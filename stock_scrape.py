@@ -435,6 +435,8 @@ def read_yahoo_stocks(symbol_list):
             stock_dict[symbol] = price
         except TypeError:
             pass
+        except KeyboardInterrupt:
+            break
     return stock_dict
 
 
