@@ -25,6 +25,7 @@ import time
 from Queue import Queue
 import __future__
 
+# TODO: Store ingest and other data files in separate folder.  Check that folder exists on creation.
 # TODO: Use TOR for anonymous scraping
 # TODO: list_market_stocks   . Finish this function and make it readable
 # TODO: Integrate with QuickFix python api for automated trading, or mechanize fidelity
@@ -114,6 +115,13 @@ class Account(object):
             print('Stock {0} is not listed.'.format(symbol))
 
     def sell_shares(self, symbol, shares):
+        """
+        Sell shares of given stock
+
+        :param symbol: e.g. ATVI
+        :param shares: amount to sell
+        :return:
+        """
         # Load all external stock data and calculate price
         if self.stock_data_file != '':
             try:
@@ -419,6 +427,13 @@ def download_file(url):
 
 
 def download_file_locally(url, dest):
+    """
+    Download file onto local host
+
+    :param url: remote url
+    :param dest: destination file
+    :return:
+    """
     req, filename, content_type = download_file(url)
     if dest.endswith('/'):
         dest = os.path.join(dest, filename)
@@ -625,6 +640,14 @@ def merge_two_dicts(x, y):
 
 
 def json_loads_byteified(json_text):
+    """
+    ****Not working on 2.7
+
+    Returns in ASCII without 'u' prepend.
+
+    :param json_text:
+    :return:
+    """
     return _byteify(
         json.loads(json_text, object_hook=_byteify),
         ignore_dicts=True
@@ -632,6 +655,10 @@ def json_loads_byteified(json_text):
 
 
 def _byteify(data, ignore_dicts = False):
+    """
+    *****BROKEN*****
+    Internal Method, do not call.
+    """
     # if this is a unicode string, return its string representation
     if isinstance(data, unicode):
         return data.encode('utf-8')
@@ -692,7 +719,8 @@ def populate_market_csv(filename, datafile):
         # remove unicode prepends
         string_values = []
         for item in values:
-            #TODO: is strip needed?
+            #TODO: split items in string values into individual objects (rather than items in list)
+            # currently string_values are not being treated as individual columns
             string_values.append(str(item).strip('u'))
         stocks_list.append([time_stamp, symbol, string_values])
 
@@ -724,7 +752,7 @@ def populate_history_csv(filename, history):
 def init_cli(account_object):
     #TODO: Searching stocks
     """
-    Command-line interface for controlling account behaviors.
+    Command-line interface for controlling Account behaviors.
 
     Type HELP for a list of commands
 
@@ -823,6 +851,10 @@ def init_cli(account_object):
 
 # TODO: Append each stock to file one by one, rather than waiting for entire dictionary
 # TODO: If interrupted, make resume option.
+
+
+# ******* TESTING COMMANDS
+# This commands are used by developer for testing purposes.
 
 def download_list():
     the_list = open_nasdaq_symbol_file('nasdaqlisted.txt')
