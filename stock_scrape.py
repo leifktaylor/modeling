@@ -433,13 +433,13 @@ def setup_queue(symbol_list):
     :param symbol_list: list of market tickers, e.g. ATVI
     :return:
     """
-        # init queue
-        q = Queue(maxsize=0)
+    # init queue
+    q = Queue(maxsize=0)
 
-        # load up queue
-        for i in range(len(symbol_list)):
-            q.put((i, symbol_list[i]))
-        return q
+    # load up queue
+    for i in range(len(symbol_list)):
+        q.put((i, symbol_list[i]))
+    return q
 
 
 def multithread_ingest(q):
@@ -464,7 +464,7 @@ def multithread_ingest(q):
 thread_results = {}
 
 
-def read_yahoo_stocks(symbol_list, max_threads=20):
+def read_yahoo_stocks(symbol_list, max_threads=32):
     """
     Reads all stocks from yahoo finance.
     Uses symbol_list of Tickers to query page by page.
