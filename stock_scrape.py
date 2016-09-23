@@ -25,6 +25,7 @@ import time
 from Queue import Queue
 import __future__
 
+# TODO: Use TOR for anonymous scraping
 # TODO: list_market_stocks   . Finish this function and make it readable
 # TODO: Integrate with QuickFix python api for automated trading, or mechanize fidelity
 # TODO: Factor in commission for sales and purchases
@@ -836,10 +837,11 @@ def login(username='Leif', password='', balance='5000'):
     init_cli(a)
 
 
-def repeated_ingest(delay=60, max_ingests=''):
+def repeated_ingest(max_ingests='', delay=60):
     counter = 0
     while True:
-        update_market_data()
+        stock_data_file = update_market_data()
+        populate_market_csv('market_csv.csv', stock_data_file)
         time.sleep(delay)
         if max_ingests:
             counter += 1
