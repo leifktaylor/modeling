@@ -10,6 +10,9 @@ import json
 import urllib2
 import urlparse
 import os
+import platform
+import ctypes
+import sys
 import mimetypes
 import shutil
 import datetime
@@ -18,6 +21,7 @@ import locale
 import csv
 import threading
 import thread
+import time
 from Queue import Queue
 import __future__
 
@@ -616,6 +620,32 @@ def merge_two_dicts(x, y):
     z.update(y)
     return z
 
+# ******* JSON Utility
+
+
+def json_loads_byteified(json_text):
+    return _byteify(
+        json.loads(json_text, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+
+def _byteify(data, ignore_dicts = False):
+    # if this is a unicode string, return its string representation
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ _byteify(item, ignore_dicts=True) for item in data ]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return dict((_byteify(key, ignore_dicts=True),
+                     _byteify(value, ignore_dicts=True)) for key, value in data.iteritems())
+
+    # if it's anything else, return it in its original form
+    return data
+
 
 # ******* CSV Interaction
 
@@ -657,8 +687,13 @@ def populate_market_csv(filename, datafile):
     stocks_list = []
     for key, value in sorted(market_dict.iteritems()):
         symbol = key
-        price = value
-        stocks_list.append([time_stamp, symbol, price])
+        values = value
+        # remove unicode prepends
+        string_values = []
+        for item in values:
+            #TODO: is strip needed?
+            string_values.append(str(item).strip('u'))
+        stocks_list.append([time_stamp, symbol, string_values])
 
     # Write into CSV
     with open(filename, 'a') as market_csv:
@@ -683,6 +718,7 @@ def populate_history_csv(filename, history):
 
 
 # ******* CLI
+
 
 def init_cli(account_object):
     #TODO: Searching stocks
@@ -800,3 +836,7 @@ def login(username='Leif', password='', balance='5000'):
     init_cli(a)
 
 
+def repeated_ingest(delay=60, ):
+    while True:
+        update_market_data()
+        time.sleep(delay)
