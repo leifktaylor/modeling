@@ -836,7 +836,13 @@ def login(username='Leif', password='', balance='5000'):
     init_cli(a)
 
 
-def repeated_ingest(delay=60, ):
+def repeated_ingest(delay=60, max_ingests=''):
+    counter = 0
     while True:
         update_market_data()
         time.sleep(delay)
+        if max_ingests:
+            counter += 1
+            if counter >= max_ingests:
+                break
+
