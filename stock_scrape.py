@@ -16,6 +16,9 @@ import datetime
 import glob
 import locale
 import csv
+import threading
+import thread
+from Queue import Queue
 import __future__
 
 # TODO: list_market_stocks   . Finish this function and make it readable
@@ -24,7 +27,8 @@ import __future__
 # TODO: Save account object for later loading
 #       save_list = [ self.balance, [{stock: shares}. {stock: shares}, ... ] ]
 #       list with dictionary of Stocks and shares
-# TODO: Make function that instantiates n Accounts.
+# TODO: Make function that instantiates n Accounts, saves IDs to spreadsheet
+# TODO: Make login() takes id from accounts spreadsheet
 # TODO: Make function that stores account balance/trading info into database
 # TODO: Record trades into account info
 # TODO: Make behaviors template (trade stock if)
@@ -32,7 +36,9 @@ import __future__
 # TODO: Round Robin for stock ingest
 # TODO: Method that writes Account.history to csv
 # TODO: Use Keras for deep learning
+# TODO: Fix timestamping on market ingest
 
+synchronize = 0
 class Account(object):
     """
     Account object can trade in securities.
@@ -419,16 +425,9 @@ def download_file_locally(url, dest):
 
 # ******* YAHOO STOCK API
 
-
-def read_yahoo_stocks(symbol_list):
-    # TODO: Read in more values from read_yahoo_stock
-    """
-    Reads stocks prices from all stocks in input stocklist.
-
-    :param symbol_list: list of stock SYMBOLS
-    :return: stock_dictionary
-    """
+def _read_stocks(symbol_list, delay):
     stock_dict = {}
+    global synchronize
     for stock in symbol_list:
         try:
             symbol, price = read_yahoo_stock(stock)
@@ -437,7 +436,74 @@ def read_yahoo_stocks(symbol_list):
             pass
         except KeyboardInterrupt:
             break
+    synchronize += 1
     return stock_dict
+
+
+def read_yahoo_stocks_old2(symbol_list):
+    # create a list of threads
+    threads = []
+
+    for i in range(len(symbol_list)):
+        try:
+            process = threading.Thread(target=thread_read_stock, args=[symbol_list[i]])
+            process.start()
+            # append each thread to thread list
+            threads.append(process)
+        except:
+            print('thread error')
+    # confirm process in each thread completed
+    for process in threads:
+        process.join()
+
+
+def setup_queue(symbol_list):
+        # init queue
+        q = Queue(maxsize=0)
+
+        # load up queue
+        for i in range(len(symbol_list)):
+            q.put((i, symbol_list[i]))
+        return q
+
+
+def multithread_ingest(q):
+    while not q.empty():
+        work = q.get()
+        try:
+            read_yahoo_stock(work[1], True, True)
+        except:
+            print('Thread error')
+        # task completed
+        q.task_done()
+    return True
+
+
+# global variable used for multi-threading
+thread_results = {}
+
+
+def read_yahoo_stocks(symbol_list, max_threads=20):
+    global thread_results
+    thread_results = {}
+    # set max threads to 30
+    num_threads = min(max_threads, len(symbol_list))
+
+    # Init queue
+    q = setup_queue(symbol_list)
+
+    results = {}
+
+    for i in range(num_threads):
+        worker = threading.Thread(target=multithread_ingest, args=(q, ))
+        # allow program to continue eventually even if threads fail
+        worker.setDaemon(True)
+        worker.start()
+
+    # wait until queue finished
+    q.join()
+    print('Threads converged. Ingest Completed')
+    return thread_results
 
 
 def save_stock_dictionary_to_file(stock_dict, filename):
@@ -455,7 +521,7 @@ def save_stock_dictionary_to_file(stock_dict, filename):
     return filename
 
 
-def read_yahoo_stock(stock_symbol, display=True):
+def read_yahoo_stock(stock_symbol, display=True, write_to_global=False):
     # TODO: Retrieve more values
     """
     Reads price from yahoo.com for given stock symbol.
@@ -482,6 +548,9 @@ def read_yahoo_stock(stock_symbol, display=True):
         except AttributeError:
             print("Unknown symbol or parsing is broken: {}".format(symbol))
             symbol, price = '', ''
+        if write_to_global:
+            # writes to global variable used for multithreading
+            thread_results[symbol] = [price, get_date_time()]
         return symbol, price
 
 
@@ -500,6 +569,7 @@ def get_live_price(symbol):
 
 # ******* UTILITY
 
+
 def get_date_time():
     """
     :return: Time in Y-M-D H:M:S
@@ -507,9 +577,11 @@ def get_date_time():
     time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return time
 
+
 def get_approx_time():
     time = datetime.datetime.now().strftime("%m-%d_%H_%M")
     return time
+
 
 def p_money(money):
     """
@@ -532,6 +604,30 @@ def file_exists(filename):
     return os.path.isfile(filename)
 
 
+def split_list(a_list):
+    """
+    Split list in half
+
+    :param a_list: list to split
+    :return: list_half, list_other_half
+    """
+    half = len(a_list)/2
+    return a_list[:half], a_list[half:]
+
+
+def merge_two_dicts(x, y):
+    """
+    Merge two dictionaries.
+
+    :param x: dictionary 1
+    :param y: dictionary 2
+    :return: merged dictionary
+    """
+    z = x.copy()
+    z.update(y)
+    return z
+
+
 # ******* CSV Interaction
 
 def create_csv(filename, *args):
@@ -547,6 +643,7 @@ def create_csv(filename, *args):
     wr.writerow(*args)
     new_csv.close()
     return filename
+
 
 def populate_market_csv(filename, datafile):
     #TODO: Improve time stamping in ingest
@@ -569,7 +666,7 @@ def populate_market_csv(filename, datafile):
 
     # Create list of lists from data [time, symbol, value]
     stocks_list = []
-    for key, value in market_dict.iteritems():
+    for key, value in sorted(market_dict.iteritems()):
         symbol = key
         price = value
         stocks_list.append([time_stamp, symbol, price])
