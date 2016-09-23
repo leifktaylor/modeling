@@ -38,7 +38,7 @@ import __future__
 # TODO: Use Keras for deep learning
 # TODO: Fix timestamping on market ingest
 
-synchronize = 0
+
 class Account(object):
     """
     Account object can trade in securities.
@@ -425,39 +425,14 @@ def download_file_locally(url, dest):
 
 # ******* YAHOO STOCK API
 
-def _read_stocks(symbol_list, delay):
-    stock_dict = {}
-    global synchronize
-    for stock in symbol_list:
-        try:
-            symbol, price = read_yahoo_stock(stock)
-            stock_dict[symbol] = price
-        except TypeError:
-            pass
-        except KeyboardInterrupt:
-            break
-    synchronize += 1
-    return stock_dict
-
-
-def read_yahoo_stocks_old2(symbol_list):
-    # create a list of threads
-    threads = []
-
-    for i in range(len(symbol_list)):
-        try:
-            process = threading.Thread(target=thread_read_stock, args=[symbol_list[i]])
-            process.start()
-            # append each thread to thread list
-            threads.append(process)
-        except:
-            print('thread error')
-    # confirm process in each thread completed
-    for process in threads:
-        process.join()
-
-
 def setup_queue(symbol_list):
+    """
+    Determines total amount of threads needed for market ingest
+    and creates queue.
+
+    :param symbol_list: list of market tickers, e.g. ATVI
+    :return:
+    """
         # init queue
         q = Queue(maxsize=0)
 
@@ -468,6 +443,12 @@ def setup_queue(symbol_list):
 
 
 def multithread_ingest(q):
+    """
+    Uses queue to control threads.
+
+    :param q: queue object
+    :return:
+    """
     while not q.empty():
         work = q.get()
         try:
@@ -484,6 +465,14 @@ thread_results = {}
 
 
 def read_yahoo_stocks(symbol_list, max_threads=20):
+    """
+    Reads all stocks from yahoo finance.
+    Uses symbol_list of Tickers to query page by page.
+
+    :param symbol_list: list of tickers, e.g. ATVI
+    :param max_threads: maximum threads to use in multi-threading
+    :return:
+    """
     global thread_results
     thread_results = {}
     # set max threads to 30
@@ -680,6 +669,7 @@ def populate_market_csv(filename, datafile):
 
     print('{0} spreadsheet updated'.format(filename))
 
+
 def populate_history_csv(filename, history):
     """
     Populates CSV with list sales transaction history of Account object.
@@ -794,9 +784,9 @@ def init_cli(account_object):
                 print('Load is offline')
 
 
+# TODO: Append each stock to file one by one, rather than waiting for entire dictionary
+# TODO: If interrupted, make resume option.
 
-#TODO: Append each stock to file one by one, rather than waiting for entire dictionary
-#TODO: If interrupted, make resume option.
 def download_list():
     the_list = open_nasdaq_symbol_file('nasdaqlisted.txt')
     symbol_list = parse_symbols_to_list(the_list)
