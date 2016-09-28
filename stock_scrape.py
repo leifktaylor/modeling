@@ -4,6 +4,8 @@ Author: Leif Taylor , Sep 2016
 """
 
 from bs4 import BeautifulSoup
+import numpy as np
+import pandas as pd
 import requests
 import re
 import json
@@ -25,6 +27,7 @@ import thread
 import time
 from Queue import Queue
 import __future__
+pd.set_option('html', False)
 
 # TODO: Display current value of total basis of particular stock in 'history' instead of balance at time of sale
 # TODO: Show cost basis in 'stats'
@@ -45,7 +48,8 @@ import __future__
 # TODO: Round Robin for stock ingest
 # TODO: Method that writes Account.history to csv
 # TODO: Use Keras for deep learning
-# TODO: Fix timestamping on market ingest
+# TODO: Fix timestamping on market ingest <<<<<<<<<<<<<<<<<<<<<
+# TODO: Overwrite SYMBOL Files, don't time stamp them
 
 
 class Account(object):
@@ -269,6 +273,47 @@ class Account(object):
                                  'SYMBOL': stock_symbol, 'TYPE': sale_type, 'TOTALSALE': total_sale,
                                  'BALANCE': account_balance})
 
+
+# ****** DATA QUERIES
+
+
+# ****** DATA QUERIES : Low Level
+
+def create_dataframe_from_single_stock(stock_ticker):
+    """
+    Creates a dataframe object listing all of the rows of a single stock
+
+    :param stock_ticker: e.g. AAPL
+    :return: dataframe object
+    """
+    return stock_database.loc[stock_database['SYMBOL'] == stock_ticker]
+
+
+def index_dataframe_using_timestamps(dataframe_object):
+    """
+    Indexes the given dataframe object by timestamp and
+    returns the newly indexed dataframe.
+
+    :return: time-stamp indexed dataframe
+    """
+    # TODO: Fix timestamping and finish this function
+    pass
+
+
+def create_dataframe_from_entire_database():
+    """
+    Returns the entire stock database as a dataframe object
+
+    :return: dataframe object
+    """
+    return stock_database
+
+# INIT -----
+try:
+    stock_file = 'market_csv.csv'
+except IOError:
+    'No stock_file, create and reload'
+stock_database = pd.read_csv(stock_file)
 
 # ****** ACCOUNT HANDLING
 
