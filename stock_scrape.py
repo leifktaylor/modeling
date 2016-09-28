@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import json
+import time
 import urllib2
 import urlparse
 import os
@@ -878,5 +879,14 @@ def download_list():
 def login(username='Leif', password='', balance='5000'):
     a = Account(5000, username)
     init_cli(a)
+
+
+def repeated_ingest(iterations):
+    a = Account(5000, 'Leif')
+    for i in range(0, iterations):
+        a.stock_data_file = update_market_data('google')
+        populate_market_csv('market_csv.csv', a.stock_data_file)
+
+
 
 
