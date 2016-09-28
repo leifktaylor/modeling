@@ -4,6 +4,8 @@ Author: Leif Taylor , Sep 2016
 """
 
 from bs4 import BeautifulSoup
+import numpy as np
+import pandas as pd
 import requests
 import re
 import json
@@ -11,6 +13,9 @@ import time
 import urllib2
 import urlparse
 import os
+import platform
+import ctypes
+import sys
 import mimetypes
 import shutil
 import datetime
@@ -18,11 +23,16 @@ import glob
 import locale
 import csv
 import threading
-import asyncio
 import thread
+import time
 from Queue import Queue
 import __future__
+pd.set_option('html', False)
 
+# TODO: Display current value of total basis of particular stock in 'history' instead of balance at time of sale
+# TODO: Show cost basis in 'stats'
+# TODO: Store ingest and other data files in separate folder.  Check that folder exists on creation.
+# TODO: Use TOR for anonymous scraping
 # TODO: list_market_stocks   . Finish this function and make it readable
 # TODO: Integrate with QuickFix python api for automated trading, or mechanize fidelity
 # TODO: Factor in commission for sales and purchases
@@ -38,7 +48,8 @@ import __future__
 # TODO: Round Robin for stock ingest
 # TODO: Method that writes Account.history to csv
 # TODO: Use Keras for deep learning
-# TODO: Fix timestamping on market ingest
+# TODO: Fix timestamping on market ingest <<<<<<<<<<<<<<<<<<<<<
+# TODO: Overwrite SYMBOL Files, don't time stamp them
 
 
 class Account(object):
@@ -111,6 +122,13 @@ class Account(object):
             print('Stock {0} is not listed.'.format(symbol))
 
     def sell_shares(self, symbol, shares):
+        """
+        Sell shares of given stock
+
+        :param symbol: e.g. ATVI
+        :param shares: amount to sell
+        :return:
+        """
         # Load all external stock data and calculate price
         if self.stock_data_file != '':
             try:
@@ -255,6 +273,47 @@ class Account(object):
                                  'SYMBOL': stock_symbol, 'TYPE': sale_type, 'TOTALSALE': total_sale,
                                  'BALANCE': account_balance})
 
+
+# ****** DATA QUERIES
+
+
+# ****** DATA QUERIES : Low Level
+
+def create_dataframe_from_single_stock(stock_ticker):
+    """
+    Creates a dataframe object listing all of the rows of a single stock
+
+    :param stock_ticker: e.g. AAPL
+    :return: dataframe object
+    """
+    return stock_database.loc[stock_database['SYMBOL'] == stock_ticker]
+
+
+def index_dataframe_using_timestamps(dataframe_object):
+    """
+    Indexes the given dataframe object by timestamp and
+    returns the newly indexed dataframe.
+
+    :return: time-stamp indexed dataframe
+    """
+    # TODO: Fix timestamping and finish this function
+    pass
+
+
+def create_dataframe_from_entire_database():
+    """
+    Returns the entire stock database as a dataframe object
+
+    :return: dataframe object
+    """
+    return stock_database
+
+# INIT -----
+try:
+    stock_file = 'market_csv.csv'
+except IOError:
+    'No stock_file, create and reload'
+stock_database = pd.read_csv(stock_file)
 
 # ****** ACCOUNT HANDLING
 
@@ -421,6 +480,13 @@ def download_file(url):
 
 
 def download_file_locally(url, dest):
+    """
+    Download file onto local host
+
+    :param url: remote url
+    :param dest: destination file
+    :return:
+    """
     req, filename, content_type = download_file(url)
     if dest.endswith('/'):
         dest = os.path.join(dest, filename)
@@ -542,6 +608,7 @@ def read_google_json(stock_symbol, display=True, write_to_global=False):
         except:
             print('Stock not found!')
     return symbol, price
+
 
 def read_google_stocks(symbol_list, max_threads=20):
     """
@@ -680,24 +747,6 @@ def merge_two_dicts(x, y):
     z.update(y)
     return z
 
-# ******* Asyncio Scrape
-#
-# @asyncio.coroutine
-# def async_get_stock(stock_symbol):
-#     url = 'http://finance.google.com/finance/info?q=NASDAQ%3a{0}'.format(stock_symbol)
-#     try:
-#         r = requests.get(url)
-#         raw = re.sub(' +', ' ', r.text[5:-2])
-#         stock_data = json.loads(raw)
-#         price = stock_data['l_cur']
-#     except:
-#         print('Stock not found!')
-#     response = yield from asyncio.aiohttp.request('GET', url)
-#     return (yield from response.read_and_close(decode=True))
-
-
-
-
 # ******* CSV Interaction
 
 def create_csv(filename, *args):
@@ -738,8 +787,14 @@ def populate_market_csv(filename, datafile):
     stocks_list = []
     for key, value in sorted(market_dict.iteritems()):
         symbol = key
-        price = value
-        stocks_list.append([time_stamp, symbol, price])
+        values = value
+        # remove unicode prepends
+        string_values = []
+        for item in values:
+            #TODO: split items in string values into individual objects (rather than items in list)
+            # currently string_values are not being treated as individual columns
+            string_values.append(str(item).strip('u'))
+        stocks_list.append([time_stamp, symbol, string_values])
 
     # Write into CSV
     with open(filename, 'a') as market_csv:
@@ -765,10 +820,11 @@ def populate_history_csv(filename, history):
 
 # ******* CLI
 
+
 def init_cli(account_object):
     #TODO: Searching stocks
     """
-    Command-line interface for controlling account behaviors.
+    Command-line interface for controlling Account behaviors.
 
     Type HELP for a list of commands
 
@@ -868,6 +924,10 @@ def init_cli(account_object):
 # TODO: Append each stock to file one by one, rather than waiting for entire dictionary
 # TODO: If interrupted, make resume option.
 
+
+# ******* TESTING COMMANDS
+# This commands are used by developer for testing purposes.
+
 def download_list():
     the_list = open_nasdaq_symbol_file('nasdaqlisted.txt')
     symbol_list = parse_symbols_to_list(the_list)
@@ -886,7 +946,3 @@ def repeated_ingest(iterations):
     for i in range(0, iterations):
         a.stock_data_file = update_market_data('google')
         populate_market_csv('market_csv.csv', a.stock_data_file)
-
-
-
-
