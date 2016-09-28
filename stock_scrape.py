@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import json
+import time
 import urllib2
 import urlparse
 import os
@@ -20,6 +21,7 @@ import glob
 import locale
 import csv
 import threading
+import asyncio
 import thread
 import time
 from Queue import Queue
@@ -292,10 +294,11 @@ def list_market_data_files():
     print(glob.glob('otherl*'))
 
 
-def update_market_data():
+def update_market_data(website='google'):
     """
     Updates market listings for NYSE.  Can be applied to Account.
 
+    website: can be 'google' or 'yahoo'
     :return: stock_data_file path for Account object
     """
     # Download files from Nasdaq FTP
@@ -304,8 +307,12 @@ def update_market_data():
     raw_lines = open_nasdaq_symbol_file(nasdaqlist)
     symbol_list = parse_symbols_to_list(raw_lines)
     print('Downloading current stock values...')
-    # Read all stock data from Yahoo Finance using Symbols
-    stock_dict = read_yahoo_stocks(symbol_list)
+    if website == 'google':
+        # Read all stock data from Google Finance using Symbols
+        stock_dict = read_google_stocks(symbol_list)
+    else:
+        # Read all stock data from Yahoo Finance using Symbols
+        stock_dict = read_yahoo_stocks(symbol_list)
     # Output Yahoo Finance stock data into stock data_file.
     data_file = save_stock_dictionary_to_file(stock_dict, 'NASD_Listings_' + str(get_approx_time()))
     return data_file
@@ -445,7 +452,7 @@ def download_file_locally(url, dest):
     return filename
 
 
-# ******* YAHOO STOCK API
+# ******* WEB SCRAPE STOCK API
 
 def setup_queue(symbol_list):
     """
@@ -464,7 +471,7 @@ def setup_queue(symbol_list):
     return q
 
 
-def multithread_ingest(q):
+def multithread_ingest(q, type='yahoo'):
     """
     Uses queue to control threads.
 
@@ -487,6 +494,7 @@ thread_results = {}
 
 
 def read_yahoo_stocks(symbol_list, max_threads=32):
+def read_yahoo_stocks(symbol_list, max_threads=20):
     """
     Reads all stocks from yahoo finance.
     Uses symbol_list of Tickers to query page by page.
@@ -506,7 +514,7 @@ def read_yahoo_stocks(symbol_list, max_threads=32):
     results = {}
 
     for i in range(num_threads):
-        worker = threading.Thread(target=multithread_ingest, args=(q, ))
+        worker = threading.Thread(target=multithread_ingest, args=(q, 'yahoo'))
         # allow program to continue eventually even if threads fail
         worker.setDaemon(True)
         worker.start()
@@ -530,6 +538,63 @@ def save_stock_dictionary_to_file(stock_dict, filename):
         json.dump(stock_dict, output_dictionary_file)
     output_dictionary_file.close()
     return filename
+
+
+def read_google_json(stock_symbol, display=True, write_to_global=False):
+    """
+    Reads stock information from finance.google.com where the URL format is:
+    http://finance.google.com/finance/info?q=NASDAQ%3a<stock ticker>
+
+    :param stock_symbol: e.g. ATVI
+    :param display: prints output
+    :param write_to_global: set to True if using hyperthreading
+    :return: symbol, price, ... more stuff soon.
+    """
+    symbol = stock_symbol
+    price = ''
+    if symbol == '\n' or symbol == 'Symbol':
+        if display:
+            print('\n')
+    else:
+        url = 'http://finance.google.com/finance/info?q=NASDAQ%3a{0}'.format(stock_symbol)
+        try:
+            r = requests.get(url)
+            raw = re.sub(' +', ' ', r.text[5:-2])
+            stock_data = json.loads(raw)
+            price = stock_data['l_cur']
+        except:
+            print('Stock not found!')
+    return symbol, price
+
+def read_google_stocks(symbol_list, max_threads=20):
+    """
+    Reads all stocks from google finance.
+    Uses symbol_list of Tickers to query page by page.
+
+    :param symbol_list: list of tickers, e.g. ATVI
+    :param max_threads: maximum threads to use in multi-threading
+    :return:
+    """
+    global thread_results
+    thread_results = {}
+    # set max threads to 30
+    num_threads = min(max_threads, len(symbol_list))
+
+    # Init queue
+    q = setup_queue(symbol_list)
+
+    results = {}
+
+    for i in range(num_threads):
+        worker = threading.Thread(target=multithread_ingest, args=(q, 'google'))
+        # allow program to continue eventually even if threads fail
+        worker.setDaemon(True)
+        worker.start()
+
+    # wait until queue finished
+    q.join()
+    print('Threads converged. Ingest Completed')
+    return thread_results
 
 
 def read_yahoo_stock(stock_symbol, display=True, write_to_global=False):
@@ -638,22 +703,22 @@ def merge_two_dicts(x, y):
     z.update(y)
     return z
 
-# ******* JSON Utility
+# ******* Asyncio Scrape
+#
+# @asyncio.coroutine
+# def async_get_stock(stock_symbol):
+#     url = 'http://finance.google.com/finance/info?q=NASDAQ%3a{0}'.format(stock_symbol)
+#     try:
+#         r = requests.get(url)
+#         raw = re.sub(' +', ' ', r.text[5:-2])
+#         stock_data = json.loads(raw)
+#         price = stock_data['l_cur']
+#     except:
+#         print('Stock not found!')
+#     response = yield from asyncio.aiohttp.request('GET', url)
+#     return (yield from response.read_and_close(decode=True))
 
 
-def json_loads_byteified(json_text):
-    """
-    ****Not working on 2.7
-
-    Returns in ASCII without 'u' prepend.
-
-    :param json_text:
-    :return:
-    """
-    return _byteify(
-        json.loads(json_text, object_hook=_byteify),
-        ignore_dicts=True
-    )
 
 
 def _byteify(data, ignore_dicts = False):
@@ -839,7 +904,7 @@ def init_cli(account_object):
                 print('Search is offline')
 
             if choice == 'update':
-                a.stock_data_file = update_market_data()
+                a.stock_data_file = update_market_data('google')
                 populate_market_csv('market_csv.csv', a.stock_data_file)
 
             if choice == 'save':
@@ -869,6 +934,15 @@ def download_list():
 def login(username='Leif', password='', balance='5000'):
     a = Account(5000, username)
     init_cli(a)
+
+
+def repeated_ingest(iterations):
+    a = Account(5000, 'Leif')
+    for i in range(0, iterations):
+        a.stock_data_file = update_market_data('google')
+        populate_market_csv('market_csv.csv', a.stock_data_file)
+
+
 
 
 def repeated_ingest(max_ingests='', delay=60):
