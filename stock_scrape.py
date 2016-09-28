@@ -21,7 +21,6 @@ import glob
 import locale
 import csv
 import threading
-import asyncio
 import thread
 import time
 from Queue import Queue
@@ -493,7 +492,6 @@ def multithread_ingest(q, type='yahoo'):
 thread_results = {}
 
 
-def read_yahoo_stocks(symbol_list, max_threads=32):
 def read_yahoo_stocks(symbol_list, max_threads=20):
     """
     Reads all stocks from yahoo finance.
@@ -565,6 +563,7 @@ def read_google_json(stock_symbol, display=True, write_to_global=False):
         except:
             print('Stock not found!')
     return symbol, price
+
 
 def read_google_stocks(symbol_list, max_threads=20):
     """
@@ -702,45 +701,6 @@ def merge_two_dicts(x, y):
     z = x.copy()
     z.update(y)
     return z
-
-# ******* Asyncio Scrape
-#
-# @asyncio.coroutine
-# def async_get_stock(stock_symbol):
-#     url = 'http://finance.google.com/finance/info?q=NASDAQ%3a{0}'.format(stock_symbol)
-#     try:
-#         r = requests.get(url)
-#         raw = re.sub(' +', ' ', r.text[5:-2])
-#         stock_data = json.loads(raw)
-#         price = stock_data['l_cur']
-#     except:
-#         print('Stock not found!')
-#     response = yield from asyncio.aiohttp.request('GET', url)
-#     return (yield from response.read_and_close(decode=True))
-
-
-
-
-def _byteify(data, ignore_dicts = False):
-    """
-    *****BROKEN*****
-    Internal Method, do not call.
-    """
-    # if this is a unicode string, return its string representation
-    if isinstance(data, unicode):
-        return data.encode('utf-8')
-    # if this is a list of values, return list of byteified values
-    if isinstance(data, list):
-        return [ _byteify(item, ignore_dicts=True) for item in data ]
-    # if this is a dictionary, return dictionary of byteified keys and values
-    # but only if we haven't already byteified it
-    if isinstance(data, dict) and not ignore_dicts:
-        return dict((_byteify(key, ignore_dicts=True),
-                     _byteify(value, ignore_dicts=True)) for key, value in data.iteritems())
-
-    # if it's anything else, return it in its original form
-    return data
-
 
 # ******* CSV Interaction
 
