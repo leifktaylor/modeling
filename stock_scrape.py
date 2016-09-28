@@ -25,6 +25,8 @@ import time
 from Queue import Queue
 import __future__
 
+# TODO: Display current value of total basis of particular stock in 'history' instead of balance at time of sale
+# TODO: Show cost basis in 'stats'
 # TODO: Store ingest and other data files in separate folder.  Check that folder exists on creation.
 # TODO: Use TOR for anonymous scraping
 # TODO: list_market_stocks   . Finish this function and make it readable
