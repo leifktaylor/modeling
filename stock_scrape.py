@@ -941,18 +941,3 @@ def repeated_ingest(iterations):
     for i in range(0, iterations):
         a.stock_data_file = update_market_data('google')
         populate_market_csv('market_csv.csv', a.stock_data_file)
-
-
-
-
-def repeated_ingest(max_ingests='', delay=60):
-    counter = 0
-    while True:
-        stock_data_file = update_market_data()
-        populate_market_csv('market_csv.csv', stock_data_file)
-        time.sleep(delay)
-        if max_ingests:
-            counter += 1
-            if counter >= max_ingests:
-                break
-
