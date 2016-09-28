@@ -27,12 +27,14 @@ def create_population(amount):
         population.append(Individual(species, sex, survivability, reproductive_likelihood))
     return population
 
+
 def create_adult_population(population):
     adult_population = []
     for individual in population:
         if individualndividual.survivablity < 0.5:
             individual.alive = False
     return adult_population
+
 
 def create_next_generation(adult_population):
     next_generation = []
@@ -41,4 +43,36 @@ def create_next_generation(adult_population):
         if individual.alive == True:
             if selection_mode == female:
                 pass
-                
+
+
+def print_population_statistics(population):
+    """
+    Prints the species, sex, survability, reproductive_likelyhood and
+    other stats of the members of a population.
+
+    :param population: population list object
+    :return:
+    """
+    for individual in population:
+        print_individual_statistics(individual)
+
+
+def print_individual_statistics(individual):
+    """
+    Prints the statistics of an individual.
+
+    :param individual: Individual class object
+    :return:
+    """
+    species = individual.species
+    sex = individual.sex
+    survivability = individual.survivability
+    reproductive_likelihood = individual.reproductive_likelihood
+    print('Species: {0} | Sex: {1} | Survivability {2} | Reproductive_Chance {3}'.format(species, sex, survivability,
+                                                                                         reproductive_likelihood))
+
+
+def test():
+    a = create_population(20)
+    print_population_statistics(a)
+    
