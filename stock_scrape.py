@@ -11,6 +11,9 @@ import time
 import urllib2
 import urlparse
 import os
+import platform
+import ctypes
+import sys
 import mimetypes
 import shutil
 import datetime
@@ -20,9 +23,14 @@ import csv
 import threading
 import asyncio
 import thread
+import time
 from Queue import Queue
 import __future__
 
+# TODO: Display current value of total basis of particular stock in 'history' instead of balance at time of sale
+# TODO: Show cost basis in 'stats'
+# TODO: Store ingest and other data files in separate folder.  Check that folder exists on creation.
+# TODO: Use TOR for anonymous scraping
 # TODO: list_market_stocks   . Finish this function and make it readable
 # TODO: Integrate with QuickFix python api for automated trading, or mechanize fidelity
 # TODO: Factor in commission for sales and purchases
@@ -111,6 +119,13 @@ class Account(object):
             print('Stock {0} is not listed.'.format(symbol))
 
     def sell_shares(self, symbol, shares):
+        """
+        Sell shares of given stock
+
+        :param symbol: e.g. ATVI
+        :param shares: amount to sell
+        :return:
+        """
         # Load all external stock data and calculate price
         if self.stock_data_file != '':
             try:
@@ -421,6 +436,13 @@ def download_file(url):
 
 
 def download_file_locally(url, dest):
+    """
+    Download file onto local host
+
+    :param url: remote url
+    :param dest: destination file
+    :return:
+    """
     req, filename, content_type = download_file(url)
     if dest.endswith('/'):
         dest = os.path.join(dest, filename)
@@ -471,6 +493,7 @@ def multithread_ingest(q, type='yahoo'):
 thread_results = {}
 
 
+def read_yahoo_stocks(symbol_list, max_threads=32):
 def read_yahoo_stocks(symbol_list, max_threads=20):
     """
     Reads all stocks from yahoo finance.
@@ -698,6 +721,27 @@ def merge_two_dicts(x, y):
 
 
 
+def _byteify(data, ignore_dicts = False):
+    """
+    *****BROKEN*****
+    Internal Method, do not call.
+    """
+    # if this is a unicode string, return its string representation
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ _byteify(item, ignore_dicts=True) for item in data ]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return dict((_byteify(key, ignore_dicts=True),
+                     _byteify(value, ignore_dicts=True)) for key, value in data.iteritems())
+
+    # if it's anything else, return it in its original form
+    return data
+
+
 # ******* CSV Interaction
 
 def create_csv(filename, *args):
@@ -738,8 +782,14 @@ def populate_market_csv(filename, datafile):
     stocks_list = []
     for key, value in sorted(market_dict.iteritems()):
         symbol = key
-        price = value
-        stocks_list.append([time_stamp, symbol, price])
+        values = value
+        # remove unicode prepends
+        string_values = []
+        for item in values:
+            #TODO: split items in string values into individual objects (rather than items in list)
+            # currently string_values are not being treated as individual columns
+            string_values.append(str(item).strip('u'))
+        stocks_list.append([time_stamp, symbol, string_values])
 
     # Write into CSV
     with open(filename, 'a') as market_csv:
@@ -765,10 +815,11 @@ def populate_history_csv(filename, history):
 
 # ******* CLI
 
+
 def init_cli(account_object):
     #TODO: Searching stocks
     """
-    Command-line interface for controlling account behaviors.
+    Command-line interface for controlling Account behaviors.
 
     Type HELP for a list of commands
 
@@ -868,6 +919,10 @@ def init_cli(account_object):
 # TODO: Append each stock to file one by one, rather than waiting for entire dictionary
 # TODO: If interrupted, make resume option.
 
+
+# ******* TESTING COMMANDS
+# This commands are used by developer for testing purposes.
+
 def download_list():
     the_list = open_nasdaq_symbol_file('nasdaqlisted.txt')
     symbol_list = parse_symbols_to_list(the_list)
@@ -886,7 +941,3 @@ def repeated_ingest(iterations):
     for i in range(0, iterations):
         a.stock_data_file = update_market_data('google')
         populate_market_csv('market_csv.csv', a.stock_data_file)
-
-
-
-
