@@ -680,19 +680,19 @@ def merge_two_dicts(x, y):
     return z
 
 # ******* Asyncio Scrape
-
-@asyncio.coroutine
-def async_get_stock(stock_symbol):
-    url = 'http://finance.google.com/finance/info?q=NASDAQ%3a{0}'.format(stock_symbol)
-    try:
-        r = requests.get(url)
-        raw = re.sub(' +', ' ', r.text[5:-2])
-        stock_data = json.loads(raw)
-        price = stock_data['l_cur']
-    except:
-        print('Stock not found!')
-    response = yield from asyncio.aiohttp.request('GET', url)
-    return (yield from response.read_and_close(decode=True))
+#
+# @asyncio.coroutine
+# def async_get_stock(stock_symbol):
+#     url = 'http://finance.google.com/finance/info?q=NASDAQ%3a{0}'.format(stock_symbol)
+#     try:
+#         r = requests.get(url)
+#         raw = re.sub(' +', ' ', r.text[5:-2])
+#         stock_data = json.loads(raw)
+#         price = stock_data['l_cur']
+#     except:
+#         print('Stock not found!')
+#     response = yield from asyncio.aiohttp.request('GET', url)
+#     return (yield from response.read_and_close(decode=True))
 
 
 
