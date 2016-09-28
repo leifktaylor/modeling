@@ -15,6 +15,7 @@ class Individual(object):
 def create_population(amount):
     population = []
     species_index = {'test_bird': {'species': 'test_bird'}}
+<<<<<<< HEAD
     sex_list = ('male', 'female')
     for i in range(0, amount):
         species = 'test_bird'
@@ -40,3 +41,7 @@ def create_next_generation(adult_population):
         if individual.alive = True:
             if selection_mode = female:
                 
+=======
+
+
+>>>>>>> 08745b030bf873806a6680b73b5344f1a3ca9ec9
