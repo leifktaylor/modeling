@@ -274,10 +274,17 @@ class Account(object):
                                  'BALANCE': account_balance})
 
 
-# ****** DATA QUERIES
+# ****** DATA QUERIES : Mid Level
 
+# get ratio of 60 day / one year slopes
+
+# check which stocks are in similiar industries
 
 # ****** DATA QUERIES : Low Level
+
+# Get 60 day growth slope
+
+# get year growth slope
 
 def create_dataframe_from_single_stock(stock_ticker):
     """
@@ -311,9 +318,10 @@ def create_dataframe_from_entire_database():
 # INIT -----
 try:
     stock_file = 'market_csv.csv'
-except IOError:
-    'No stock_file, create and reload'
-stock_database = pd.read_csv(stock_file)
+    stock_database = pd.read_csv(stock_file)
+except:
+    print('Issue with {0}'.format(stock_file))
+
 
 # ****** ACCOUNT HANDLING
 
@@ -822,7 +830,7 @@ def populate_history_csv(filename, history):
 
 
 def init_cli(account_object):
-    #TODO: Searching stocks
+    # TODO: Searching stocks
     """
     Command-line interface for controlling Account behaviors.
 
