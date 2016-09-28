@@ -1,7 +1,9 @@
 class HashMap:
-    def __init__(self):
-        self.size = 20
+    def __init__(self, **kwargs):
+        self.size = (20 + len(kwargs))
         self.map = [None] * self.size
+        for k, v in kwargs.iteritems():
+            self.add(k, v)
 
     def _get_hash(self, key):
         # get index of map to place k_v in
