@@ -3,16 +3,30 @@
 # TODO: Create In-Game script with turn taking (Rotate through player list)
 # TODO: Create AI that randomly moves, then expand from it:
 
-class Board(object):  
+
+class Board(object):
+    """
+    The Game Board. Populated by player moves.
+
+    rows: how tall the board is (y axis)
+    columns: how wide the board is (x axis)
+    win_amt: length of consecutive moves to win game
+    """
     def __init__(self, rows=3, columns=3, win_amt=3):
         self.directions = {'UP': (-1, 0), 'UR': (-1, 1), 'RT': (0, 1), 'DR': (1, 1),
                            'DN': (1, 0), 'DL': (1, -1), 'LT': (0, -1), 'UL': (-1, -1)}
         self.board = []
         self.win_amt = win_amt
+        # Create game board
         for i in range(0, rows):
             self.board.append([' ']*columns)
 
     def print_board(self):
+        """
+        Prints board data to screen for debugging.
+        For pretty ascii representation use 'draw_board'
+        :return:
+        """
         for row in self.board:
             print(row)
 
@@ -78,6 +92,14 @@ class Board(object):
 
 
 class Player(object):
+    """
+    Player instance places its graphic on the Board.
+    Player can be controlled by ai or by user input.
+    Any number of players can be instantiated.
+    NOTE:
+        Graphic must be different for each instantiated player.
+        Duplicate graphic will result in errors.
+    """
     def __init__(self, graphic, board):
         self.b = board
         self.graphic = graphic
