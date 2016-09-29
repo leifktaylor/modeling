@@ -1,3 +1,7 @@
+# TODO: Create draw_board function and switch empty spaces to None
+# TODO: 'Player.place' return False if player already on space (not None)
+# TODO: Create In-Game script with turn taking (Rotate through player list)
+# TODO: Create AI that randomly moves, then expand from it:
 
 class Board(object):  
     def __init__(self, rows=3, columns=3, win_amt=3):
@@ -63,10 +67,7 @@ class Board(object):
             if self.board[y][x] == graphic:
                 count += 1
                 # check next move in current direction
-                #try:
                 return self.check_length((y, x), dir, graphic, count)
-                #except IndexError:
-                #    return count
         except IndexError:
             return count
         else:
@@ -82,14 +83,24 @@ class Player(object):
         self.graphic = graphic
 
     def place(self, y, x):
-        self.b.board[y][x] = self.graphic
-
+        """
+        Places character graphic on space on board.
+        Returns True if successful, False if non-existent coordinate.
+        :param y: y coordinate on board
+        :param x: x coordinate on board
+        :return: True or False
+        """
+        try:
+            self.b.board[y][x] = self.graphic
+        except IndexError:
+            return False
+        return True
 
 # Regression Tests:
 
 def run_test_suite():
     print('\n--- REGRESSION TEST RESULTS ---\n{0}'.format(
-        str([test1(), test2()])))
+        str([test1(), test2(), test3()])))
 
 
 def test1():
@@ -150,3 +161,30 @@ def test2():
     else:
         return 'FAIL'
 
+def test3():
+    """
+    PASS: PLACING OUTSIDE OF BOARD HANDLES EXCEPTION
+    FAIL: ERROR STOPS PROGRAM
+    Tests that IndexError is handled for placing out of board
+    :return: True, False
+    """
+    print('\n')
+    print('--- INDEX ARROW BOARD COORD TEST ---')
+    print('\n')
+    b = Board(10, 10)
+    p = Player('X', b)
+    try:
+        p.place(1, 20)
+        p.place(13, 3)
+        p.place(13, 44)
+        p.place(31, 123)
+        p.place(22, 1)
+        p.place(02, 1)
+        p.place(642, 1)
+        p.place(8, 4)
+        p.place(31, 9)
+    except IndexError:
+        b.print_board()
+        return 'FAIL'
+    b.print_board()
+    return 'PASS'
