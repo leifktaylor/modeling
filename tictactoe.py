@@ -121,6 +121,11 @@ class Player(object):
 # Regression Tests:
 
 def run_test_suite():
+    """
+    Run suite of regression tests.
+    Test results displayed on screen.
+    :return:
+    """
     print('\n--- REGRESSION TEST RESULTS ---\n{0}'.format(
         str([test1(), test2(), test3()])))
 
