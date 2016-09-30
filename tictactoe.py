@@ -135,7 +135,7 @@ def test1():
     PASS: Win state achieved
     FAIL: Win state not achieved
     Tests that win state is detected when it should be.
-    :return: True, False
+    :return: PASS, FAIL
     """
     print('\n')
     print('--- WIN STATE TEST ---')
@@ -165,7 +165,7 @@ def test2():
     FAIL: Win state achieved
     Tests that win state is only detected when actual
     win state occurs.
-    :return: True, False
+    :return: PASS, FAIL
     """
     print('\n')
     print('--- FALSE WIN STATE TEST ---')
@@ -193,10 +193,10 @@ def test3():
     PASS: PLACING OUTSIDE OF BOARD HANDLES EXCEPTION
     FAIL: ERROR STOPS PROGRAM
     Tests that IndexError is handled for placing out of board
-    :return: True, False
+    :return: PASS, FAIL
     """
     print('\n')
-    print('--- INDEX ARROW BOARD COORD TEST ---')
+    print('--- INDEX ERROR BOARD COORD BOUNDS TEST ---')
     print('\n')
     b = Board(10, 10)
     p = Player('X', b)
