@@ -3,6 +3,7 @@
 # TODO: Create In-Game script with turn taking (Rotate through player list)
 # TODO: Create AI that randomly moves, then expand from it:
 
+
 class Board(object):  
     def __init__(self, rows=3, columns=3, win_amt=3):
         self.directions = {'UP': (-1, 0), 'UR': (-1, 1), 'RT': (0, 1), 'DR': (1, 1),
@@ -78,9 +79,10 @@ class Board(object):
 
 
 class Player(object):
-    def __init__(self, graphic, board):
+    def __init__(self, graphic, board, ai=False):
         self.b = board
         self.graphic = graphic
+        self.ai = ai
 
     def place(self, y, x):
         """
@@ -96,7 +98,58 @@ class Player(object):
             return False
         return True
 
+# Game Session
+
+
+def game_session(board_y=3, board_x=3, win_amt=3, players=[Player('X', ''), Player('Y', '')]):
+    """
+    Game session handles the course of a tic-tac-toe game.
+    Cycles through player turns and checks for win-state.
+
+    :param board_y: amount of rows in game board.
+    :param board_x: amount of columns in game board.
+    :param win_amt: amount of consecutive moves to win.
+    :param players: list of player objects
+    :return: winning player object
+    """
+    b = Board(board_y, board_x, win_amt)
+    # assign players to board
+    for player in players:
+        player.b = b
+    while True:
+        # cycle through player turns
+        for player in players:
+            # print game board at beginning of each turn.
+            b.print_board()
+            if player.ai:
+                pass
+            else:
+                # doesn't progress until correct input given
+                while not _input_move(player):
+                    pass
+            # check for win state
+            if b.check_for_win_state(player.graphic):
+                return player
+
+
+def _input_move(player_object):
+    """
+    If player is not ai enabled, takes user input.
+    :param player_object: player to take input of
+    :return:
+    """
+    try:
+        y = int(raw_input("{0}'s Move, Input Y coord: ".format(player_object.graphic))) - 1
+        x = int(raw_input("Input X coord: ")) - 1
+        player_object.place(y, x)
+        return True
+    except:
+        print('Something went wrong, Give me a better input')
+        return False
+
+
 # Regression Tests:
+
 
 def run_test_suite():
     print('\n--- REGRESSION TEST RESULTS ---\n{0}'.format(
