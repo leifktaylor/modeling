@@ -1,14 +1,139 @@
 import re
 import logging
+import logboss as lb
+import pandas as pd
+import os
+pd.set_option('display.max_colwidth', 100)
+pd.set_option('display.max_rows', 500000)
+current_df = ''
+current_type = ''
+current_ds = ''
 
 # TODO: Create logchecker class that stores line_list of entire log
 # This way each command won't have to parse the file every single time it is invoked.
 
 
+def help():
+    print(bcolors.BOLD + 'HELP:')
+    print(bcolors.OKBLUE + "grep('filename.log', 'substring', 'another...', ....) <-- try grep('-h')")
+    print(bcolors.FAIL + "combine(dataframe1, dataframe2) <-- combines two dataframes")
+    print(bcolors.OKGREEN + "save() <--- Saves current dataframe to csv")
+    print(bcolors.WARNING + "load('file.csv') <--- Loads csv into dataframe")
+    print(bcolors.ENDC + "ls() <-- view logs and csv in current directory")
+
+
+def load(csv_file):
+    """
+    Opens csv file of actifio log files and converts to dataframe.
+    :param csv_file: e.g. uddpmstuff.csv
+    :return: dataframe object
+    """
+    global current_df
+    log_dataframe = pd.read_csv(csv_file, dtype='str')
+    log_dataframe.index = pd.to_datetime(log_dataframe.pop('date_time'), format='%Y-%m-%d %H:%M:%S.%f')
+    current_df = log_dataframe
+    return log_dataframe
+
+
+def save(filename='savedataframe.csv'):
+    """
+    Saves most recently grepped dataframe to csv
+    :param filename: output filename
+    :return:
+    """
+    print("How to use save():")
+    print("First grep to create a dataframe, or use combine to combine two dataframes")
+    print("save() will save the last grepped, or the last combined dataframe to a csv")
+    print("save('filename.csv') will save to the given outputfile.")
+
+    global current_df
+    try:
+        dataframeobject = current_df
+        dataframeobject.to_csv(filename)
+        os.system('open {0}'.format(filename))
+    except AttributeError:
+        print('Must use "grep" to create a dataframe before you can save')
+
+
+def create_datastructure(log_file, *args):
+    """
+    Creates a datastructure from a log file.
+    Optional args allow grepping for only lines which contain args.
+
+    :param args: words to grep for.
+    :param log_file: specify log file so that lines can be parsed. e.g. 'uddpm.log' or 'UDSAgent.log'
+    :return: pretty print on your screen!
+    """
+    line_list = read_lines_from_log(log_file, *args)
+    log_datastructure = lb.read_log_line_list_to_data_structure(line_list, log_file)
+    return log_datastructure
+
+
+def combine(df1, df2, truncate=True):
+    """
+    Combines two dataframe objects together horizontally.
+
+    :param df1: dataframe object
+    :param df2: dataframe object
+    :param truncate: show only timestamp and messages (enabled by default)
+    :return: concatenated dataframe object
+    """
+    global current_df
+    print("Combine(dataframe1, dataframe2)")
+    print('Combine to dataframes. Create dataframe objects with "grep" and then combine')
+    if truncate:
+        combined_df = pd.concat([df1['message'], df2['message']], axis=1)
+    else:
+        combined_df = pd.concat([df1, df2], axis=1)
+    current_df = combined_df
+    return combined_df
+
+
+def grep(filename, *args, **kwargs):
+    """
+    Prints lines from log file.  If substrings are given as args, prints only lines
+    from file which contain those substrings.
+    :param filename: log file to parse through
+    :param args:
+    :param kwargs: Optional: csv='filename' . to Write output to a CSV
+    :return: Pandas dataframe object
+    """
+    global current_df
+    global current_type
+    if filename == '-h':
+        print('Prints lines from log file.  If substrings are given as args, prints only lines')
+        print('from file which contain those substrings.')
+        print("e.g. grep('udppm.log', 'fail')")
+        print("If grepping hundreds of thousands of rows, try csv='filename.csv>'")
+        print('  This will save the query directly to a csv')
+        print('')
+        print("grep() also returns a dataframe object. set r = grep('udppm.log') to test.")
+    print('-h for help')
+    current_type = filename
+
+    # Create datastructure (list of dicts) from lines in given log file (can only parse udppm and UDSagent currently)
+    line_data = create_datastructure(filename, *args)
+
+    # Create data frame from datastructured log lines (list of dictionaries)
+    log_dataframe = pd.DataFrame(line_data)
+    try:
+        # Set dataframe index to time_index from 'date_time' column
+        log_dataframe.index = pd.to_datetime(log_dataframe.pop('date_time'), format='%Y-%m-%d %H:%M:%S.%f')
+    except KeyError:
+        return 'No results found in query'
+    cols = ['log_level', 'job_name', 'job', 'status', 'progress', 'message']
+    current_df = log_dataframe[cols]
+    if 'csv' in kwargs:
+        log_dataframe[cols].to_csv(kwargs['csv'])
+        os.system('open {0}'.format(kwargs['csv']))
+        return 'saved CSV to {0}'.format(kwargs['csv'])
+    return log_dataframe[cols]
+
+
 def read_lines_from_log(filename, *args):
     """
     Opens a log or any file and returns a list of lines.
-    If substring(s) are given as arguments, returns a list only the lines which contain that substring(s).
+    If substring(s) are given as arguments, returns a list only the lines which contain either of the substring(s).
 
     :param filename: file to read from
     :param substring: substring to search for, if left blank, returns all lines.
@@ -32,153 +157,28 @@ def read_lines_from_log(filename, *args):
     return final_list
 
 
-def verify_masked_credentials(filename):
-    """
-    Verifies that in the given log file, all credentials (passwords) are masked.
-    Where format is:
-    some_password_related_key#value
-    And the value is either masked '****', or blank.
-    If a password is not masked, this keyword will return False.
-
-    Example Robot Framework Usage:
-
-    +---------------------------+------------------+
-    | verify_masked_credentials | /dumps/udppm.log |
-    +---------------------------+------------------+
-
-    |
-
-    :param filename: filename of log file to check in
-    :return: True (credentials all masked), or False (unmasked credentials found)
-    """
-    line_list = read_lines_from_log(filename)
-    for line in line_list:
-        # split line into base elements
-        element_list = ' '.join(line.split('|')).split()
-        # iterate through line and find password strings
-        val = ''
-        for element in element_list:
-            if 'password#' in element:
-                val = element.split('password#')[1]
-                break
-            elif 'pass#' in element:
-                val = element.split('pass#')[1]
-                break
-        if val:
-            print('found password val: {0}'.format(val))
-            # if unmasked value found, return True
-            if re.match("^[A-Za-z0-9_-]*$", val):
-                print('Possible unmasked credentials found: {0}'.format(element))
-                return False
-    return True
+# **** convenience
+class bcolors(object):
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
-def verify_ssl_connected(udppm_log_file, job_name):
-    """
-    Verifies that for the given BACKUP job_name:
-    SSL Connected
-    SSL Handshake done
-    #Possible Extra:
-    SSL TLS sessions ticket verified
-
-    :param udppm_log_file: udppm log file, e.g. /dumps/udppm.log
-    :param job_name: e.g. Job_12345
-    :return: True if SSL_connected, or False
-    """
-    line_list = read_lines_from_log(udppm_log_file, job_name)
-    if get_job_type(line_list) != 'backup':
-        logging.error('Incorrect job type provided. Must be backup job')
-        return False
-    required_checks = 0
-    for line in line_list:
-        if 'SSL Connected' in line:
-            # print(line)
-            required_checks += 1
-        if 'SSL handshake done' in line:
-            # print(line)
-            required_checks += 1
-    if required_checks >= 2:
-        return True
-    else:
-        return False
+def ls():
+    print(bcolors.OKBLUE + "CSV Files:")
+    os.system('ls *.csv')
+    print(bcolors.OKGREEN + "log Files:")
+    os.system('ls *.log')
+    print(bcolors.ENDC)
 
 
-def verify_vdisk_deletion_succeeded(udppm_log_file, job_name):
-    """
-    Verifies that the vdisk deletion for an EXPIRATION job succeeded:
-    looks for:
-    'errorCode 592... ...VDisk deletion failed'
-
-    :param udppm_log_file: uddpm.log file
-    :param job_name: e.g. Job_12345
-    :return: True (if job succeeded) or False
-    """
-    line_list = read_lines_from_log(udppm_log_file, job_name)
-    if get_job_type(line_list) == 'expire':
-        for line in line_list:
-            if 'VDisk deletion failed' in line:
-                return False
-        return True
-    else:
-        logging.error('Incorrect job type provided, must be expire job')
-    return False
 
 
-def get_job_type(line_list):
-    """
-    Takes a list of lines that have been filtered for a particular job using 'read_lines_from_log'
-    and then returns the job type.
 
-    :param line_list: list of lines from 'read_lines_from_log' where Job_12345 was the filter.
-    :return: job type
-    """
-    job_type = 'Unknown'
-    for line in line_list:
-        if 'job=' in line:
-            if 'UnknownJobType' not in line:
-                job_type = re.search('job="(.*?)"', line).group(1).strip(':')
-                return job_type
-    return job_type
-
-
-def get_error_codes_from_job(log_file, job_name):
-    """
-    Parses through log and finds error codes that were raised during the job.
-    Not guaranteed to find every error, just the ones raised in the log file.
-
-    :param log_file: log file to parse. e.g. udppm.log
-    :param job_name: name of job to filter for
-
-    :return: list of error codes
-    """
-    line_list = read_lines_from_log(log_file, job_name)
-    error_list = []
-    try:
-        for line in line_list:
-            if 'errorcode' in line:
-                error_list.append(re.search('errorcode \d+', line).group(0).split()[1])
-            if 'errorCode' in line:
-                error_list.append(re.search('errorCode \d+', line).group(0).split()[1])
-    except AttributeError:
-        logging.debug('no error codes found')
-    return error_list
-
-
-def list_jobs_by_type(log_file, job_type):
-    """
-    Returns a list of all the jobs by given type in the given log file.
-
-    :param log_file: e.g. /dumps/udppm.log
-    :param job_type: e.g. 'backup' , 'streamsnap' , 'logreplicate' , 'expire', etc.
-    :return: list of jobnames. e.g. ['Job12345', 'Job43763', ...]
-    """
-    line_list = read_lines_from_log(log_file)
-    job_list = []
-    for line in line_list:
-        if 'job="{0}"'.format(job_type) in line:
-            job_name = re.search('Job_\d+', line).group(0)
-            if job_name not in job_list:
-                job_list.append(job_name)
-    return job_list
-
-
+# ************* Log datastructure queries
+# TODO: Place in different module

@@ -164,6 +164,7 @@ def read_log_line_list_to_data_structure(line_list, log_file):
 # Log files, after being converted to data structures, are stored in JSON format and CSV Format
 # JSON Handling *****
 
+
 def write_log_to_json(filename, loglist, write_type='w'):
     """
     Populates file with log data in json format.
@@ -180,7 +181,7 @@ def write_log_to_json(filename, loglist, write_type='w'):
 # CSV Handling *****
 
 
-def populate_log_csv(log_type, log_list, write_type='w', overwrite=True):
+def populate_log_csv(log_type, log_list, write_type='w', overwrite=True, **kwargs):
     # TODO: Improve time stamping in ingest
     """
     Populates CSV from list of log lines.
@@ -190,6 +191,8 @@ def populate_log_csv(log_type, log_list, write_type='w', overwrite=True):
     :param log_type: 'udppm.log' or 'UDSAgent.log'
     :return:
     """
+    if 'filename' in kwargs:
+        log_type = kwargs['filename']
     if overwrite:
         create_csv(log_type+'.csv')
     else:
@@ -249,6 +252,7 @@ def create_log_dataframe(log_file):
     :return: dataframe object
     """
     log_datastructure = create_log_datastructure(log_file)
+    print('Total row count of {0} Dataframe is {1}'.format(log_file, len(log_datastructure)))
     csv_file = populate_log_csv(log_file, log_datastructure)
     return create_dataframe_from_csv(csv_file)
 
@@ -267,15 +271,28 @@ class LogDataframe(object):
         if 'df' in kwargs:
             if kwargs['df'] == 'udppm':
                 self.df['udppm'] = create_log_dataframe('udppm.log')
-            if kwargs['df'] == 'udsagent':
+            elif kwargs['df'] == 'udsagent':
                 self.df['udsagent'] = create_log_dataframe('UDSAgent.log')
-            else:
-                print('ERROR .. must supply a "udppm" or "udsagent" as argument')
         else:
             self.df['udppm'] = create_log_dataframe('udppm.log')
             self.df['udsagent'] = create_log_dataframe('UDSAgent.log')
         if 'printall' in kwargs:
             self.print_all = True
+
+    def show_all(self, **kwargs):
+        """
+        Shows combined dataframe of all logs. Attempts to match timestamps for side-by-side comparison.
+        :param kwargs:
+        :return:
+        """
+        # Truncate logs to show only message and jobname
+        udppm = self.df['udppm'][['job_name', 'message']]
+        udsagent = self.df['udsagent'][['message']]
+        # Change udsagent 'message' column name to avoid duplication error
+        # udsagent.columns.values[0] = 'udsmessage'
+        # Combine logs into one dataframe
+        combined_df = combine_dataframes(udppm, udsagent)
+        combined_df.to_csv('combined.csv')
 
     def select(self, column_name, value, dataframe=''):
         """
@@ -327,7 +344,7 @@ class LogDataframe(object):
             dataframe_object = dataframe_object[['job_name', 'message']]
             col_width = 100
         pd.set_option('display.max_colwidth', col_width)
-        pd.set_option('display.max_rows', len(dataframe_object))
+        pd.set_option('display.max_rows', 1000000)
         print(dataframe_object)
         pd.reset_option('display.max_rows')
         pd.set_option('display.max_colwidth', 100)
@@ -401,7 +418,7 @@ def create_dataframe_from_csv(csv_file):
     return log_dataframe
 
 
-def combine_dataframes(self, dataframe1, dataframe2):
+def combine_dataframes(dataframe1, dataframe2):
     """
     Combines two dataframes.
 
@@ -409,7 +426,16 @@ def combine_dataframes(self, dataframe1, dataframe2):
     :param dataframe2:
     :return: concatenated dataframe
     """
-    return pd.concat(dict(df1=dataframe1, df2=dataframe2), axis=1)
+                                    #.set_index(['date_time']
+    #result = dataframe1.append(dataframe2)
+    #result = pd.concat([dataframe1, dataframe2], axis=1)
+
+    #result = dataframe1.join(dataframe2, how='outer')
+    result = pd.merge(dataframe1, dataframe2, on='message', how='outer')
+    return result
+    #return dataframe1.merge(dataframe2)
+    #, left_index=True, right_index=True, how='right', lsuffix='_x')
+
 
 # PART 4: Commandline Use, Utility, File-Handling, Etc
 # Utility ****
@@ -452,7 +478,7 @@ def run_test(**kwargs):
     # Write to Json
     write_log_to_json(log_file, final_list)
     # Write to CSV
-    #populate_log_csv(log_file, final_list)
+    populate_log_csv(log_file, final_list)
     # Create Dataframe Object
     return LogDataframe(df=log_file)
 
@@ -482,9 +508,8 @@ if __name__ == '__main__':
     substring = str(args.substring)
     t1 = str(args.time1)
     t2 = str(args.time2)
-    df = str(args.dataframe)
-    messages = str(args.messages)
-
+    df = args.dataframe
+    messages = args.messages
     # Prepare KW Args for show function
     kwargs = {}
     if column:
@@ -503,7 +528,7 @@ if __name__ == '__main__':
 
     # Create Dataframe
     #a = run_test(**kwargs)
-    a = LogDataframe(df=kwargs['df'])
+    a = LogDataframe(**kwargs)
     a.show(**kwargs)
 
         # TODO: Plot numerical data of:
