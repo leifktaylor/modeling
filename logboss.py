@@ -28,11 +28,11 @@ pd.set_option('display.max_colwidth', 100)
 
 # udppm log parsing *****
 # TODO: udsagent parser!!!
-
 def determine_line_type(line):
+
     # Determine if the line type fits a particular template
     if 'job=' and 'message=' and 'progress=' and 'status=' in line:
-        return (read_jobstatus_line(line))
+        return read_jobstatus_line(line)
     return None
 
 
@@ -42,7 +42,7 @@ def read_jobstatus_line(line):
     job_status = {}
     for item in item_list:
         if item not in line:
-            item_list.pop(item)
+            item_list.pop(item_list.index(item))
         else:
             try:
                 job_status[item] = re.search('{0}="(.*?)"'.format(item), line).group(1).strip(':')
@@ -93,7 +93,7 @@ def write_log_to_json(filename, loglist, write_type='w'):
 # CSV Handling *****
 
 
-def populate_log_csv(log_type='udppm', log_list, write_type='w'):
+def populate_log_csv(log_type, log_list, write_type='w', overwrite=True):
     # TODO: Improve time stamping in ingest
     """
     Populates CSV from list of log lines.
@@ -103,9 +103,12 @@ def populate_log_csv(log_type='udppm', log_list, write_type='w'):
     :param log_type: 'udppm' or 'udsagent'
     :return:
     """
-    # Create a CSV if one doesn't exist
-    if not file_exists(log_type):
+    if overwrite:
         create_csv(log_type+'.csv')
+    else:
+        # Create a CSV if one doesn't exist
+        if not file_exists(log_type):
+            create_csv(log_type+'.csv')
 
     if log_type == 'udppm':
         # Create list from log_list
@@ -119,7 +122,7 @@ def populate_log_csv(log_type='udppm', log_list, write_type='w'):
             log_lines.append(current_line)
 
         # Write into CSV
-        with open(filename, write_type) as log_csv:
+        with open('udppm.csv', write_type) as log_csv:
             wr = csv.writer(log_csv, quoting=csv.QUOTE_ALL)
 
             # Write header row
@@ -142,7 +145,7 @@ def populate_log_csv(log_type='udppm', log_list, write_type='w'):
             log_lines.append(current_line)
 
         # Write into CSV
-        with open(filename, write_type) as log_csv:
+        with open('udsagent.csv', write_type) as log_csv:
             wr = csv.writer(log_csv, quoting=csv.QUOTE_ALL)
 
             # Write header row
@@ -166,7 +169,7 @@ def create_csv(filename):
     Creates a csv file.
     :return: filename
     """
-    new_csv = open(filename, 'wb')
+    new_csv = open(filename, 'w')
     new_csv.close()
     return filename
 
@@ -356,7 +359,7 @@ def run_test(**kwargs):
     # Write to CSV
     populate_log_csv('udppm', final_list)
     # Create Dataframe Object
-    return create_dataframe_from_csv('logtest.csv')
+    return create_dataframe_from_csv('udppm.csv')
 
 
 def parseArguments():
