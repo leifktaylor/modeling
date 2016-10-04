@@ -26,35 +26,98 @@ pd.set_option('display.max_colwidth', 100)
 
 # 2016-09-30 16:11:06.979 INFO   Job_3672360:
 
-# udppm log parsing *****
-# TODO: udsagent parser!!!
-def determine_line_type(line):
 
+# PART 1: Log Datastructure Creation (List of Dictionaries)
+
+def create_log_datastructure(log_file):
+    """
+    Return a list of dictionaries.
+    Each dictionary contains a time-stamped line from a log entry, split into
+    some, or all, of the following keys:
+    'date_time' (Always will be in line)
+    'log_level' (Always will be in line)
+    'job_name'
+    'progress'
+    'job'
+    'status'
+    'message' (Always will be in line)
+
+    :param log_file: UDSAgent.log, or udppm.log
+    :return: list of dictionaries
+    """
+    content = read_log_lines_to_list(log_file)
+    main_list = read_log_line_list_to_data_structure(content, log_file)
+    return main_list
+
+
+def determine_line_type(line, log_file):
     # Determine if the line type fits a particular template
-    if 'job=' and 'message=' and 'progress=' and 'status=' in line:
+    # This is the template for udppm job lines:
+    if log_file == 'udppm.log':
         return read_jobstatus_line(line)
-    return None
+    # This is the template for UDSAgent lines
+    elif log_file == 'UDSAgent.log':
+        return read_udsagent_jobstatus_line(line)
+    else:
+        return None
+
+
+def read_udsagent_jobstatus_line(line):
+    """
+    UDSAGENT ONLY
+    Reads a udsagent.log line
+    :param line: a line from UDSAgent.log
+    :return: dictionary of line components
+    """
+    job_status = {}
+    job_status['date_time'] = '{0} {1}'.format(line.split()[0], line.split()[1])
+    job_status['log_level'] = line.split()[2]
+    # TODO: Account for subjobs.
+    # If the type of line where jobname is the 5th element:
+    if re.match('Job_\d+', line.split()[4]):
+        job_status['job_name'] = re.match('Job_\d+', line.split()[4]).group(0)
+        job_status['message'] = ' '.join(line.split()[5:])
+    # If the type of line without a jobname...
+    else:
+        job_status['job_name'] = ''
+        job_status['message'] = ' '.join(line.split()[4:])
+    job_status['progress'] = ''
+    job_status['job'] = ''
+    job_status['status'] = ''
+    return job_status
 
 
 def read_jobstatus_line(line):
+    """
+    UDPPM ONLY
+    Reads a udppm.log line and returns a dictionary of line components
+    :param line: an input line with the correct format (use 'determine_line_type')
+    :return: a dictionary of line components
+    """
     # parse a line for jobstatus info and place into dictionary
     item_list = ['job', 'message', 'progress', 'status']
     job_status = {}
-    for item in item_list:
-        if item not in line:
-            item_list.pop(item_list.index(item))
-        else:
+    # if it is the type of list where jobname is the 4th element:
+    if re.match('Job_\d+', line.split()[3]):
+        #TODO: Ad another layer to this parsing.
+        #TODO: If it is a jobname 4th element, but there are no blah=
+        for item in item_list:
             try:
                 job_status[item] = re.search('{0}="(.*?)"'.format(item), line).group(1).strip(':')
             except AttributeError:
-                print('element not found')
-
+                pass
+        # add job name
+        job_status['job_name'] = line.split()[3].strip(':')
+    else:
+        job_status['job_name'] = ''
+        job_status['progress'] = ''
+        job_status['job'] = ''
+        job_status['status'] = ''
+        job_status['message'] = ' '.join(line.split()[3:])
     # add date information
     job_status['date_time'] = '{0} {1}'.format(line.split()[0], line.split()[1])
     # add log level
     job_status['log_level'] = '{0}'.format(line.split()[2])
-    # add job name
-    job_status['job_name'] = line.split()[3].strip(':')
     return job_status
 
 
@@ -66,12 +129,35 @@ def read_log_lines_to_list(log_file):
     return content
 
 
-def read_log_line_list_to_data_structure(line_list):
+def read_log_line_list_to_data_structure(line_list, log_file):
+    """
+    Determines the type of line in the file and properly puts it into the mainlist.
+    :param log_file: the type of log. e.g 'UDSAgent.log' or 'uddpm.log'
+    :param line_list:
+    :return:
+    """
     main_list = []
+    has_timestamp = ''
+    previous_time_stamp = ''
+    r = {}
+    # Each iteration of this forloop will attempt to add a dictionary to the main_list
     for line in line_list:
-        r = determine_line_type(line)
-        if r:
-            main_list.append(r)
+        #Determine if line has a time_stamp
+        time_stamp = re.match('\d\d\d\d-\d\d-\d\d', line)
+        # If a line has a timestamp, use it, and format line
+        if re.match('\d\d\d\d-\d\d-\d\d', line):
+            r = determine_line_type(line, log_file)
+            previous_time_stamp = time_stamp.group(0)
+        # If line does not have time_stamp, use the previous time stamp
+        else:
+            if not previous_time_stamp:
+                # If a previous time_stamp doesn't exist
+                previous_time_stamp = '2016-01-01 03:03:03'
+            # Use the Previous time_stamp
+            r['date_time'] = previous_time_stamp
+            r['message'] = line
+        # Append the line to the line list
+        main_list.append(r)
     return main_list
 
 
@@ -85,10 +171,10 @@ def write_log_to_json(filename, loglist, write_type='w'):
     :param write_type: 'w' (overwrite) or 'a' (append)
     :return:
     """
-    with open(filename, 'w') as outputfile:
+    with open(filename+'.json', 'w') as outputfile:
         json.dump(loglist, outputfile)
         outputfile.close()
-    print('Json data written to {0}'.format(filename))
+    print('Json data written to {0}'.format(filename+'.json'))
 
 # CSV Handling *****
 
@@ -100,17 +186,17 @@ def populate_log_csv(log_type, log_list, write_type='w', overwrite=True):
 
     :param log_list: list of log lines.
     :param write_type: 'w' (overwrite) or 'a' (append)
-    :param log_type: 'udppm' or 'udsagent'
+    :param log_type: 'udppm.log' or 'UDSAgent.log'
     :return:
     """
     if overwrite:
         create_csv(log_type+'.csv')
     else:
         # Create a CSV if one doesn't exist
-        if not file_exists(log_type):
+        if not file_exists(log_type+'.csv'):
             create_csv(log_type+'.csv')
 
-    if log_type == 'udppm':
+    if log_type:
         # Create list from log_list
         log_lines = []
         for dict in log_list:
@@ -122,7 +208,7 @@ def populate_log_csv(log_type, log_list, write_type='w', overwrite=True):
             log_lines.append(current_line)
 
         # Write into CSV
-        with open('udppm.csv', write_type) as log_csv:
+        with open(log_type+'.csv', write_type) as log_csv:
             wr = csv.writer(log_csv, quoting=csv.QUOTE_ALL)
 
             # Write header row
@@ -133,35 +219,11 @@ def populate_log_csv(log_type, log_list, write_type='w', overwrite=True):
             for line in log_lines:
                 wr.writerow(line)
         log_csv.close()
-    elif log_type == 'udsagent':
-        # Create list from log_list
-        log_lines = []
-        for dict in log_list:
-            current_line = []
-            order_key = {'date_time': 1, 'log_level': 2, 'job_name': 3, 'status': 4,
-                         'job': 5, 'progress': 6, 'message': 7}
-            for item in sorted(dict, key=order_key.__getitem__):
-                current_line.append(dict[item])
-            log_lines.append(current_line)
-
-        # Write into CSV
-        with open('udsagent.csv', write_type) as log_csv:
-            wr = csv.writer(log_csv, quoting=csv.QUOTE_ALL)
-
-            # Write header row
-            wr.writerow(['date_time', 'log_level', 'job_name',
-                         'status', 'job', 'progress', 'message'])
-
-            # Write log data
-            for line in log_lines:
-                wr.writerow(line)
-        log_csv.close()
-
-
     else:
-        print('Invalid log type. Accepts "udppm" or "udsagent"')
+        print('Invalid log type. Accepts "udppm.log" or "UDSAgent.log"')
 
     print('{0} spreadsheet updated'.format(log_type+'.csv'))
+    return log_type+'.csv'
 
 
 def create_csv(filename):
@@ -175,21 +237,45 @@ def create_csv(filename):
 
 # Matplotlib Graphing
 
-
-
 # Pandas Dataframe Handling ****
 
 
-class LogDataframe(object):
-    def __init__(self, dataframe, print_all=False):
-        """
-        :param dataframe:
-        :param print_all: print_all will print all queries to the screen in addition to creating dataframe objects
-        """
-        self.df = dataframe
-        self.print_all = print_all
+def create_log_dataframe(log_file):
+    """
+    Returns a dataframe of the given log_file
+    :param log_file: 'UDSAgent.log' or 'udppm.log'
+    :return: dataframe object
+    """
+    log_datastructure = create_log_datastructure(log_file)
+    csv_file = populate_log_csv(log_file, log_datastructure)
+    return create_dataframe_from_csv(csv_file)
 
-    def select(self, column_name, value, spawn_csv=False):
+
+class LogDataframe(object):
+    def __init__(self, **kwargs):
+        """
+        Class with a dictionary containing dataframe objects for 'udppm' and 'udsagent' logs.
+
+        Optional Kwaargs:
+        printall: Boolean: Prints all queries to screen in addition to returning dataframes.
+        df: assign only a single dataframe, do not load all ('udppm', 'udsagent') etc.
+        :param kwargs: Optional K-V pairs
+        """
+        self.df = {}
+        if 'df' in kwargs:
+            if kwargs['df'] == 'udppm':
+                self.df['udppm'] = create_log_dataframe('udppm.log')
+            if kwargs['df'] == 'udsagent':
+                self.df['udsagent'] = create_log_dataframe('UDSAgent.log')
+            else:
+                print('ERROR .. must supply a "udppm" or "udsagent" as argument')
+        else:
+            self.df['udppm'] = create_log_dataframe('udppm.log')
+            self.df['udsagent'] = create_log_dataframe('UDSAgent.log')
+        if 'printall' in kwargs:
+            self.print_all = True
+
+    def select(self, column_name, value, dataframe=''):
         """
         Select from 'column_name' where item == 'value'.
 
@@ -198,8 +284,9 @@ class LogDataframe(object):
         :param dataframe: pandas dataframe object
         :return:
         """
-        dataframe = self.df
-        query = dataframe.loc[dataframe[column_name] == value]
+        if not dataframe:
+            dataframe = self.df['udppm']
+        query = dataframe.ix[dataframe[column_name] == value]
         return query
 
     def show(self, **kwargs):
@@ -211,24 +298,29 @@ class LogDataframe(object):
         :param has: row value string has 'X' in it.
         :param t1: start time (requires t2)
         :param t2: end time (requires t1)
+        :param df: dataframe to query (udppm or udsagent)
         :param messages: show status messages only (set to True)
         :return: dataframe object
         """
+        if 'df' in kwargs:
+            dataframe = self.df[kwargs['df']]
+        else:
+            dataframe = self.df.itervalues().next()
         col_width = 100
         if 'column' in kwargs:
             if 'value' in kwargs and 'has' in kwargs:
                 print('CANNOT SHOW DATAFRAME. Choose either "value" or "has", not both.')
             elif 'value' in kwargs:
                 print('QUERIED')
-                dataframe_object = self.select(kwargs['column'], kwargs['value'])
+                dataframe_object = self.select(kwargs['column'], kwargs['value'], dataframe)
             elif 'has' in kwargs:
-                dataframe_object = self.df[self.df[kwargs['column']].str.contains(kwargs['has'])]
+                dataframe_object = dataframe[dataframe[kwargs['column']].str.contains(kwargs['has'])]
             else:
                 print('Include a "value" or a "has" along with the "column"')
         else:
-            dataframe_object = self.df
+            dataframe_object = dataframe
         if 't1' and 't2' in kwargs:
-            dataframe_object = dataframe_object.loc[kwargs['t1']:kwargs['t2']]
+            dataframe_object = dataframe_object.ix[kwargs['t1']:kwargs['t2']]
         if 'messages' in kwargs:
             dataframe_object = dataframe_object[['job_name', 'message']]
             col_width = 100
@@ -302,16 +394,9 @@ def create_dataframe_from_csv(csv_file):
     :param csv_file: input csv file.
     :return:
     """
-    # INIT -----
     log_dataframe = pd.read_csv(csv_file, dtype='str')
     log_dataframe.index = pd.to_datetime(log_dataframe.pop('date_time'), format='%Y-%m-%d %H:%M:%S.%f')
-    #log_dataframe.index = pd.to_datetime(log_dataframe.pop('date_time'), nfer_datetime_format=True)
-
-    #log_dataframe['date_time'] = pd.to_datetime(log_dataframe['date_time'])
-    #log_dataframe['date_time'] = pd.date_range('2000-1-1', periods=200, freq='D')
-    #log_dataframe = log_dataframe.set_index(['date_time'])
-    #print('Issue with source {0}'.format(csv_file))
-    return LogDataframe(log_dataframe)
+    return log_dataframe
 
 
 def combine_dataframes(self, dataframe1, dataframe2):
@@ -336,6 +421,8 @@ def file_exists(filename):
     """
     return os.path.isfile(filename)
 
+# *** Command Line Functionality (run logboss as executable)
+
 
 def run_test(**kwargs):
     """
@@ -343,8 +430,15 @@ def run_test(**kwargs):
     jobname='blah' for only a specific job
     :return:
     """
-    content = read_log_lines_to_list('udppm.log')
-    main_list = read_log_line_list_to_data_structure(content)
+    # TODO: Make df argument allow for 'both' which combines the dataframes
+    if 'df' in kwargs:
+        if kwargs['df'] == 'udsagent':
+            log_file = 'UDSAgent.log'
+        if kwargs['df'] == 'udppm':
+            log_file = 'udppm.log'
+    else:
+        log_file = 'udppm.log'
+    main_list = create_log_datastructure(log_file)
     final_list = []
     if 'jobname' in kwargs:
         for item in main_list:
@@ -352,14 +446,13 @@ def run_test(**kwargs):
                 final_list.append(item)
     else:
         final_list = main_list
-    #for item in final_list:
-    #    print(item)
     # Write to Json
-    write_log_to_json('udppm.json', final_list)
+    write_log_to_json(log_file, final_list)
     # Write to CSV
-    populate_log_csv('udppm', final_list)
+    #populate_log_csv(log_file, final_list)
     # Create Dataframe Object
-    return create_dataframe_from_csv('udppm.csv')
+    return LogDataframe(df=log_file)
+
 
 
 def parseArguments():
@@ -368,11 +461,12 @@ def parseArguments():
     :return:
     """
     parser = argparse.ArgumentParser()
-    #Optional Ar
+    #Optional Args
     parser.add_argument("-c", "--column", help="select from this column.", default='')
     parser.add_argument("-r", "--row", help="an exact row value.", default='')
     parser.add_argument("-s", "--substring", help="rows that contain this substring", default='')
     parser.add_argument("-m", "--messages", help="status message only", default='')
+    parser.add_argument("-df", "--dataframe", help="dataframe to read from 'udppm' or 'udsagent'")
     parser.add_argument("-t1", "--time1", help="start time (get rows in range t1-t2)", default='')
     parser.add_argument("-t2", "--time2", help="end time (get rows in range t1-t2)", default='')
     args = parser.parse_args()
@@ -386,6 +480,7 @@ if __name__ == '__main__':
     substring = str(args.substring)
     t1 = str(args.time1)
     t2 = str(args.time2)
+    df = str(args.dataframe)
     messages = str(args.messages)
 
     # Prepare KW Args for show function
@@ -401,9 +496,12 @@ if __name__ == '__main__':
         kwargs['t2'] = t2
     if messages:
         kwargs['messages'] = messages
+    if df:
+        kwargs['df'] = df
 
     # Create Dataframe
-    a = run_test()
+    #a = run_test(**kwargs)
+    a = LogDataframe(df=kwargs['df'])
     a.show(**kwargs)
 
         # TODO: Plot numerical data of:
