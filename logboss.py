@@ -160,7 +160,8 @@ def read_log_line_list_to_data_structure(line_list, log_file):
         main_list.append(r)
     return main_list
 
-
+# PART 2: External File Handling
+# Log files, after being converted to data structures, are stored in JSON format and CSV Format
 # JSON Handling *****
 
 def write_log_to_json(filename, loglist, write_type='w'):
@@ -235,9 +236,10 @@ def create_csv(filename):
     new_csv.close()
     return filename
 
+# TODO:
 # Matplotlib Graphing
 
-# Pandas Dataframe Handling ****
+# PART 3: Pandas Dataframe Handling ****
 
 
 def create_log_dataframe(log_file):
@@ -409,6 +411,7 @@ def combine_dataframes(self, dataframe1, dataframe2):
     """
     return pd.concat(dict(df1=dataframe1, df2=dataframe2), axis=1)
 
+# PART 4: Commandline Use, Utility, File-Handling, Etc
 # Utility ****
 
 
@@ -452,7 +455,6 @@ def run_test(**kwargs):
     #populate_log_csv(log_file, final_list)
     # Create Dataframe Object
     return LogDataframe(df=log_file)
-
 
 
 def parseArguments():
