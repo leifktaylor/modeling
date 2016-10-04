@@ -1,4 +1,61 @@
-from logcheck import *
+# from logcheck import *
+import re
+import logging
+
+
+def read_lines_from_log(filename, *args):
+    """
+    Opens a log or any file and returns a list of lines.
+    If substring(s) are given as arguments, returns a list only the lines which contain either of the substring(s).
+
+    :param filename: file to read from
+    :param substring: substring to search for, if left blank, returns all lines.
+    :param args: additional substrings to search for
+    :return: list of lines
+
+    """
+    final_list = []
+    # opens the file and reads lines into a list
+    with open(filename, 'r') as log:
+        for line in log:
+            if args:
+                # if any of the argument substrings in line
+                for argument in args:
+                    if argument in line:
+                        final_list.append(line)
+            # if no arguments given, just return all lines
+            else:
+                final_list.append(line)
+        log.close()
+    return final_list
+
+
+def read_lines_from_list(line_list, *args):
+    """
+    Similiar to read_lines_from_log.  Reads lines for a list looking
+    for particular substrings.  Returns a list of lines containing the
+    given substring.
+
+    This function should be used if you are performing iterations on
+    log data.  You may initially use read_lines_from_log, and then
+    use read_lines_from_list to iterate filters (because this is
+    faster)
+
+    :param line_list: list of log lines
+    :param args: substrings to search for
+    :return: list of lines
+    """
+    final_list = []
+    for line in line_list:
+        if args:
+            # if any of the argument substrings in line
+            for argument in args:
+                if argument in line:
+                    final_list.append(line)
+        # if no arguments given, just return all lines
+        else:
+            final_list.append(line)
+    return final_list
 
 
 def verify_masked_credentials(filename):
@@ -128,17 +185,23 @@ def get_job_type_from_lines(line_list):
     return job_type
 
 
-def get_error_codes_from_job(log_file, job_name):
+def get_error_codes_from_job(log_file, job_name, linelist=''):
     """
     Parses through log and finds error codes that were raised during the job.
     Not guaranteed to find every error, just the ones raised in the log file.
 
+    If a linelist is provided instead of a log_file, will search through that.
+    If you need to iterate repeatedly, use a linelist.
+
     :param log_file: log file to parse. e.g. udppm.log
     :param job_name: name of job to filter for
-
+    :param linelist: (optional) for iterations, use a linelist, it is faster.
     :return: list of error codes
     """
-    line_list = read_lines_from_log(log_file, job_name)
+    if linelist:
+        line_list = read_lines_from_list(linelist, job_name)
+    else:
+        line_list = read_lines_from_log(log_file, job_name)
     error_list = []
     try:
         for line in line_list:
@@ -149,6 +212,23 @@ def get_error_codes_from_job(log_file, job_name):
     except AttributeError:
         logging.debug('no error codes found')
     return error_list
+
+
+def get_error_codes_from_all_jobs(log_file):
+    """
+    Parses udppm.log and returns the error codes for all jobs in the form of a
+    dictionary where key is the job_name and value is a list of error codes.
+
+    :param log_file: e.g. udppm.log
+    :return: dictionary of lists
+    """
+    error_dict = {}
+    line_list = read_lines_from_log(log_file)
+    job_list = list_all_jobs(log_file)
+    for job in job_list:
+        error_list = get_error_codes_from_job(log_file, job, line_list)
+        error_dict[job] = error_list
+    return error_dict
 
 
 def list_jobs_of_type(log_file, job_type):
@@ -167,6 +247,24 @@ def list_jobs_of_type(log_file, job_type):
             if job_name not in job_list:
                 job_list.append(job_name)
     return job_list
+
+
+def list_all_jobs(log_file):
+    """
+    Returns a list of all the jobs in the given udppm.log file.
+
+    :param log_file: e.g. /dumps/udppm.log
+    :return: list of jobnames. e.g. ['Job12345', 'Job43763', ...]
+    """
+    line_list = read_lines_from_log(log_file)
+    job_list = []
+    for line in line_list:
+        if 'job=' in line:
+            job_name = re.search('Job_\d+', line).group(0)
+            if job_name not in job_list:
+                job_list.append(job_name)
+    return job_list
+
 
 def verify_hello_connector():
     """
