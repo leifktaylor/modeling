@@ -2,6 +2,7 @@ import re
 import logging
 import logboss as lb
 import pandas as pd
+import numpy as np
 import os
 pd.set_option('display.max_colwidth', 100)
 pd.set_option('display.max_rows', 500000)

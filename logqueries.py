@@ -274,3 +274,19 @@ def verify_hello_connector():
     """
     # TODO: Finish
     pass
+
+
+def verify_restore_job_succeeded(udppm_log_file, job_name):
+    """
+    Checks udppm.log to confirm that restore job has succeeded.
+
+    :return: True or False
+    """
+    if get_job_type(udppm_log_file, job_name) == 'restore':
+        for line in line_list:
+            if 'Restore job completed successfully' in line:
+                return True
+        return False
+    else:
+        logging.error('Incorrect job type provided, must be restore job')
+    return False
