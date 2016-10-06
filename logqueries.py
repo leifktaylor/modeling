@@ -3,31 +3,76 @@ import re
 import logging
 
 
-def read_lines_from_log(filename, *args):
+def read_lines_from_log(filename, *args, **kwargs):
     """
     Opens a log or any file and returns a list of lines.
     If substring(s) are given as arguments, returns a list only the lines which contain either of the substring(s).
 
+    Default substring filtering logic is: filter='or'
+    >> If SubstringA Or SubstringB or SubstringC --> return the line
+    If optional param: filter='and'
+    >> If SubstringA AND SubstringB both in line --> return the line
+
     :param filename: file to read from
     :param substring: substring to search for, if left blank, returns all lines.
     :param args: additional substrings to search for
+    :param kwargs: kv pairs of arguments. e.g. exclusion=True
     :return: list of lines
 
     """
+    if 'filter' in kwargs:
+        filtertype = kwargs['filter']
+    else:
+        filtertype = 'or'
     final_list = []
     # opens the file and reads lines into a list
     with open(filename, 'r') as log:
         for line in log:
             if args:
-                # if any of the argument substrings in line
-                for argument in args:
-                    if argument in line:
+                if filtertype == 'or':
+                    # if any of the argument substrings in line
+                    if any(substring in line for substring in args):
+                        final_list.append(line)
+                if filtertype == 'and':
+                    # if all of the argument substrings in line
+                    if all(substring in line for substring in args):
                         final_list.append(line)
             # if no arguments given, just return all lines
             else:
                 final_list.append(line)
         log.close()
     return final_list
+
+
+def verify_substring_in_log(filename, *args, **kwargs):
+    """
+    NOTE: If multiple substrings are given in args, this will verify that:
+    ---Substring_A OR Substring_B OR Substring_C are in log----
+    If optional param: filter='or' , then this will verify that:
+    ---Substring_A AND Substring_B AND Substring_C are in log
+
+    Returns True if given substring(s) in log,
+    Returns False if they are not.
+    :param filename: log file, e.g. 'udppm.log', 'UDSAgent.log', etc
+    :param args: substrings to check for. e.g. 'failed', or 'Job_12345'
+    :return: True or False
+    """
+    if not args:
+        raise ValueError('No substrings given. Cannot parse for anything')
+    line_list = read_lines_from_log(filename, *args, **kwargs)
+    if not line_list:
+        return False
+    return True
+
+
+def confirm_udppm(log_file):
+    """
+    Confirms that given logfile is a udppm log file, raises error if it isn't.
+    :param log_file: udppm log file. e.g. udppm.log
+    :return: None
+    """
+    if 'udppm' not in log_file:
+        raise ValueError('Incorrect Log type. Udppm required')
 
 
 def read_lines_from_list(line_list, *args):
@@ -101,6 +146,7 @@ def verify_masked_credentials(filename):
 
 def verify_ssl_connected(udppm_log_file, job_name):
     """
+    Use udppm log file.
     Verifies that for the given BACKUP job_name:
     SSL Connected
     SSL Handshake done
@@ -111,10 +157,10 @@ def verify_ssl_connected(udppm_log_file, job_name):
     :param job_name: e.g. Job_12345
     :return: True if SSL_connected, or False
     """
+    confirm_udppm(udppm_log_file)
     line_list = read_lines_from_log(udppm_log_file, job_name)
     if get_job_type(udppm_log_file, job_name) != 'backup':
-        logging.error('Incorrect job type provided. Must be backup job')
-        return False
+        raise ValueError('Incorrect job type provided, must be backup job')
     required_checks = 0
     for line in line_list:
         if 'SSL Connected' in line:
@@ -139,6 +185,7 @@ def verify_vdisk_deletion_succeeded(udppm_log_file, job_name):
     :param job_name: e.g. Job_12345
     :return: True (if job succeeded) or False
     """
+    confirm_udppm(udppm_log_file)
     line_list = read_lines_from_log(udppm_log_file, job_name)
     if get_job_type(udppm_log_file, job_name) == 'expire':
         for line in line_list:
@@ -146,18 +193,20 @@ def verify_vdisk_deletion_succeeded(udppm_log_file, job_name):
                 return False
         return True
     else:
-        logging.error('Incorrect job type provided, must be expire job')
+        raise ValueError('Incorrect job type provided, must be expire job')
     return False
 
 
 def get_job_type(filename, job_name):
     """
+    Parses udppm.log for the jobtype of the given job name.
     Takes a list of lines that have been filtered for a particular job using 'read_lines_from_log'
     and then returns the job type.
 
     :param job_name: name of job to search for
     :return: job type
     """
+    confirm_udppm(filename)
     line_list = read_lines_from_log(filename, job_name)
     job_type = 'Unknown'
     for line in line_list:
@@ -171,7 +220,7 @@ def get_job_type(filename, job_name):
 def get_job_type_from_lines(line_list):
     """
     Takes a list of lines that have been filtered for a particular job using 'read_lines_from_log'
-    and then returns the job type.
+    and then returns the job type from udppm.log.
 
     :param line_list: list of lines from 'read_lines_from_log' where Job_12345 was the filter.
     :return: job type
@@ -222,6 +271,7 @@ def get_error_codes_from_all_jobs(log_file):
     :param log_file: e.g. udppm.log
     :return: dictionary of lists
     """
+    confirm_udppm(log_file)
     error_dict = {}
     line_list = read_lines_from_log(log_file)
     job_list = list_all_jobs(log_file)
@@ -233,12 +283,13 @@ def get_error_codes_from_all_jobs(log_file):
 
 def list_jobs_of_type(log_file, job_type):
     """
-    Returns a list of all the jobs of given type in the given log file.
+    Returns a list of all the jobs of given type in the given udppm.log file.
 
     :param log_file: e.g. /dumps/udppm.log
     :param job_type: e.g. 'backup' , 'streamsnap' , 'logreplicate' , 'expire', etc.
     :return: list of jobnames. e.g. ['Job12345', 'Job43763', ...]
     """
+    confirm_udppm(log_file)
     line_list = read_lines_from_log(log_file)
     job_list = []
     for line in line_list:
@@ -256,6 +307,7 @@ def list_all_jobs(log_file):
     :param log_file: e.g. /dumps/udppm.log
     :return: list of jobnames. e.g. ['Job12345', 'Job43763', ...]
     """
+    confirm_udppm(log_file)
     line_list = read_lines_from_log(log_file)
     job_list = []
     for line in line_list:
@@ -282,6 +334,7 @@ def verify_restore_job_succeeded(udppm_log_file, job_name):
 
     :return: True or False
     """
+    confirm_udppm(udppm_log_file)
     if get_job_type(udppm_log_file, job_name) == 'restore':
         for line in line_list:
             if 'Restore job completed successfully' in line:
@@ -290,3 +343,27 @@ def verify_restore_job_succeeded(udppm_log_file, job_name):
     else:
         logging.error('Incorrect job type provided, must be restore job')
     return False
+
+
+def verify_backup_inband(logfile, job_name):
+    """
+    Use this KW on a udppm.log file.
+    Verifies that given snapshot job was inband.
+    (At least that the log said it was inband)
+
+    :param logfile: logfile, e.g. 'udppm.log'
+    :param job_name: e.g. Job_12345
+    :return:
+    """
+    confirm_udppm(logfile)
+    if get_job_type(logfile, job_name) != 'backup':
+        raise ValueError('Incorrect job type provided, must be backup job')
+    # check if the job is even found in the log
+    if verify_substring_in_log(job_name):
+        if verify_substring_in_log('Prepared snapshot for inband', job_name, filter='and'):
+            return True
+        else:
+            return False
+    else:
+        raise ValueError('Job not found in given log file')
+
