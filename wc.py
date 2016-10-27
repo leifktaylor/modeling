@@ -1,6 +1,7 @@
 import random
 
-def run():
+
+def input_params():
     print('Choose a series of three coin flips, i.e. heads, heads, tails.  The computer will try to choose better than you such that its pattern will occur first in a set of coin flips.')
     choice0 = int(input('First choice; Heads = 1, Tails = 0: '))
     choice1 = int(input('Second choice; Heads = 1, Tails = 0: '))
@@ -12,6 +13,10 @@ def run():
     cc2 = choice1
     if choice1 == 0:
         cc0 = 1
+    return choice0, choice1, choice2, bestof, won, cc0, cc1, cc2
+
+
+def run(choice0, choice1, choice2, bestof, won, cc0, cc1, cc2):
     print('Players choice 1: {0}, 2: {1}, 3: {2} || Computer choice 1: {3}, 2: {4} 3: {5}'.format(choice0, choice1, choice2, cc0, cc1, cc2))
     player_count = 0
     computer_count = 0
@@ -45,3 +50,4 @@ def run():
                 else:
                     stop += 1
             stop += 1
+
