@@ -1,6 +1,10 @@
 import random
 
 
+def easy_run():
+    choice0, choice1, choice2, bestof, won, cc0, cc1, cc2 = input_params()
+    run(choice0, choice1, choice2, bestof, won, cc0, cc1, cc2)
+
 def input_params():
     print('Choose a series of three coin flips, i.e. heads, heads, tails.  The computer will try to choose better than you such that its pattern will occur first in a set of coin flips.')
     choice0 = int(input('First choice; Heads = 1, Tails = 0: '))
