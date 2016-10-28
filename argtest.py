@@ -1,5 +1,5 @@
 import sys
-
+from math import *
 
 def evaluate(string):
     print(eval(string))
