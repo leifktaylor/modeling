@@ -1,9 +1,11 @@
 import random
+import sys
 
 
 def easy_run():
-    choice0, choice1, choice2, bestof, won, cc0, cc1, cc2 = input_params()
-    run(choice0, choice1, choice2, bestof, won, cc0, cc1, cc2)
+    choice0, choice1, choice2, bestof = input_params()
+    run(choice0, choice1, choice2, bestof)
+
 
 def input_params():
     print('Choose a series of three coin flips, i.e. heads, heads, tails.  The computer will try to choose better than you such that its pattern will occur first in a set of coin flips.')
@@ -11,30 +13,35 @@ def input_params():
     choice1 = int(input('Second choice; Heads = 1, Tails = 0: '))
     choice2 = int(input('Third choie; Heads = 1, Tails = 0: '))
     bestof = int(input('Best out of how many rounds? '))
-    won = int(bestof/2) + 1
+
+    return choice0, choice1, choice2, bestof
+
+
+def run(choice0, choice1, choice2, bestof):
+    # Computer choice based on player choice
     cc0 = 0
     cc1 = choice0
     cc2 = choice1
     if choice1 == 0:
         cc0 = 1
-    return choice0, choice1, choice2, bestof, won, cc0, cc1, cc2
-
-
-def run(choice0, choice1, choice2, bestof, won, cc0, cc1, cc2):
-    print('Players choice 1: {0}, 2: {1}, 3: {2} || Computer choice 1: {3}, 2: {4} 3: {5}'.format(choice0, choice1, choice2, cc0, cc1, cc2))
+    won = int(bestof / 2) + 1
     player_count = 0
     computer_count = 0
     stop = 1
     s = 0
     f = []
-    for x in range (0, bestof):
+
+    print('Players choice 1: {0}, 2: {1}, 3: {2} || Computer choice 1: {3}, 2: {4} 3: {5}'.format(choice0, choice1, choice2,
+                                                                                            cc0, cc1, cc2))
+
+    for x in range(0, bestof):
         if computer_count == won:
             print('You have lost to the computer you stupid idiot!')
             break
         if player_count == won:
             print('You beat the computer you lucky duck!')
             break
-        for y in range (0, stop):
+        for y in range(0, stop):
             s = int(random.randint(0, 1))
             f.append(s)
             print(f)
@@ -55,3 +62,6 @@ def run(choice0, choice1, choice2, bestof, won, cc0, cc1, cc2):
                     stop += 1
             stop += 1
 
+
+if __name__ == '__main__':
+    run(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]))
