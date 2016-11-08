@@ -1,17 +1,21 @@
 import subprocess
+__doc__ = 'This is just great!'
 
 ch_dir = '.'
 
-def cmd(cmd):
+
+def cmd(command):
     """
     Executes a command in the termina and saves the output to a list of lines.
     :param cmd:
     :return:
     """
     global ch_dir
+    if not command:
+        return []
     try:
         print('Current Directory: {0}'.format(ch_dir))
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=ch_dir)
+        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=ch_dir)
         lines = p.stdout.readlines()
         line_list = []
         for line in lines:
@@ -27,12 +31,14 @@ def cmd(cmd):
 
 def parse_input(input_string):
     global ch_dir
+    if not input_string:
+        return
     if input_string.split()[0] == 'cd':
         try:
             cd_arg = input_string.split()[1]
             if cd_arg == '..':
                 ch_dir = cd_arg
-                #or back slash .. todo
+                # or back slash .. todo
             elif cd_arg == '/' or cd_arg == '\\':
                 ch_dir = 'C:\\'
             else:
@@ -46,6 +52,6 @@ def parse_input(input_string):
         print(line)
 
 
-while True:
-    input_string = str(input('@:'))
-    parse_input(input_string)
+# while True:
+#     input_string = str(input('@:'))
+#     parse_input(input_string)
