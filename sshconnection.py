@@ -11,7 +11,9 @@ class OracleError(Exception):
                   ('ORA-00936', 'missing expression'),
                   ('ORA-00904', 'invalid identifier'),
                   ('ORA-00955', 'name is already used by an existing object'),
-                  ('ORA-00907', 'missing right parenthesis')]
+                  ('ORA-00907', 'missing right parenthesis'),
+                  ('ORA-01722', 'invalid number'),
+                  ('ORA-00902', 'invalid datatype')]
 
 
 class SQLPlusError(Exception):
@@ -20,7 +22,8 @@ class SQLPlusError(Exception):
     """
     errorcodes = [('SP2-0042:', 'unknown command - rest of line ignored.'),
                   ('SP2-0734:', 'unknown command - rest of line ignored.'),
-                  ('SP2-0223:', 'No lines in SQL buffer.')]
+                  ('SP2-0223:', 'No lines in SQL buffer.'),
+                  ('SP2-0172:', 'No HELP matching this topic was found.')]
 
 
 class SSHConnection(object):
@@ -152,7 +155,6 @@ class OracleConnection(SSHConnection):
                 raise SQLPlusError(tuple[1])
 
 
-
 class DatabaseLib(OracleConnection):
     """
     Library of keywords which issue sqlplus commands on remote host and handle the output
@@ -191,14 +193,11 @@ class DatabaseLib(OracleConnection):
         if command[-1] != ';':
             command += ';'
 
-        # Set line size for parsing
+        # Set line size for parsing, and issue query
         command = 'set linesize 32000\nSET PAGESIZE 50000\n' + command
-
         stdout, __, __ = self.sqlplus(command)
 
-
         # Get Column Names and Find Rows in output
-        first_entry = ''
         column_list = ''
         for i in range(0, len(stdout)):
             if stdout[i]:
