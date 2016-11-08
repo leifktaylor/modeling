@@ -162,7 +162,7 @@ class DatabaseLib(OracleConnection):
     Keywords with the prepend 'verify' will raise for error if conditions are not met.
     """
     def __init__(self, ipaddress, username='oracle', password='12!pass345', port=22, sid='', home='', path=''):
-        super(OracleLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
+        super(DatabaseLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
 
     def sqlplus(self, command, *args, **kwargs):
         """
@@ -246,3 +246,13 @@ class DatabaseLib(OracleConnection):
                 return True
             else:
                 return False
+
+
+
+# SQL SERVER COMMANDS
+
+    # sqlcmd -q "SQL COMMAND HERE"
+
+    # sqlcmd -q "CREATE DATABASE [SOMENAME]"
+                # keep the brackets to the parser doesn't try to interpret
+                # command parser interprets anything inside square brackets as a literal
