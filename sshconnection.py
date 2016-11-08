@@ -29,11 +29,15 @@ class SSHConnection(object):
         client.connect(self.ipaddress, username=self.username, password=self.password, port=self.port, **self.connection_params)
         return client
 
-    def raw_cmd(self, command, ascii=False):
+    def raw_cmd(self, command, ascii=False, max_retries=5):
         """
         Issue direct command over ssh
+
+        #TODO: If sshconnection is lost, attempt to reconnect and reissue command
+
         :param command: command to issue
         :param ascii: Attempt to convert to ascii if true, if false return unicode
+        :param max_retries: Maximum re-connect attempts if connection is lost
         :return: stdout, stderr, return code
         """
         stdin, stdout, stderr = self.client.exec_command(command)
@@ -50,10 +54,11 @@ class SSHConnection(object):
     def cmd(self, command, ascii=True, raise_error=True):
         """
         Issue direct command over ssh, with handlers, can raise for error and attempt to convert to ascii
+
         :param command:
         :param ascii:
         :param raise_error:
-        :return:
+        :return: stdout, stderr, rc
         """
         stdout, stderr, rc = self.raw_cmd(command, ascii=ascii)
         if raise_error:
@@ -128,13 +133,27 @@ class OracleLib(OracleConnection):
         stdout, stderr, rc = self.sqlplus_cmd(command, **kwargs)
         return stdout, stderr, rc
 
+    def query(self, command, *args, **kwargs):
+        """
+        Attempt to parse result of query in place in list of dictionaries where:
+        - list index ---> row in the table
+        - dictionary key/values ---> column/value in row
+
+        :param command: e.g. 'select name, price FROM products;'
+        :param args:
+        :param kwargs:
+        :return: list of dictionaries
+        """
+        # add ';' to command if not present
+        pass
+
     def verify_database_open(self):
         """
         Verifies database is open for read and write
         :return: True / False
         """
-        r = self.sqlplus('select open_mode from v\$database;')
-        if 'OPEN_MODE' in r[0] and 'READ WRITE' in r[0]:
+        stdout, __, __ = self.sqlplus('select open_mode from v\$database;')
+        if 'OPEN_MODE' in stdout and 'READ WRITE' in stdout:
             return True
         else:
             return False
@@ -150,6 +169,15 @@ class OracleLib(OracleConnection):
                 return True
         return False
 
+    def verify_table_exists(self, tablename):
+        """
+        Verifies that the given table exists
+        :param tablename:  name of table to check if it exists
+        :return: True or False
+        """
+        # TODO: Verify Table Exists
+        pass
+
     def verify_row_count(self, tablename, rows):
         """
         Verifies that the given table has the correct amount of rows
@@ -157,9 +185,22 @@ class OracleLib(OracleConnection):
         :param rows: amount of rows expected in table
         :return: True / False
         """
-        stdout, __, __ = self.sqlplus('select count(*) from {0}'.format(tablename))
-        for line in stdout:
-            if rows in line:
-                return True
-            else:
-                return False
+        if self.verify_table_exists(tablename):
+            stdout, __, __ = self.sqlplus('select count(*) from {0};'.format(tablename))
+            for line in stdout:
+                if rows in line:
+                    return True
+                else:
+                    return False
+        else:
+            return False
+
+    def show_tables(self):
+        """
+        Show all tables in database
+        :return: return a python list of all tables in database
+        """
+        # TODO: Return parsed table list
+        stdout, __, __ = self.sqlplus'show tables;'
+        return stdout
+
