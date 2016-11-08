@@ -3,7 +3,7 @@ import paramiko
 
 class OracleError(Exception):
     """
-    ORA-00942: table or view does not exist
+    Oracle exception object with error codes.
     """
     errorcodes = [('ORA-00942', 'table or view does not exist'),
                   ('ORA-00923', 'FROM keyword not found where expected'),
@@ -12,6 +12,15 @@ class OracleError(Exception):
                   ('ORA-00904', 'invalid identifier'),
                   ('ORA-00955', 'name is already used by an existing object'),
                   ('ORA-00907', 'missing right parenthesis')]
+
+
+class SQLPlusError(Exception):
+    """
+    SQLPlus exception object (SP2-####) with error codes.
+    """
+    errorcodes = [('SP2-0042:', 'unknown command - rest of line ignored.'),
+                  ('SP2-0734:', 'unknown command - rest of line ignored.'),
+                  ('SP2-0223:', 'No lines in SQL buffer.')]
 
 
 class SSHConnection(object):
@@ -126,12 +135,22 @@ class OracleConnection(SSHConnection):
     def raise_oracle_error(response):
         """
         Searches stdout for ORA exceptions and raises for error
-        :return:
         """
         output_string = ' '.join(response)
         for tuple in OracleError.errorcodes:
             if tuple[0] in output_string:
                 raise OracleError(tuple[1])
+
+    @staticmethod
+    def raise_sqlplus_error(response):
+        """
+        Searches stdout for SP2 exceptions and raises for error
+        """
+        output_string = ' '.join(response)
+        for tuple in SQLPlusError.errorcodes:
+            if tuple[0] in output_string:
+                raise SQLPlusError(tuple[1])
+
 
 
 class DatabaseLib(OracleConnection):
