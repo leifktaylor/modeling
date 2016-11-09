@@ -84,7 +84,7 @@ class SSHConnection(object):
         if raise_error:
             if rc != 0:
                 # If ascii set to false, error message will have u'<message>\n'
-                raise RuntimeError(stderr)
+                raise RuntimeError(str(stderr) + 'with rc: ' + str(rc))
         return stdout, stderr, rc
 
 
@@ -106,7 +106,23 @@ class OracleConnection(SSHConnection):
     """
     def __init__(self, ipaddress, username='oracle', password='12!pass345', port=22, sid='', home='', path=''):
         super(OracleConnection, self).__init__(ipaddress, username=username, password=password, port=port)
+
+        # Attempt to find Oracle environmental variables using SID if not provided
+        if sid and not home and not path:
+            home, path = self.determine_oracle_environmental_variables(sid)
+
         self.oracle_env = OracleEnv(sid, home, path)
+
+    def determine_oracle_environmental_variables(self, sid):
+        """
+        Attempts to find oracle home and oracle path directories using SID to search for init<sid>.ora
+        :param sid: ORACLE_SID e.g. mydb1
+        :return: oracle_home, oracle_path
+        """
+        stdout, stderr, rc = self.cmd("find / -type f -name 'init{0}.ora' 2>/dev/null".format(sid), raise_error=False)
+        orahome = stdout[0].rstrip('dbs/init{0}.ora'.format(sid))
+        orapath = '{0}/bin'.format(orahome)
+        return orahome, orapath
 
     def sqlplus_cmd(self, command, ignore_env=False, **kwargs):
         """
