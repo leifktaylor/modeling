@@ -59,7 +59,7 @@ class SSHConnection(object):
         Issue direct command over ssh
         :param command: command to issue
         :param ascii: Attempt to convert to ascii if true, if false return unicode
-        :return: stdout, stderr, return code
+        :return: stdout (list of lines), stderr (list of lines), return code (integer)
         """
         stdin, stdout, stderr = self.client.exec_command(command)
         stdin.close
@@ -78,7 +78,7 @@ class SSHConnection(object):
         :param command:
         :param ascii:
         :param raise_error:
-        :return:
+        :return: stdout (list of lines), stderr (list of lines), return code (integer)
         """
         stdout, stderr, rc = self.raw_cmd(command, ascii=ascii)
         if raise_error:
@@ -111,6 +111,7 @@ class OracleConnection(SSHConnection):
         if sid and not home and not path:
             home, path = self.determine_oracle_environmental_variables(sid)
 
+        # Instantiate OracleEnv class which holds oracle environmental variables
         self.oracle_env = OracleEnv(sid, home, path)
 
     def determine_oracle_environmental_variables(self, sid):
@@ -119,9 +120,21 @@ class OracleConnection(SSHConnection):
         :param sid: ORACLE_SID e.g. mydb1
         :return: oracle_home, oracle_path
         """
+        # Find Oracle_Home directory by searching for database init or spfile
         stdout, stderr, rc = self.cmd("find / -type f -name 'init{0}.ora' 2>/dev/null".format(sid), raise_error=False)
-        orahome = stdout[0].rstrip('dbs/init{0}.ora'.format(sid))
+        if not stdout:
+            # If init.ora not found, search for spfile
+            stdout, stderr, rc = self.cmd("find / -type f -name 'spfile{0}.ora' 2>/dev/null".format(sid), raise_error=False)
+            if not stdout:
+                # If neither spfile nor init.ora found, raise error
+                raise RuntimeError('Could not automatically determine oracle env, please provide SID, home and path')
+            orahome = stdout[0].rstrip('dbs/spfile{0}.ora'.format(sid))
+        else:
+            orahome = stdout[0].rstrip('dbs/init{0}.ora'.format(sid))
+
+        # Set oracle_path to orahome/bin
         orapath = '{0}/bin'.format(orahome)
+
         return orahome, orapath
 
     def sqlplus_cmd(self, command, ignore_env=False, **kwargs):
