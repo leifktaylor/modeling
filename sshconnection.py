@@ -128,16 +128,16 @@ class OracleConnection(SSHConnection):
             if not stdout:
                 # If neither spfile nor init.ora found, raise error
                 raise RuntimeError('Could not automatically determine oracle env, please provide SID, home and path')
-            orahome = stdout[0].rstrip('dbs/spfile{0}.ora'.format(sid))
+            orahome = stdout[0].replace('/dbs/spfile{0}.ora'.format(sid), '')
         else:
-            orahome = stdout[0].rstrip('dbs/init{0}.ora'.format(sid))
+            orahome = stdout[0].replace('/dbs/init{0}.ora'.format(sid), '')
 
         # Set oracle_path to orahome/bin
         orapath = '{0}/bin'.format(orahome)
 
         return orahome, orapath
 
-    def sqlplus_cmd(self, command, ignore_env=False, **kwargs):
+    def sqlplus_cmd(self, command, ignore_env=False, raise_error=True, **kwargs):
         """
         Export Oracle_Home, SID, and Path, open sqlplus session as sysdba, and issue 'command'
         :param command: sql statement
@@ -159,8 +159,10 @@ class OracleConnection(SSHConnection):
         final_command = oracle_exports + ';' + 'echo "' + command + '" | sqlplus -S / as sysdba'
         stdout, stderr, rc = self.cmd(final_command)
 
-        # Check for ORA error messages and return
-        self.raise_oracle_error(stdout)
+        # Check for ORA or SP2 error messages and return
+        if raise_error:
+            self.raise_oracle_error(stdout)
+            self.raise_sqlplus_error(stdout)
         return stdout, stderr, rc
 
     @staticmethod
@@ -204,7 +206,6 @@ class DatabaseLib(OracleConnection):
         :return: stdout, stderr, rc
         """
         stdout, stderr, rc = self.sqlplus_cmd(command, **kwargs)
-        #self.raise_for_error(stdout)
         return stdout, stderr, rc
 
     def query(self, command, *args, **kwargs):
@@ -218,6 +219,10 @@ class DatabaseLib(OracleConnection):
         :param kwargs:
         :return: list of dictionaries
         """
+        #TODO: Fix parsing for multiword string column values
+        #TODO: set colsep   " | "   <-- any delimiter
+        #TODO: maaybe ...  set numwidth 10
+
         # Add ';' if not already in command
         if command[-1] != ';':
             command += ';'
