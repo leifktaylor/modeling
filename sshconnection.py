@@ -219,9 +219,9 @@ class DatabaseLib(OracleConnection):
         :param kwargs:
         :return: list of dictionaries
         """
-        #TODO: Fix parsing for multiword string column values
-        #TODO: set colsep   " | "   <-- any delimiter
-        #TODO: maaybe ...  set numwidth 10
+        # TODO: Fix parsing for multiword string column values
+        # TODO: set colsep   " | "   <-- any delimiter
+        # TODO: maaybe ...  set numwidth 10
 
         # Add ';' if not already in command
         if command[-1] != ';':
