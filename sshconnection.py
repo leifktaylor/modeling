@@ -194,6 +194,7 @@ class DatabaseLib(OracleConnection):
     """
     def __init__(self, ipaddress, username='oracle', password='12!pass345', port=22, sid='', home='', path=''):
         super(DatabaseLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
+        self.delimiter = "MiLeD"
 
     def sqlplus(self, command, *args, **kwargs):
         """
@@ -219,24 +220,27 @@ class DatabaseLib(OracleConnection):
         :param kwargs:
         :return: list of dictionaries
         """
-        # TODO: Fix parsing for multiword string column values
-        # TODO: set colsep   " | "   <-- any delimiter
-        # TODO: maaybe ...  set numwidth 10
-
         # Add ';' if not already in command
         if command[-1] != ';':
             command += ';'
 
         # Set line size for parsing, and issue query
-        command = 'set linesize 32000\nSET PAGESIZE 50000\n' + command
+        command = 'set colsep "{0}"\nset linesize 32000\nSET PAGESIZE 50000\n'.format(self.delimiter) + command
         stdout, __, __ = self.sqlplus(command)
 
         # Get Column Names and Find Rows in output
-        column_list = ''
+        column_list = []
+        table_rows = []
         for i in range(0, len(stdout)):
             if stdout[i]:
-                column_list = stdout[i].split()
-                table_rows = [row.split() for row in stdout[i+2:-1]]
+                # Get column headers and strip whitespace
+                column_list = stdout[i].split(self.delimiter)
+                column_list = [item.strip() for item in column_list]
+                # Get row values and strip whitespace
+                unstripped_rows = [row.split(self.delimiter) for row in stdout[i+2:-1]]
+                # Each row is a list, and must have all of the strings within it stripped
+                for row in unstripped_rows:
+                    table_rows.append([item.strip() for item in row])
                 break
 
         # Create list of dictionaries where each list index is a row, populated by a dictionary with column/value pairs
