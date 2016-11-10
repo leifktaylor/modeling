@@ -42,7 +42,7 @@ class OracleLib(oracleconnection.OracleConnection):
         if command[-1] != ';':
             command += ';'
 
-        # Set line size for parsing, and issue query
+        # Add delimiter, line size, and pagesize to command for parsing purposes, and then issue query
         command = 'set colsep "{0}"\nset linesize 32000\nSET PAGESIZE 50000\n'.format(self.delimiter) + command
         stdout, __, __ = self.sqlplus(command)
 
@@ -63,9 +63,7 @@ class OracleLib(oracleconnection.OracleConnection):
                 break
 
         # Create list of dictionaries where each list index is a row, populated by a dictionary with column/value pairs
-        table_data = []
-        for row in table_rows:
-            table_data.append(dict(zip(column_list, row)))
+        table_data = [dict(zip(column_list, row)) for row in table_rows]
         return table_data
 
     def verify_database_open(self):
