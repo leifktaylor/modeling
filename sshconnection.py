@@ -1,29 +1,33 @@
 import paramiko
+import re
 
 
 class OracleError(Exception):
     """
-    Oracle exception object with error codes.
+    Oracle exception object for (ORA-#####) type errors.
+    Oracle errors are sent to stdout and must be caught.
     """
-    errorcodes = [('ORA-00942', 'table or view does not exist'),
-                  ('ORA-00923', 'FROM keyword not found where expected'),
-                  ('ORA-00922', 'missing or invalid option'),
-                  ('ORA-00936', 'missing expression'),
-                  ('ORA-00904', 'invalid identifier'),
-                  ('ORA-00955', 'name is already used by an existing object'),
-                  ('ORA-00907', 'missing right parenthesis'),
-                  ('ORA-01722', 'invalid number'),
-                  ('ORA-00902', 'invalid datatype')]
+    def __init__(self, errorcode, errormessage):
+        self.errormessage = errormessage
+        self.errorcode = errorcode
+        self.msg = '{0}: {1}'.format(self.errorcode, self.errormessage)
+
+    def __str__(self):
+        return self.msg
 
 
 class SQLPlusError(Exception):
     """
-    SQLPlus exception object (SP2-####) with error codes.
+    SQLPlus exception object for (SP2-####) type errors.
+    SQLPlus errors are sent to stdout and must be caught.
     """
-    errorcodes = [('SP2-0042:', 'unknown command - rest of line ignored.'),
-                  ('SP2-0734:', 'unknown command - rest of line ignored.'),
-                  ('SP2-0223:', 'No lines in SQL buffer.'),
-                  ('SP2-0172:', 'No HELP matching this topic was found.')]
+    def __init__(self, errorcode, errormessage):
+        self.errormessage = errormessage
+        self.errorcode = errorcode
+        self.msg = '{0}: {1}'.format(self.errorcode, self.errormessage)
+
+    def __str__(self):
+        return self.msg
 
 
 class SSHConnection(object):
@@ -171,9 +175,12 @@ class OracleConnection(SSHConnection):
         Searches stdout for ORA exceptions and raises for error
         """
         output_string = ' '.join(response)
-        for tuple in OracleError.errorcodes:
-            if tuple[0] in output_string:
-                raise OracleError(tuple[1])
+        if re.search('ORA-\d+', output_string):
+            # Get error code searching for ORA-#####
+            errorcode = re.search('ORA-\d+', output_string).group(0)
+            # Extract error message from response (shave off ' :')
+            errormessage = output_string.split(errorcode)[1].strip()[2:]
+            raise OracleError(errorcode, errormessage)
 
     @staticmethod
     def raise_sqlplus_error(response):
@@ -181,19 +188,23 @@ class OracleConnection(SSHConnection):
         Searches stdout for SP2 exceptions and raises for error
         """
         output_string = ' '.join(response)
-        for tuple in SQLPlusError.errorcodes:
-            if tuple[0] in output_string:
-                raise SQLPlusError(tuple[1])
+        if re.search('SP2-\d+', output_string):
+            # Get error code searching for ORA-#####
+            errorcode = re.search('SP2-\d+', output_string).group(0)
+            # Extract error message from response (shave off ' :')
+            errormessage = output_string.split(errorcode)[1].strip()[2:]
+            raise SQLPlusError(errorcode, errormessage)
 
 
-class DatabaseLib(OracleConnection):
+class OracleLib(OracleConnection):
     """
     Library of keywords which issue sqlplus commands on remote host and handle the output
 
     Keywords with the prepend 'verify' will raise for error if conditions are not met.
     """
     def __init__(self, ipaddress, username='oracle', password='12!pass345', port=22, sid='', home='', path=''):
-        super(DatabaseLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
+        super(OracleLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
+        # Delimiter used for parsing sqlplus queries
         self.delimiter = "MiLeD"
 
     def sqlplus(self, command, *args, **kwargs):
@@ -240,7 +251,8 @@ class DatabaseLib(OracleConnection):
                 unstripped_rows = [row.split(self.delimiter) for row in stdout[i+2:-1]]
                 # Each row is a list, and must have all of the strings within it stripped
                 for row in unstripped_rows:
-                    table_rows.append([item.strip() for item in row])
+                    # .replace to remove the \t automatically added if there are four spaces in entry
+                    table_rows.append([item.strip().replace('\t', '    ') for item in row])
                 break
 
         # Create list of dictionaries where each list index is a row, populated by a dictionary with column/value pairs
