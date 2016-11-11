@@ -5,6 +5,7 @@
 import connection
 import errors
 
+
 class SQLServerConnection(connection.SSHConnection):
     """
     Connect to remote host as oracle user over ssh and issue sqlplus commands while maintaining environmental variables

@@ -3,6 +3,7 @@
 # These methods can be used as keywords in Robot Framework.
 
 from models import oracleconnection
+from models.errors import *
 
 
 class OracleLib(oracleconnection.OracleConnection):
@@ -63,3 +64,18 @@ class OracleLib(oracleconnection.OracleConnection):
             return True
         else:
             return False
+
+    def verify_table_exists(self, tablename):
+        """
+        Verifies given table exists
+        :param tablename: name of table to check for
+        :return: True / False
+        """
+        try:
+            self.query('select * from {0};'.format(tablename))
+        except OracleError as e:
+            if e.errorcode == 'ORA-00942':
+                return False
+            else:
+                raise OracleError
+        return True

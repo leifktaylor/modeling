@@ -3,6 +3,7 @@
 # These methods can be used as keywords in Robot Framework.
 
 from models import sqlserverconnection
+from models.errors import *
 
 
 class SQLServerLib(sqlserverconnection.SQLServerConnection):
@@ -34,3 +35,18 @@ class SQLServerLib(sqlserverconnection.SQLServerConnection):
             return True
         else:
             return False
+
+    def verify_table_exists(self, tablename):
+        """
+        Verifies given table exists
+        :param tablename: name of table to check for
+        :return: True / False
+        """
+        try:
+            self.query('select * from {0};'.format(tablename))
+        except SQLServerError as e:
+            if e.errorcode == 'Msg 208':
+                return False
+            else:
+                raise
+        return True
