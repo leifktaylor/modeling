@@ -32,6 +32,19 @@ class SQLPlusError(Exception):
         return self.msg
 
 
+class SQLServerError(Exception):
+    """
+    SQLCmd and SQLServer exception object for 'Msg ###' 'Error message'
+    """
+    def __init__(self, errorcode, errormessage):
+        self.errormessage = errormessage
+        self.errorcode = errorcode
+        self.msg = '{0}: {1}'.format(self.errorcode, self.errormessage)
+
+    def __str__(self):
+        return self.msg
+
+
 def raise_oracle_error(response):
     """
     Searches stdout for ORA exceptions and raises for error
@@ -56,3 +69,20 @@ def raise_sqlplus_error(response):
         # Extract error message from response (shave off ' :')
         errormessage = output_string.split(errorcode)[1].strip()[2:]
         raise SQLPlusError(errorcode, errormessage)
+
+
+def raise_sqlserver_error(response):
+    """
+    Searches stdout for 'msg' exceptions and raises for error
+    """
+    # Find error code
+    output_string = ' '.join(response)
+    error_found = re.search('Msg \d+', output_string)
+    if error_found:
+        errorcode = error_found.group(0)
+        # Find error message in response, will be index after the error code in the stdout line list
+        for i in range(0, len(response)):
+            if errorcode in response[i]:
+                errormessage = response[i+1]
+                break
+        raise SQLServerError(errorcode, errormessage)

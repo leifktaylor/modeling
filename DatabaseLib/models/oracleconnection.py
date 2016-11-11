@@ -2,8 +2,8 @@
 # This Library maintains an ssh connection with a host running an Oracle Database.
 # It allows maintaining of environmental variables (oracle_sid, oracle_home), and executes and parses sqlplus commands.
 
-import errors
 import connection
+import errors
 
 
 class OracleEnv(object):
@@ -84,3 +84,63 @@ class OracleConnection(connection.SSHConnection):
             errors.raise_oracle_error(stdout)
             errors.raise_sqlplus_error(stdout)
         return stdout, stderr, rc
+
+    def sqlplus(self, command, *args, **kwargs):
+        """
+        Issue a mysql command
+        Will raise/return Oracle errors
+
+        :param command: e.g 'INSERT INTO mytable VALUES (30, 22, 15)'
+        :param args:
+        :param kwargs:
+        :return: stdout, stderr, rc
+        """
+        stdout, stderr, rc = self.sqlplus_cmd(command, **kwargs)
+        return stdout, stderr, rc
+
+    def query(self, command, *args, **kwargs):
+        """
+        Query Oracle database and return output as list of dictionaries where:
+        list index is database row
+        dictionary kv pairs are column/row pairs
+
+        :param command: e.g. 'SELECT * FROM mytable;'
+        :param args:
+        :param kwargs:
+        :return: list of dictionaries
+        """
+        # Add ';' if not already in command
+        if command[-1] != ';':
+            command += ';'
+
+        # Add delimiter, line size, and pagesize to command for parsing purposes, and then issue query
+        command = 'set colsep "{0}"\nset linesize 32000\nSET PAGESIZE 50000\n'.format(self.delimiter) + command
+        stdout, __, __ = self.sqlplus(command)
+        return self.parse_query(stdout)
+
+    def parse_query(self, output):
+        """
+        Parse output sqlplus query into a list of dictionaries where each dictionary is a row of kv pairs
+
+        :param output: output of sqlplus query
+        :return: list of dictionaries
+        """
+        # Get Column Names and Find Rows in output
+        column_list = []
+        table_rows = []
+        for i in range(0, len(output)):
+            if output[i]:
+                # Get column headers and strip whitespace
+                column_list = output[i].split(self.delimiter)
+                column_list = [item.strip() for item in column_list]
+                # Get row values and strip whitespace
+                unstripped_rows = [row.split(self.delimiter) for row in output[i + 2:-1]]
+                # Each row is a list, and must have all of the strings within it stripped
+                for row in unstripped_rows:
+                    # .replace to remove the \t automatically added if there are four spaces in entry
+                    table_rows.append([item.strip().replace('\t', '    ') for item in row])
+                break
+
+        # Create list of dictionaries where each list index is a row, populated by a dictionary with column/value pairs
+        table_data = [dict(zip(column_list, row)) for row in table_rows]
+        return table_data
