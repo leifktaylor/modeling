@@ -1,9 +1,9 @@
 # Author: Leif Taylor
-# This is a library of sqlplus command that can be executed on a remote host.
+# This is a library of sqlplus commands that can be executed on a remote host.
 # These methods can be used as keywords in Robot Framework.
 
-from models import oracleconnection
-from models.errors import *
+from scripts import oracleconnection
+from scripts.errors import *
 
 
 class OracleLib(oracleconnection.OracleConnection):
@@ -34,7 +34,7 @@ class OracleLib(oracleconnection.OracleConnection):
 
         Note:
         Because mounted child instances can have numbers appended to them, auto_correct
-        will attempt to find the new child sid even if you have forgotten to add a append.
+        will attempt to find the new child sid even if you have forgotten to add an append.
         e.g. if you enter 'achild' as your sid, but the actual database sid is 'achild1'
 
         :param new_sid: oracle_sid to change to
@@ -158,3 +158,6 @@ class OracleLib(oracleconnection.OracleConnection):
 
         # Return the time
         return self.get_time()
+
+    ###### Diskgroup related commands
+

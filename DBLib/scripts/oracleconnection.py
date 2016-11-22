@@ -5,6 +5,9 @@
 import connection
 import errors
 
+# TODO: Connect as grid user to use asmcmd
+# TODO: list disk groups : lsdg   (in asmcmd)
+# TODO: list disk groups in sqlplus: select name,state from v$asm_diskgroup;
 
 class OracleEnv(object):
     """
@@ -67,7 +70,7 @@ class OracleConnection(connection.SSHConnection):
         """
         # Raise error if oracle env not initialized and ignore_env is set to False
         if not ignore_env and not self.oracle_env:
-            raise RuntimeError('No oracle environment, use init_oracle_env')
+            raise RuntimeError('No oracle environment')
 
         # Create string which exports environmental variables from OracleEnv class (self.oracle_env)
         oracle_exports = 'export PATH={0}:$PATH;' \
@@ -89,6 +92,8 @@ class OracleConnection(connection.SSHConnection):
         """
         Issue a mysql command
         Will raise/return Oracle errors
+
+        # TODO: Adjust this so it returns only stdout
 
         :param command: e.g 'INSERT INTO mytable VALUES (30, 22, 15)'
         :param args:
