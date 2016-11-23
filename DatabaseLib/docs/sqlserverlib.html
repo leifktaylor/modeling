@@ -1,0 +1,125 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module sqlserverlib</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>sqlserverlib</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/actifioadmin/PycharmProjects/modeling/DatabaseLib/sqlserverlib.py">/Users/actifioadmin/PycharmProjects/modeling/DatabaseLib/sqlserverlib.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Author:&nbsp;Leif&nbsp;Taylor<br>
+#&nbsp;This&nbsp;is&nbsp;a&nbsp;library&nbsp;of&nbsp;sqlplus&nbsp;command&nbsp;that&nbsp;can&nbsp;be&nbsp;executed&nbsp;on&nbsp;a&nbsp;remote&nbsp;host.<br>
+#&nbsp;These&nbsp;methods&nbsp;can&nbsp;be&nbsp;used&nbsp;as&nbsp;keywords&nbsp;in&nbsp;Robot&nbsp;Framework.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="re.html">re</a><br>
+</td><td width="25%" valign=top><a href="models.sqlserverconnection.html">models.sqlserverconnection</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="models.sqlserverconnection.html#SQLServerConnection">models.sqlserverconnection.SQLServerConnection</a>(<a href="models.connection.html#SSHConnection">models.connection.SSHConnection</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="sqlserverlib.html#SQLServerLib">SQLServerLib</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SQLServerLib">class <strong>SQLServerLib</strong></a>(<a href="models.sqlserverconnection.html#SQLServerConnection">models.sqlserverconnection.SQLServerConnection</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Library&nbsp;of&nbsp;keywords&nbsp;which&nbsp;issue&nbsp;sqlcmd&nbsp;commands&nbsp;on&nbsp;remote&nbsp;host&nbsp;and&nbsp;handle&nbsp;the&nbsp;output<br>
+&nbsp;<br>
+Note:&nbsp;When&nbsp;passing&nbsp;in&nbsp;'database'&nbsp;argument&nbsp;on&nbsp;instantiation&nbsp;'use&nbsp;&lt;db_name&gt;;'&nbsp;will&nbsp;be&nbsp;prepended&nbsp;to&nbsp;all&nbsp;queries<br>
+and&nbsp;commands.<br>
+&nbsp;<br>
+To&nbsp;construct&nbsp;keywords,&nbsp;use:<br>
+For&nbsp;issuing&nbsp;insert/delete/create/etc:&nbsp;&nbsp;&nbsp;stdout,&nbsp;stderr,&nbsp;rc&nbsp;=&nbsp;self.<a href="#SQLServerLib-sqlcmd">sqlcmd</a>('your&nbsp;command&nbsp;here')<br>
+For&nbsp;queries&nbsp;(select,&nbsp;show):&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;row_list&nbsp;=&nbsp;self.<a href="#SQLServerLib-query">query</a>('your&nbsp;select&nbsp;statement&nbsp;here')<br>
+&nbsp;<br>
+Keywords&nbsp;with&nbsp;the&nbsp;prepend&nbsp;'verify'&nbsp;will&nbsp;raise&nbsp;for&nbsp;error&nbsp;if&nbsp;conditions&nbsp;are&nbsp;not&nbsp;met.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="sqlserverlib.html#SQLServerLib">SQLServerLib</a></dd>
+<dd><a href="models.sqlserverconnection.html#SQLServerConnection">models.sqlserverconnection.SQLServerConnection</a></dd>
+<dd><a href="models.connection.html#SSHConnection">models.connection.SSHConnection</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SQLServerLib-__init__"><strong>__init__</strong></a>(self, ipaddress, username<font color="#909090">='Administrator'</font>, password<font color="#909090">='12!pass345'</font>, port<font color="#909090">=22</font>, database<font color="#909090">=''</font>, instance_name<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="SQLServerLib-verify_row_count"><strong>verify_row_count</strong></a>(self, tablename, rows)</dt><dd><tt>Verifies&nbsp;that&nbsp;the&nbsp;given&nbsp;table&nbsp;has&nbsp;the&nbsp;correct&nbsp;amount&nbsp;of&nbsp;rows<br>
+:param&nbsp;tablename:&nbsp;name&nbsp;of&nbsp;table&nbsp;in&nbsp;database<br>
+:param&nbsp;rows:&nbsp;amount&nbsp;of&nbsp;rows&nbsp;expected&nbsp;in&nbsp;table<br>
+:return:&nbsp;True&nbsp;/&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-verify_table_exists"><strong>verify_table_exists</strong></a>(self, tablename)</dt><dd><tt>Verifies&nbsp;given&nbsp;table&nbsp;exists<br>
+:param&nbsp;tablename:&nbsp;name&nbsp;of&nbsp;table&nbsp;to&nbsp;check&nbsp;for<br>
+:return:&nbsp;True&nbsp;/&nbsp;False</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="models.sqlserverconnection.html#SQLServerConnection">models.sqlserverconnection.SQLServerConnection</a>:<br>
+<dl><dt><a name="SQLServerLib-find_default_sql_instance"><strong>find_default_sql_instance</strong></a>(self)</dt><dd><tt>Default&nbsp;SQL&nbsp;Instance&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;host.<br>
+:return:&nbsp;host&nbsp;name</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-init_add_database"><strong>init_add_database</strong></a>(self, database_name)</dt><dd><tt>Creates&nbsp;database&nbsp;if&nbsp;does&nbsp;not&nbsp;exist&nbsp;for&nbsp;initializing&nbsp;auto_database<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-parse_query"><strong>parse_query</strong></a>(self, output)</dt><dd><tt>Parse&nbsp;output&nbsp;sqlserver&nbsp;query&nbsp;into&nbsp;a&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;where&nbsp;each&nbsp;dictionary&nbsp;is&nbsp;a&nbsp;row&nbsp;of&nbsp;kv&nbsp;pairs<br>
+&nbsp;<br>
+:param&nbsp;output:&nbsp;output&nbsp;of&nbsp;sqlcmd&nbsp;query<br>
+:return:&nbsp;list&nbsp;of&nbsp;dictionaries</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-query"><strong>query</strong></a>(self, command)</dt><dd><tt>Run&nbsp;a&nbsp;sqlplus&nbsp;query&nbsp;and&nbsp;parse&nbsp;the&nbsp;output,&nbsp;returning&nbsp;a&nbsp;list&nbsp;of&nbsp;dictionaries<br>
+:return:&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;where&nbsp;each&nbsp;list&nbsp;element&nbsp;is&nbsp;a&nbsp;dictionary&nbsp;representing&nbsp;a&nbsp;row&nbsp;of&nbsp;data</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-sqlcmd"><strong>sqlcmd</strong></a>(self, command, raise_error<font color="#909090">=True</font>, **kwargs)</dt><dd><tt>Issue&nbsp;sqlcmd&nbsp;command&nbsp;on&nbsp;remote&nbsp;host&nbsp;and&nbsp;parse&nbsp;output<br>
+:param&nbsp;command:&nbsp;sql&nbsp;statement<br>
+:param&nbsp;raise_error:&nbsp;raise&nbsp;for&nbsp;error<br>
+:param&nbsp;database:&nbsp;database&nbsp;to&nbsp;query<br>
+:param&nbsp;kwargs:<br>
+:return:&nbsp;stdout,&nbsp;stderr,&nbsp;rc</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="models.connection.html#SSHConnection">models.connection.SSHConnection</a>:<br>
+<dl><dt><a name="SQLServerLib-cmd"><strong>cmd</strong></a>(self, command, ascii<font color="#909090">=True</font>, raise_error<font color="#909090">=True</font>)</dt><dd><tt>Issue&nbsp;direct&nbsp;command&nbsp;over&nbsp;ssh,&nbsp;with&nbsp;handlers,&nbsp;can&nbsp;raise&nbsp;for&nbsp;error&nbsp;and&nbsp;attempt&nbsp;to&nbsp;convert&nbsp;to&nbsp;ascii<br>
+:param&nbsp;command:<br>
+:param&nbsp;ascii:<br>
+:param&nbsp;raise_error:<br>
+:return:&nbsp;stdout&nbsp;(list&nbsp;of&nbsp;lines),&nbsp;stderr&nbsp;(list&nbsp;of&nbsp;lines),&nbsp;return&nbsp;code&nbsp;(integer)</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-connect"><strong>connect</strong></a>(self)</dt><dd><tt>Connect&nbsp;to&nbsp;remote&nbsp;host<br>
+:return:&nbsp;paramiko&nbsp;SSHClient&nbsp;object</tt></dd></dl>
+
+<dl><dt><a name="SQLServerLib-raw_cmd"><strong>raw_cmd</strong></a>(self, command, ascii<font color="#909090">=False</font>)</dt><dd><tt>Issue&nbsp;direct&nbsp;command&nbsp;over&nbsp;ssh<br>
+:param&nbsp;command:&nbsp;command&nbsp;to&nbsp;issue<br>
+:param&nbsp;ascii:&nbsp;Attempt&nbsp;to&nbsp;convert&nbsp;to&nbsp;ascii&nbsp;if&nbsp;true,&nbsp;if&nbsp;false&nbsp;return&nbsp;unicode<br>
+:return:&nbsp;stdout&nbsp;(list&nbsp;of&nbsp;lines),&nbsp;stderr&nbsp;(list&nbsp;of&nbsp;lines),&nbsp;return&nbsp;code&nbsp;(integer)</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="models.connection.html#SSHConnection">models.connection.SSHConnection</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>
