@@ -88,3 +88,51 @@ class Lifeform(Entity):
             return eval('self.stats.{0}.stat_max'.format(stat))
         except AttributeError:
             raise RuntimeError('{0} has no {1} stat'.format(self.name, stat))
+
+    def change_stat(self, stat, amount):
+        if hasattr(self.stats, stat) and hasattr(self, '_change_{0}'.format(stat)):
+            change_method = getattr(self, '_change_{0}'.format(stat))
+            return change_method(amount)
+        else:
+            stat_to_change = getattr(self.stats, stat)
+            stat_to_change.stat_current = amount
+
+
+# Query Functions
+
+def is_alive(lifeform):
+    return lifeform.stat_current('HP') > 0
+
+def is_dead(lifeform):
+    return lifeform.stat_current('HP') < 1
+
+def is_out_of_MP(lifeform):
+    return lifeform.stat_current('MP') < 1
+
+def has_enough_MP(lifeform, amount):
+    return lifeform.stat_current('MP') >= amount
+
+def has_enough_HP(lifeform, amount):
+    return lifeform.stat_current('HP') >= amount
+
+def has_enough_MIND(lifeform, amount):
+    return lifeform.stat_current('MIND') >= amount
+
+def has_enough_STR(lifeform, amount):
+    return lifeform.stat_current('STR') >= amount
+
+def has_stat(lifeform, stat):
+    return hasattr(lifeform.stats, stat)
+
+def get_distance(entity1, entity2, distance):
+    assert isinstance(entity1, Entity) and isinstance(entity2, Entity), 'Expects two Entity objects and a distance'
+    return vc.vec_distance(entity1.x, entity1.y, entity2.x, entity2.y)
+
+# Task Functions
+
+def change_stat(lifeform, stat, value):
+    """
+    Changes the current_value of an Lifeform.stats.stat.  This is the only method that should be directly called
+    to change an Lifeform's stat. Do not change a Lifeform's stat directly.
+    """
+    return entity.change_stat(stat, value)
