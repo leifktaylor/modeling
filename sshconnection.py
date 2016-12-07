@@ -58,9 +58,12 @@ class SSHConnection(object):
         client.connect(self.ipaddress, username=self.username, password=self.password, port=self.port, **self.connection_params)
         return client
 
-    def raw_cmd(self, command, ascii=False):
+    def raw_cmd(self, command, ascii=False, max_retries=5):
         """
         Issue direct command over ssh
+
+        #TODO: If sshconnection is lost, attempt to reconnect and reissue command
+
         :param command: command to issue
         :param ascii: Attempt to convert to ascii if true, if false return unicode
         :return: stdout (list of lines), stderr (list of lines), return code (integer)
@@ -79,6 +82,7 @@ class SSHConnection(object):
     def cmd(self, command, ascii=True, raise_error=True):
         """
         Issue direct command over ssh, with handlers, can raise for error and attempt to convert to ascii
+
         :param command:
         :param ascii:
         :param raise_error:
@@ -266,8 +270,8 @@ class OracleLib(OracleConnection):
         Verifies database is open for read and write
         :return: True / False
         """
-        r = self.sqlplus('select open_mode from v\$database;')
-        if 'OPEN_MODE' in r[0] and 'READ WRITE' in r[0]:
+        stdout, __, __ = self.sqlplus('select open_mode from v\$database;')
+        if 'OPEN_MODE' in stdout and 'READ WRITE' in stdout:
             return True
         else:
             return False
@@ -283,6 +287,15 @@ class OracleLib(OracleConnection):
                 return True
         return False
 
+    def verify_table_exists(self, tablename):
+        """
+        Verifies that the given table exists
+        :param tablename:  name of table to check if it exists
+        :return: True or False
+        """
+        # TODO: Verify Table Exists
+        pass
+
     def verify_row_count(self, tablename, rows):
         """
         Verifies that the given table has the correct amount of rows
@@ -290,12 +303,13 @@ class OracleLib(OracleConnection):
         :param rows: amount of rows expected in table
         :return: True / False
         """
-        stdout, __, __ = self.sqlplus('select count(*) from {0}'.format(tablename))
-        for line in stdout:
-            if rows in line:
-                return True
-            else:
-                return False
+        if self.verify_table_exists(tablename):
+            stdout, __, __ = self.sqlplus('select count(*) from {0};'.format(tablename))
+            for line in stdout:
+                if rows in line:
+                    return True
+                else:
+                    return False
 
 
 
@@ -306,3 +320,5 @@ class OracleLib(OracleConnection):
     # sqlcmd -q "CREATE DATABASE [SOMENAME]"
                 # keep the brackets to the parser doesn't try to interpret
                 # command parser interprets anything inside square brackets as a literal
+        return stdout
+

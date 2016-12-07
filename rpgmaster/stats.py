@@ -8,9 +8,9 @@ class Stats(object):
             self.stat_list = [StatSTR(), StatMP(), StatHP(), StatDEF(), StatATK(), StatSPD(), StatMIND()]
         else:
             self.stat_list = stat_list
-        # Custom stat list is provided
-        for stat in stat_list:
-            exec('self.{0} = {1}'.format(stat.stat_name, stat))
+        
+        for stat in self.stat_list:
+            setattr(self, stat.stat_name, stat)
 
     def stat_dict(self):
         """
@@ -26,7 +26,7 @@ class Stat(object):
         self.stat_min = stat_min
         self.stat_max = stat_max
         self.stat_current = stat_current
-
+   
 
 class StatSTR(Stat):
     def __init__(self):
