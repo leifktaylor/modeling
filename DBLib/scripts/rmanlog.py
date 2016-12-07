@@ -11,6 +11,8 @@ class RmanLog(object):
                  ipaddress='172.27.17.125', username='root', password='12!pass345', port=22):
         self.dbname = dbname
         self.a = connection.SSHConnection(ipaddress=ipaddress, username=username, password=password, port=port)
+
+        # Try to determine rman log name, if filename given use that, else try from dbname
         if filename:
             self.filename = filename
         elif dbname:
@@ -23,6 +25,7 @@ class RmanLog(object):
         Returns list of all the lines in rman log
         :return: list
         """
+        # Open and read lines of rman.log file
         sftp_client = self.a.client.open_sftp()
         remote_file = sftp_client.open('/var/act/log/{0}'.format(self.filename))
         line_list = []
