@@ -19,14 +19,6 @@ class OracleLib(oracleconnection.OracleConnection):
     def __init__(self, ipaddress, username='oracle', password='12!pass345', port=22, sid='', home='', path=''):
         super(OracleLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
 
-    def check_oracle_sid(self):
-        """
-        This keyword is for debugging, to confirm oraclelib has the correct oracle_sid.
-        Will return the current oracle_sid that is selected.  To change oracle_sid, use 'change_database()'
-        :return: oracle_sid in self.oracle_env
-        """
-        return self.oracle_env.sid
-
     def change_database(self, new_sid, auto_correct=True):
         """
         Changes the SID of the oracle_env object in OracleLib.
@@ -55,6 +47,29 @@ class OracleLib(oracleconnection.OracleConnection):
             self.oracle_env.sid = new_sid
         # If new oracle_sid not found, or instance not running
         raise RuntimeError('Oracle_SID: {0} not found, or instance not running'.format(new_sid))
+
+    def drop_table(self, tablename):
+        """
+        Deletes table, will return error if table does not exist
+        :param tablename: table to delete
+        :return:
+        """
+        self.sqlplus('drop table {0};'.format(tablename))
+
+    def do_drop_table(self, tablename):
+        """
+        [Idempotent]
+        Deletes table if it exists.  Will not raise error if table does not exist.
+        :param tablename: table to delete
+        :return:
+        """
+        try:
+            self.drop_table(tablename)
+        except OracleError as e:
+            if e.errorcode == 'ORA-00942':
+                pass
+            else:
+                raise OracleError
 
     def db_verifications(self):
         """
@@ -142,11 +157,7 @@ class OracleLib(oracleconnection.OracleConnection):
         :return: datetime on host
         """
         # Delete table if exists
-        try:
-            self.sqlplus('drop table {0};'.format(tablename))
-        except OracleError as e:
-            if e.errorcode != 'ORA-00942':
-                raise OracleError
+        self.do_drop_table(tablename)
 
         # Create generic table
         self.sqlplus('create table {0} (firstname varchar(30), lastname varchar(30));'.format(tablename))
@@ -159,5 +170,36 @@ class OracleLib(oracleconnection.OracleConnection):
         # Return the time
         return self.get_time()
 
-    ###### Diskgroup related commands
+    def get_database_size(self):
+        """
+        This will return the size of the database in GB
+        :return: float (size in GB)
+        """
+        return self.query("SELECT SUM (bytes) / 1024 / 1024 / 1024 AS GB FROM dba_data_files;")[0]['GB']
 
+    def get_oracle_sid(self):
+        """
+        This keyword is for debugging, to confirm oraclelib has the correct oracle_sid.
+        Will return the current oracle_sid that is selected.  To change oracle_sid, use 'change_database()'
+        :return: oracle_sid in self.oracle_env
+        """
+        return self.query('select instance_name from v\$instance')[0]['INSTANCE_NAME']
+
+    def get_datafiles(self):
+        """
+        This keyword returns the dba_datafile paths/names
+        :return: list of dba_datafile paths/names
+        """
+        dict_list = self.query('select file_name from dba_data_files;')
+        return [item['FILE_NAME'] for item in dict_list]
+
+    def is_asm(self):
+        """
+        This keyword returns True if the database is an ASM rac, and false if it is a filesystem
+        :return: True or False
+        """
+        r = self.query("select name, value from v\$parameter where name = 'cluster_database';")[0]['VALUE']
+        if r.lower() == 'false':
+            return False
+        else:
+            return True
