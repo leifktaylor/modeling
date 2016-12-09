@@ -15,9 +15,51 @@ class OracleLib(oracleconnection.OracleConnection):
     For queries (select, show):             row_list = self.query('your select statement here')
 
     Keywords with the prepend 'verify' will raise for error if conditions are not met.
+    # TODO: Currently while in development, these keywords will just return True or False.
     """
     def __init__(self, ipaddress, username='oracle', password='12!pass345', port=22, sid='', home='', path=''):
         super(OracleLib, self).__init__(ipaddress, username=username, password=password, port=port, sid=sid, home=home, path=path)
+
+    def change_database(self, new_sid, auto_correct=True):
+        """
+        Changes the SID of the oracle_env object in OracleLib.
+        All keywords will now act on the database_sid that you have changed to.
+
+        Note:
+        Because mounted child instances can have numbers appended to them, auto_correct
+        will attempt to find the new child sid even if you have forgotten to add a append.
+        e.g. if you enter 'achild' as your sid, but the actual database sid is 'achild1'
+
+        :param new_sid: oracle_sid to change to
+        :param auto_correct: automatically determine sid name, e.g. 'achild' is actually 'achild1'
+        :return: actual new oracle_sid of running instance
+        """
+        stdout, stderr, rc = self.cmd('ps -ef | grep pmon | grep {0} | grep -v grep'.format(new_sid))
+        if not stdout:
+            raise RuntimeError('No SID found, is instance running?')
+        # Search ps output for running oracle instance with new_sid name
+        if auto_correct:
+            for line in stdout:
+                if new_sid in line:
+                    actual_sid = line.split('ora_pmon_')[-1]
+                    self.oracle_env.sid = actual_sid
+                    return actual_sid
+        else:
+            self.oracle_env.sid = new_sid
+        # If new oracle_sid not found, or instance not running
+        raise RuntimeError('Oracle_SID: {0} not found, or instance not running'.format(new_sid))
+
+    def db_verifications(self):
+        """
+        Set of standard verifications to make sure Oracle Database is online, mounted, open, archivemode, and running.
+        :return: True / False
+        """
+        if not self.verify_database_open():
+            raise RuntimeError('Database not open for read write')
+        if not self.verify_archivelog_mode():
+            raise RuntimeError('Database not in archivelog mode')
+        if not self.verify_pmon_running():
+            raise RuntimeError('Pmon is not running. DB Instance down')
 
     def verify_database_open(self):
         """

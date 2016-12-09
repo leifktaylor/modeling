@@ -180,7 +180,7 @@ class OracleLib(oracleconnection.OracleConnection):
     def get_oracle_sid(self):
         """
         This keyword is for debugging, to confirm oraclelib has the correct oracle_sid.
-        Will return the current oracle_sid that is selected.  To change oracle_sid, use 'change_database()'
+        Will return the current oracle_sid that is exported.  To change oracle_sid, use 'change_database()'
         :return: oracle_sid in self.oracle_env
         """
         return self.query('select instance_name from v\$instance')[0]['INSTANCE_NAME']

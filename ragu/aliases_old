@@ -1,0 +1,9 @@
+[aix]
+docker run --rm -v "/ragu":/home/testing/robot/inv brianwilliams/framework3 robot -d inv/ -L DEBUG:INFO "$@" -V inv/appliance/alfalfa.py -V inv/host/NSTLPAR18_nathan.py:rac1 -V inv/host/NSTLPAR18_nathan.py:rac2 suites/orarac1+2/logsmart_appaware_local.robot >> /ragu/newfile.out 2>&1
+[hpux]
+docker run --rm -v "/ragu":/home/testing/robot/inv brianwilliams/framework3 robot -d inv/ -L DEBUG:INFO "$@" -V inv/appliance/alfalfa.py -V inv/host/NSTLPAR18_nathan.py:rac1 -V inv/host/NSTLPAR18_nathan.py:rac2 suites/orarac1+2/logsmart_appaware_local.robot >> /ragu/newfile.out 2>&1
+[linux]
+docker run --rm -v "/ragu":/home/testing/robot/inv brianwilliams/framework3 robot -d inv/ -L DEBUG:INFO "$@" -V inv/appliance/alfalfa.py -V inv/host/NSTLPAR18_nathan.py:rac1 -V inv/host/NSTLPAR18_nathan.py:rac2 suites/orarac1+2/logsmart_appaware_local.robot >> /ragu/newfile.out 2>&1
+[rac1]
+docker run --rm -v "/ragu":/home/testing/robot/inv brianwilliams/framework3 robot -d inv/ -L DEBUG:INFO "$@" -V inv/appliance/alfalfa.py -V inv/host/NSTLPAR18_nathan.py:rac1 -V inv/host/NSTLPAR18_nathan.py:rac2 suites/orarac1+2/logsmart_appaware_local.robot >> /ragu/newfile.out 2>&1
+

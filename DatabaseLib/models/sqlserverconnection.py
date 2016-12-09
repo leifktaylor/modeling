@@ -13,7 +13,7 @@ class SQLServerConnection(connection.SSHConnection):
     def __init__(self, ipaddress, username='Administrator', password='12!pass345', port=22,
                  instance_name='', database=''):
         super(SQLServerConnection, self).__init__(ipaddress, username=username, password=password, port=port)
-        # Delimiter used for parsing sqlcmd queries
+        # Delimiter used for parsing sqlcmd queries (Only a single character delimiter is allowed in sqlcmd)
         self.delimiter = "%"
 
         # Attempt to find default instance name if instance_name not provided

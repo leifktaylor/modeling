@@ -104,6 +104,10 @@ class OracleConnection(connection.SSHConnection):
         list index is database row
         dictionary kv pairs are column/row pairs
 
+        Example usage:
+        >> self.query('select * from mytable;')
+        [{'name': 'Jim', 'age': '30'}, {'name': 'Chris', 'age': '56'}]
+
         :param command: e.g. 'SELECT * FROM mytable;'
         :param args:
         :param kwargs:
