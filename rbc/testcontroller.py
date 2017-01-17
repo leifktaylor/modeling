@@ -42,7 +42,7 @@ import tempfile
 # Happy Testing!
 
 # TODO: Each test run should have its own console.out, put with the logs, instead of a single one.
-
+local_image = True
 
 class AliasReader(object):
     """
@@ -136,8 +136,12 @@ class AliasReader(object):
         :return:
         """
         # First create the base command string:
-        base_string = 'docker run --rm -v "{0}":/home/testing/robot/inv brianwilliams/framework3 ' \
-                      'robot -d inv/ -L DEBUG:INFO "$@"'.format(os.path.abspath('.'))
+        if local_image:
+            base_string = 'docker run -ti -v /Users/actifioadmin/PycharmProjects/framework3:/home/testing ' \
+                          'brianwilliams/framework3 robot --loglevel DEBUG:INFO'
+        else:
+            base_string = 'docker run --rm -v "{0}":/home/testing/robot/inv brianwilliams/framework3 ' \
+                          'robot -d inv/ -L DEBUG:INFO "$@"'.format(os.path.abspath('.'))
 
         # Cut out any comments (once # has appeared, remove it and everything after), isolate inventory names
         uncommented_line = alias_command.split('#')[0].rstrip()
@@ -200,6 +204,7 @@ class AliasReader(object):
         """
         for alias, command in self.aliases.items():
             print "'{0}' : '{1}'".format(alias, command)
+
 
 class TestController(object):
     """
