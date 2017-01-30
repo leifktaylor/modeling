@@ -1,0 +1,22 @@
+# Weapon Template
+lifeform_type:LifeForm
+name:generic_lifeform
+description:a lonely gentlemen
+
+# Stats
+HP:4
+MP:4
+STR:3
+MND:2
+STA:5
+SPD:2
+MDEF:5
+PDEF:3
+
+# Inventory
+# <slot>:<path/to/template> <equipped (boolean)> <drop_chance percent (int)>
+slots:10
+slot0:apparel/linen_shirt.itm True 20
+slot1:potion/template.itm False 15
+
+# Skills TODO

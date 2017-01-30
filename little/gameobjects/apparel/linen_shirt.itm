@@ -1,0 +1,24 @@
+# Apparel Template
+item_type:apparel
+name:Linen Shirt
+description:Quality linen products are crafted by the elderly women of the local villages
+equippable_slot:chest
+
+# Defensive
+MDEF:3
+PDEF:1
+
+# Stats
+HP:2
+MP:2
+STR:0
+MND:1
+SPD:1
+STA:1
+
+# Effects (functional call from effects class)
+OnHit:<function call>
+Passive:<functional call>
+
+# misc stuff
+weight:1

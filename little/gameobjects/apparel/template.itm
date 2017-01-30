@@ -1,0 +1,24 @@
+# Apparel Template
+item_type:apparel
+name:name of apparel
+description:description of apparel
+equippable_slot:slot to equip in
+
+# Defensive
+MDEF:3
+PDEF:3
+
+# Stats
+HP:10
+MP:10
+STR:2
+MND:2
+SPD:2
+STA:2
+
+# Effects (functional call from effects class)
+OnHit:<function call>
+Passive:<functional call>
+
+# misc stuff
+weight:2

@@ -1,0 +1,23 @@
+# Ingredient Template
+# WIP
+item_type:misc
+name:name of ingredient
+description:description of ingredient
+
+# Properties (Any number)
+HP:4
+MP:3
+MND:2
+
+# Effects (functional call from effects class), length in seconds
+OnHit:<function call>
+OnHitLength:3
+Passive:<functional call>
+PassiveLength:3
+
+# When used as an item
+OnUse:<function call>
+uses:3
+
+# misc stuff
+weight:2

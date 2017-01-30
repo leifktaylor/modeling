@@ -1,0 +1,28 @@
+# name
+name:Fireball
+description: Blast a fireball at a target
+cast_message: %S launches a flaming fireball at %T
+hit_message: %T is burned
+
+# cost
+mp_cost:3
+hp_cost:1
+
+# power (base damage or healing)
+power:10
+
+# scaling (percent, e.g. is MND:50 then 50% of MND stat will be added to base damage)
+MND:50
+SPD:25
+
+# misc
+AOE: False
+self_only: False
+
+# debuff applied, length is time in seconds
+debuff:<script call>
+debuff_length:3
+
+# buff applied
+buff:<script_call>
+buff_length:0

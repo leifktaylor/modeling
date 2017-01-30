@@ -1,0 +1,20 @@
+# Weapon Template
+item_type:ammo
+name:name of ammo
+description:description of weapon
+
+# Damage Types
+DMG:5
+
+# Effects (functional call from effects class), length in seconds
+OnHit:<function call>
+OnHitChance:20
+Passive:<functional call>
+
+# For ammo, uses represents the amount of times this projectile can be fired before deleting itself.
+# Setting uses to 0 will give unlimited uses.
+# For other items, uses effects the OnUse function (potions, etc)
+uses:200
+
+# misc stuff
+weight:1
