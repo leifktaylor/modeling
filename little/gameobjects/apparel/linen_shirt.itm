@@ -16,9 +16,10 @@ MND:1
 SPD:1
 STA:1
 
-# Effects (functional call from effects class)
-OnHit:<function call>
-Passive:<functional call>
+# Effects (functional call from effects class) OnHit on armor is when user is hit
+OnHit:path/to/spell.spl
+OnHitChance:10
+Passive:path/to/status.sts
 
 # misc stuff
 weight:1

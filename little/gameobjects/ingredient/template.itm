@@ -3,20 +3,5 @@ item_type:ingredient
 name:name of ingredient
 description:description of ingredient
 
-# Properties, Integer size represents potency
-HP:3
-MP:1
-MND:2
-
-# Effects (functional call from effects class), length in seconds
-OnHit:<function call>
-OnHitLength:3
-Passive:<functional call>
-PassiveLength:3
-
-# When used as an item
-OnUse:<function call>
-uses:3
-
 # misc stuff
-weight:2
+weight:1

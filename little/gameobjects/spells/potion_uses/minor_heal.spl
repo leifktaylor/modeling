@@ -1,0 +1,9 @@
+# name
+name:minor heal
+description: heals you real good
+cast_message: %S uncorks a bubbling potion
+hit_message: %S feels a little better
+
+# power (base damage or healing)
+power:10
+

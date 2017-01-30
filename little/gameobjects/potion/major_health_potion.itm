@@ -1,0 +1,11 @@
+# Ingredient Template
+item_type:potion
+name:Large Health Potion
+description:This big bottle holds enough for multiple uses of healing delight.
+
+# When used as an item
+OnUse:spells/potion_uses/minor_heal.spl
+uses:3
+
+# misc stuff
+weight:2

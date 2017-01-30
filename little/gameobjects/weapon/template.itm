@@ -12,9 +12,9 @@ MP:5
 STR:4
 
 # Effects (functional call from effects class), length in seconds
-OnHit:<function call>
+OnHit:path/to/spell.spl
 OnHitChance:20
-Passive:<functional call>
+Passive:path/to/status.sts
 
 # misc stuff
-weight:2
+weight:4

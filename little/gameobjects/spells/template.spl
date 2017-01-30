@@ -1,0 +1,42 @@
+# name
+name:Fireball
+description: Blast a fireball at a target
+cast_message: %S launches a flaming fireball at %T
+hit_message: %T is burned
+
+# cost
+mp_cost:3
+hp_cost:1
+
+# power (base damage or healing)
+power:10
+
+# scaling (percent, e.g. is MND:50 then 50% of MND stat will be added to base damage)
+MND_scale:50
+SPD_scale:25
+
+# MISC
+AOE: False
+self_only: False
+# Stat steal (as a percentage of total damage done)
+HP_steal:30
+MP_steal:20
+# Percent change to steal a random item, or gold
+item_steal:0
+gold_steal:0
+# Stun/sleep (chance is percent, duration is turns)
+stun_chance:0
+stun_duration:0
+sleep_chance:0
+sleep_duration:0
+charm_chance:0
+charm_duration:0
+
+# status:
+# statusN:path/to/status.sts <chance_to_apply> <duration_turns>
+status1:<status file> 10 5
+status2:<status file> 5 20
+
+# custom script(s)
+custom1:<script>
+custom2:<script>
