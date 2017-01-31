@@ -2,8 +2,11 @@
 # Room templates must contain these four sections, delimited by '*** section_name ***'
 
 *** settings ***
-name:Dark Hallway
-look:A dark and dreary hallway in a very smelly sewer.  Darkness extends in both directions.
+name:Forest Clearing
+atenter:%P enters a dark clearing, it is night.
+atexit:%P walks deeper into the forest.
+look:Nothing surrounds you but trees, and darkness.
+listen:You hear distant night birds, and other less friendly sounding creatures.
 
 *** lifeforms ***
 lifeform/rat_man.lfm

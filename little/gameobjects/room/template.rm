@@ -3,7 +3,10 @@
 
 *** settings ***
 name:Dark Hallway
-look:A dark and dreary hallway in a very smelly sewer.  Darkness extends in both directions.
+atenter: As you enter the hallway, you hear nothing but water dripping and a slight breeze.
+atexit: You proceed down the hallway.
+look: The walls are covered in slime.  What a horrid place.
+listen: You think you hear a distant moaning sound.
 
 *** lifeforms ***
 lifeform/rat_man.lfm

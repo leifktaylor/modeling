@@ -118,6 +118,10 @@ def create_lifeform_from_template(filename):
     return lifeform
 
 
+def create_room_from_template(filename):
+    # TODO
+    pass
+
 # Classes
 
 
@@ -127,7 +131,11 @@ class Room(object):
     """
     def __init__(self, name, contents=None, **kwargs):
         self.name = name
-        self.contents = contents
+        if contents:
+            self.contents = contents
+        else:
+            self.contents = {}
+    # TODO
 
 
 class GameObject(object):
