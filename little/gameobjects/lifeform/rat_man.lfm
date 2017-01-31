@@ -1,17 +1,17 @@
 # Weapon Template
 lifeform_type:LifeForm
-name:generic_lifeform
-description:a lonely gentlemen
+name:Rat Man
+description:Life in the sewers, and a diet of rats... You are what you eat!
 
 # Stats
-HP:4
+HP:9
 MP:4
 STR:3
 MND:2
 STA:5
 SPD:2
-MDEF:5
-PDEF:3
+MDEF:2
+PDEF:2
 
 # Inventory
 # <slot>:<path/to/template> <equipped (boolean)> <drop_chance percent (int)>
@@ -19,5 +19,6 @@ slots:10
 slot0:apparel/linen_shirt.itm True 20
 slot1:potion/minor_health_potion.itm False 10
 slot2:potion/major_health_potion.itm False 15
+slot3:weapon/long_sword.itm True 5
 
 # Skills TODO

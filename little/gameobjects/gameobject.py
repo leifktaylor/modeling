@@ -2,16 +2,26 @@
 Test based mushy fun!
 """
 import logging
-import game_constants
+import template_constants
 import gc
 import itm_parser
 import lfm_parser
+import rm_parser
+
+
+# gc.collect()   -- this will garbage collect actively
 
 
 def print_lifeform_inventory(id):
-    inventory = get_object_by_id(id).inventory.slots
-    for item in inventory:
-        print item
+    slots = get_object_by_id(id).inventory.slots
+    inventory = get_object_by_id(id).inventory
+    for i, item in enumerate(slots):
+        if item:
+            if inventory.is_equipped(item.id):
+                equip_slot = item.equippable_slot
+                print('{0}: {1} [{2}]'.format(i, item.name, equip_slot))
+            else:
+                print('{0}: {1}'.format(i, item.name))
 
 
 def print_name(id):
@@ -22,7 +32,7 @@ def print_lifeform_stats(id):
     """
     Print all stats (base and from items) of given lifeform from id
     """
-    for stat in game_constants.all_stats:
+    for stat in template_constants.all_stats:
         print_lifeform_stat(id, stat)
 
 
@@ -34,10 +44,10 @@ def print_lifeform_stat(id, stat):
 
 
 def create_gameobject(type='GameObject', **kwargs):
-    try:
-        id_list = [o.id for o in gc.get_objects() if isinstance(o, eval('GameObject'))]
-        id = id_list[-1] + 1
-    except IndexError:
+    id_list = [o.id for o in gc.get_objects() if isinstance(o, eval('GameObject'))]
+    if id_list:
+        id = max(id_list) + 1
+    else:
         id = 1
     return eval(type)(id, **kwargs)
 
@@ -74,15 +84,14 @@ def create_item_from_template(filename):
     properties = itm_parser.dict_lines(filename)
 
     # create ItemStats class to compose with Item created
-    # TODO: A list of all these values needs to be put somewhere else because this will get unmaintainable quick
+    # TODO: OnHit effects and such
     item_stats = ItemStats(HP=properties['HP'], MP=properties['MP'], MND=properties['MND'],
                            STA=properties['STA'], STR=properties['STR'], SPD=properties['SPD'],
-                           DMG=properties['DMG'], PDEF=properties['PDEF'], MDEF=properties['MDEF'],
-                           weight=properties['weight'])
+                           PDMG=properties['PDMG'], PDEF=properties['PDEF'], MDEF=properties['MDEF'],
+                           MDMG=properties['MDMG'], weight=properties['weight'])
 
     # create item of correct class from response object
-    classes = {'apparel': 'ItemApparel', 'ingredient': 'ItemIngredient', 'misc': 'ItemMisc',
-               'potion': 'ItemPotion', 'weapon': 'ItemWeapon'}
+    classes = template_constants.item_classes
     item = create_gameobject(type=classes[properties['item_type']], name=properties['name'],
                              description=properties['description'], equippable_slot=properties['equippable_slot'],
                              item_stats=item_stats)
@@ -125,6 +134,7 @@ class GameObject(object):
     def __init__(self, id, name='unnamed_gameobject', **kwargs):
         self.id = id
         self.name = name
+        self.destroyed = False
 
         # Update all attributes with kwargs
         self.__dict__.update(kwargs)
@@ -190,12 +200,19 @@ class Inventory(object):
     def item_in_inventory(self, id):
         return get_object_by_id(id) in self.slots
 
+    def is_equipped(self, id):
+        item_slot = get_object_by_id(id).equippable_slot
+        if item_slot:
+            return self.equip_slots[item_slot] == get_object_by_id(id)
+        else:
+            return False
+
     def equip_item(self, id):
         new_item = get_object_by_id(id)
         equip_slot = new_item.equippable_slot
 
         # If item has no equip slot, or has an invalid equip slot
-        if equip_slot not in game_constants.all_equip_slots:
+        if equip_slot not in template_constants.all_equip_slots:
             raise RuntimeError('{0} is not a valid equip_slot'.format(equip_slot))
 
         # If item isn't in inventory
@@ -241,10 +258,10 @@ class Stats(object):
     def __init__(self, **kwargs):
         # Make sure only kwargs passed in are valid stats
         for k, v in kwargs.items():
-            if k not in game_constants.all_stats:
+            if k not in template_constants.all_stats:
                 raise RuntimeError('{0} is not a valid stat'.format(k))
         # Create dict of all stat names and set default values to 0, update, and set as class attributes
-        base_dict = {stat_name: 0 for stat_name in game_constants.all_stats}
+        base_dict = {stat_name: 0 for stat_name in template_constants.all_stats}
         base_dict.update(kwargs)
         self.__dict__.update(base_dict)
 
@@ -260,6 +277,7 @@ class ItemGeneric(GameObject):
         self.name = name
         self.description = description
         self.equippable_slot = equippable_slot
+        self.anchored = False
 
 
 class ItemWeapon(ItemGeneric):
@@ -291,3 +309,9 @@ class ItemMisc(ItemGeneric):
         super(ItemMisc, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
         self.stats = item_stats
 
+
+class ItemProp(ItemGeneric):
+    def __init__(self, id, name='unnamed_misc', item_stats=None, description='', equippable_slot=None):
+        super(ItemMisc, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+        self.stats = item_stats
+        self.anchored = True

@@ -1,10 +1,12 @@
 # Weapon Template
 item_type:weapon
 name:name of weapon
+attack_verb:slashes
 description:description of weapon
 
 # Damage Types
-DMG:5
+PDMG:5
+MDMG:3
 
 # Properties (Any number)
 HP:4

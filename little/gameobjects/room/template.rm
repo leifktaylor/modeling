@@ -1,0 +1,18 @@
+# Room template
+# Room templates must contain these four sections, delimited by '*** section_name ***'
+
+*** settings ***
+name:Dark Hallway
+look:A dark and dreary hallway in a very smelly sewer.  Darkness extends in both directions.
+
+*** lifeforms ***
+lifeform/rat_man.lfm
+lifeform/rat_man.lfm
+lifeform/rat_man.lfm
+
+*** items ***
+potion/minor_health_potion.itm
+weapon/rusty_shiv.itm
+
+*** links ***
+rooms/anotherroom.rm

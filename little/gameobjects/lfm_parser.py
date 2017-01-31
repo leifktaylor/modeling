@@ -1,4 +1,8 @@
-import game_constants
+"""
+Parse .lfm (lifeform) template files and return dictionary response of parameters
+"""
+
+import template_constants
 import re
 
 
@@ -8,7 +12,7 @@ def list_lines_from_template(filename):
 
 
 def template_lines_to_dict(line_list):
-    base_dict = {stat: None for stat in game_constants.possible_stats}
+    base_dict = {stat: None for stat in template_constants.possible_stats}
 
     # Get rid of all comments in all lines
     uncommented = [line.split('#', 1)[0].rstrip() for line in line_list]

@@ -1,0 +1,16 @@
+# Weapon Template
+item_type:weapon
+name:Longsword
+attack_verb:slashes
+description:A sturdy, hefty, and imposing steel blade
+equippable_slot:right_hand
+
+# Damage Types
+PDMG:5
+
+# Properties (Any number)
+STA:1
+STR:1
+
+# misc stuff
+weight:4
