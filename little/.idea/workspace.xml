@@ -36,8 +36,8 @@
       <file leaf-file-name="gameobject.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gameobjects/gameobject.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="291">
-              <caret line="71" column="5" selection-start-line="71" selection-start-column="5" selection-end-line="71" selection-end-column="5" />
+            <state relative-caret-position="345">
+              <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
               <folding>
                 <element signature="e#30#44#0" expanded="true" />
               </folding>
@@ -979,8 +979,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gameobjects/gameobject.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="291">
-          <caret line="71" column="5" selection-start-line="71" selection-start-column="5" selection-end-line="71" selection-end-column="5" />
+        <state relative-caret-position="345">
+          <caret line="23" column="0" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
           <folding>
             <element signature="e#30#44#0" expanded="true" />
           </folding>

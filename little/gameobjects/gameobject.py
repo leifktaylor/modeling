@@ -54,13 +54,38 @@ def print_lifeform_stat(id, stat):
     print('{0}: {1} ({2}+{3})'.format(stat, total_stats, base_stats, stats_from_equip))
 
 
-def create_gameobject(type='GameObject', **kwargs):
-    id_list = [o.id for o in gc.get_objects() if isinstance(o, eval('GameObject'))]
-    if id_list:
-        id = max(id_list) + 1
-    else:
-        id = 1
-    return eval(type)(id, **kwargs)
+# Core Commands
+
+
+def dict_rooms(type='Room'):
+    return {o.name: o for o in gc.get_objects() if isinstance(o, eval(type))}
+
+
+def list_rooms():
+    return [o for o in gc.get_objects() if isinstance(o, eval('Room'))]
+
+
+def dict_gameobjects(type='GameObject'):
+    return {o.id: o for o in gc.get_objects() if isinstance(o, eval(type))}
+
+
+def get_object_by_id(id, type='GameObject'):
+    try:
+        game_object = dict_gameobjects(type=type)[id]
+        return game_object
+    except KeyError:
+        raise RuntimeError('Game object {0} does not exist'.format(id))
+
+
+def get_room_from_lifeform(id):
+    """
+    Returns reference to room where given id (lifeform) dwells, will return None if lifeform not in a room
+    """
+    for room in list_rooms():
+        for k, lifeform in room.lifeforms.items():
+            if lifeform.id == id:
+                return room
+    return None
 
 
 def get_stat_from_equipment(id, stat):
@@ -76,35 +101,13 @@ def get_stat_from_equipment(id, stat):
         return 0
 
 
-def dict_rooms(type='Room'):
-    return {o.name: o for o in gc.get_objects() if isinstance(o, eval(type))}
-
-
-def list_rooms():
-    return [o for o in gc.get_objects() if isinstance(o, eval('Room'))]
-
-
-def get_room_from_lifeform(id):
-    """
-    Returns reference to room where given id (lifeform) dwells, will return None if lifeform not in a room
-    """
-    for room in list_rooms():
-        for k, lifeform in room.lifeforms.items():
-            if lifeform.id == id:
-                return room
-    return None
-
-
-def dict_gameobjects(type='GameObject'):
-    return {o.id: o for o in gc.get_objects() if isinstance(o, eval(type))}
-
-
-def get_object_by_id(id, type='GameObject'):
-    try:
-        game_object = dict_gameobjects(type=type)[id]
-        return game_object
-    except KeyError:
-        raise RuntimeError('Game object {0} does not exist'.format(id))
+def create_gameobject(type='GameObject', **kwargs):
+    id_list = [o.id for o in gc.get_objects() if isinstance(o, eval('GameObject'))]
+    if id_list:
+        id = max(id_list) + 1
+    else:
+        id = 1
+    return eval(type)(id, **kwargs)
 
 
 def create_item_from_template(filename):
@@ -364,7 +367,7 @@ class ItemMisc(ItemGeneric):
 
 
 class ItemProp(ItemGeneric):
-    def __init__(self, id, name='unnamed_misc', item_stats=None, description='', equippable_slot=None):
+    def __init__(self, id, name='unnamed_prop', item_stats=None, description='', equippable_slot=None):
         super(ItemProp, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
         self.stats = item_stats
         self.anchored = True
