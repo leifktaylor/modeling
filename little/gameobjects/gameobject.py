@@ -68,7 +68,8 @@ def get_stat_from_equipment(id, stat):
     Returns total stat bonuses from equipment of given stat from given id
     """
     slots = get_object_by_id(id).inventory.equip_slots
-    values = [slots[k].stats.__getattribute__(stat) for k, v in slots.items() if slots[k]]
+    values = [v.stats.__getattribute__(stat) for k, v in slots.items() if v]
+    values = [item for item in values if item is not None]
     if values:
         return sum(values)
     else:

@@ -1,16 +1,16 @@
 # Weapon Template
 lifeform_type:LifeForm
-name:Rat Man
-description:Life in the sewers, and a diet of rats... You are what you eat!
+name:Mercenary
+description:This particular mercenary has been trained to hunt apprentice magicians.
 
 # Stats
-HP:9
+HP:16
 MP:4
-STR:3
+STR:4
 MND:2
-STA:5
-SPD:2
-MDEF:2
+STA:6
+SPD:3
+MDEF:5
 PDEF:2
 
 # Inventory

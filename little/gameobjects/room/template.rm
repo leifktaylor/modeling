@@ -3,19 +3,19 @@
 
 *** settings ***
 name:Dark Hallway
-atenter: As you enter the hallway, you hear nothing but water dripping and a slight breeze.
-atexit: You proceed down the hallway.
-look: The walls are covered in slime.  What a horrid place.
-listen: You think you hear a distant moaning sound.
+atenter:As you enter the hallway, you hear nothing but water dripping and a slight breeze.
+atexit:You proceed down the hallway.
+look:The walls are covered in slime.  What a horrid place.
+listen:You think you hear a distant moaning sound.
 
 *** lifeforms ***
-lifeform/rat_man.lfm
-lifeform/rat_man.lfm
-lifeform/rat_man.lfm
+gameobjects/lifeform/rat_man.lfm
+gameobjects/lifeform/rat_man.lfm
+gameobjects/lifeform/rat_man.lfm
 
 *** items ***
-potion/minor_health_potion.itm
-weapon/rusty_shiv.itm
+gameobjects/potion/minor_health_potion.itm
+gameobjects/weapon/rusty_shiv.itm
 
 *** links ***
-rooms/anotherroom.rm
+gameobjects/rooms/anotherroom.rm

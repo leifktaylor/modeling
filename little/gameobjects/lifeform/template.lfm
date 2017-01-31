@@ -16,8 +16,8 @@ PDEF:3
 # Inventory
 # <slot>:<path/to/template> <equipped (boolean)> <drop_chance percent (int)>
 slots:10
-slot0:apparel/linen_shirt.itm True 20
-slot1:potion/minor_health_potion.itm False 10
-slot2:potion/major_health_potion.itm False 15
+slot0:gameobjects/apparel/linen_shirt.itm True 20
+slot1:gameobjects/potion/minor_health_potion.itm False 10
+slot2:gameobjects/potion/major_health_potion.itm False 15
 
 # Skills TODO

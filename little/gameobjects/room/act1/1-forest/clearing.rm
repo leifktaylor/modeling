@@ -9,14 +9,16 @@ look:Nothing surrounds you but trees, and darkness.
 listen:You hear distant night birds, and other less friendly sounding creatures.
 
 *** lifeforms ***
-lifeform/rat_man.lfm
-lifeform/rat_man.lfm
-lifeform/rat_man.lfm
+gameobjects/lifeform/rat_man.lfm
+gameobjects/lifeform/rat_man.lfm
+gameobjects/lifeform/rat_man.lfm
+gameobjects/lifeform/mercenary.lfm
+gameobjects/lifeform/mercenary.lfm
 
 *** items ***
-potion/minor_health_potion.itm
-weapon/rusty_shiv.itm
-prop/boulder.itm
+gameobjects/potion/minor_health_potion.itm
+gameobjects/weapon/rusty_shiv.itm
+gameobjects/prop/boulder.itm
 
 *** links ***
-rooms/anotherroom.rm
+gameobjects/rooms/anotherroom.rm
