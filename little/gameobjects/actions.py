@@ -1,4 +1,5 @@
 from gameobject import get_object_by_id
+from gameobject import get_room_from_lifeform
 import random
 
 
@@ -41,4 +42,7 @@ def do_damage(target, amount):
     target.stats.HP -= amount
     if target.stats.HP <= 0:
         target.destroyed = True
+        room = get_room_from_lifeform(target.id)
+        room.remove_gameobject_by_id(target.id)
+    # TODO: drops
 

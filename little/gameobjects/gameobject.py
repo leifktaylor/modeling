@@ -10,6 +10,17 @@ import rm_parser
 
 
 # gc.collect()   -- this will garbage collect actively
+def print_room_contents(room):
+    """
+    Rooms do not have ids, use a reference to room instance as argument
+    """
+    roomitems = room.items
+    for k, v in room.lifeforms.items():
+        print('[{0}]: {1}'.format(k, v.name))
+    for k, v in roomitems.items():
+        print('[{0}]: {1}'.format(k, v.name))
+    for k, v in room.links.items():
+        print('[{0}]: {1}'.format(k, v))
 
 
 def print_lifeform_inventory(id):
@@ -68,6 +79,21 @@ def dict_rooms(type='Room'):
     return {o.name: o for o in gc.get_objects() if isinstance(o, eval(type))}
 
 
+def list_rooms():
+    return [o for o in gc.get_objects() if isinstance(o, eval('Room'))]
+
+
+def get_room_from_lifeform(id):
+    """
+    Returns reference to room where given id (lifeform) dwells, will return None if lifeform not in a room
+    """
+    for room in list_rooms():
+        for k, lifeform in room.lifeforms.items():
+            if lifeform.id == id:
+                return room
+    return None
+
+
 def dict_gameobjects(type='GameObject'):
     return {o.id: o for o in gc.get_objects() if isinstance(o, eval(type))}
 
@@ -119,8 +145,16 @@ def create_lifeform_from_template(filename):
 
 
 def create_room_from_template(filename):
-    # TODO
-    pass
+    properties = rm_parser.dict_lines(filename)
+    lifeforms = [create_lifeform_from_template(path) for path in properties['lifeforms']]
+    items = [create_item_from_template(path) for path in properties['items']]
+    # TODO linking
+    links = properties['links']
+    settings = properties['settings']
+    room = Room(name=settings['name'], atenter=settings['atenter'], atexit=settings['atexit'], look=settings['look'],
+                listen=settings['listen'], lifeforms=lifeforms, items=items, links=links)
+    return room
+
 
 # Classes
 
@@ -129,13 +163,23 @@ class Room(object):
     """
     This is a room class.
     """
-    def __init__(self, name, contents=None, **kwargs):
+    def __init__(self, name='unnamed_room', atenter='', atexit='', look='', listen='',
+                 lifeforms=None, items=None, links=None):
         self.name = name
-        if contents:
-            self.contents = contents
-        else:
-            self.contents = {}
-    # TODO
+        self.atenter = atenter
+        self.atexit = atexit
+        self.look = look
+        self.listen = listen
+        self.lifeforms = {i: lifeform for i, lifeform in enumerate(lifeforms)} if lifeforms else {}
+        next_i = len(self.lifeforms)
+        self.items = {i+next_i: item for i, item in enumerate(items)} if items else {}
+        next_i = len(self.items) + len(self.lifeforms)
+        self.links = {i+next_i: link for i, link in enumerate(links)} if links else {}
+
+    def remove_gameobject_by_id(self, id):
+        for k, lifeform in self.lifeforms.items():
+            if lifeform.id == id:
+                del self.lifeforms[k]
 
 
 class GameObject(object):
@@ -320,6 +364,6 @@ class ItemMisc(ItemGeneric):
 
 class ItemProp(ItemGeneric):
     def __init__(self, id, name='unnamed_misc', item_stats=None, description='', equippable_slot=None):
-        super(ItemMisc, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+        super(ItemProp, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
         self.stats = item_stats
         self.anchored = True

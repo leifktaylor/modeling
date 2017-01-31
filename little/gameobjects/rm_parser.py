@@ -9,7 +9,8 @@ def list_lines_from_template(filename):
 
 
 def template_lines_to_dict(line_list):
-    base_dict = {'settings': None, 'lifeforms': None, 'items': None, 'links': None}
+    base_dict = {'settings': {'atenter': None, 'atexit': None, 'look': None, 'listen': None, 'name': None},
+                 'lifeforms': None, 'items': None, 'links': None}
 
     # Get rid of all comments in all lines
     uncommented = [line.split('#', 1)[0].rstrip() for line in line_list]
@@ -36,10 +37,10 @@ def template_lines_to_dict(line_list):
     # Convert strings of digits to integers, and string booleans to python booleans
     for k, v in settings_dict.items():
         if v.isdigit():
-            settings_dict[k] = int(line_dict[k])
+            settings_dict[k] = int(settings_dict[k])
         elif v.lower() in ['yes', 'true']:
             settings_dict[k] = stringtobool(settings_dict[k])
-    base_dict['settings'] = settings_dict
+    base_dict['settings'].update(settings_dict)
 
     return base_dict
 
