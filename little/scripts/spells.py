@@ -1,1 +1,2 @@
-def fire_ball
+def fire_ball():
+    pass
