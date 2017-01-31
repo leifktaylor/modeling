@@ -23,12 +23,8 @@ def basic_attack(source, target):
     target_pdef = target.stats.PDEF
     target_mdef = target.stats.MDEF
 
-    pdiff = source_pdmg - target_pdef
-    mdiff = source_mdmg - target_mdef
-    if pdiff < 0:
-        pdiff = 0
-    if mdiff < 0:
-        mdiff = 0
+    pdiff = source_pdmg - target_pdef if source_pdmg - target_pdef >= 0 else 0
+    mdiff = source_mdmg - target_mdef if source_mdmg - target_mdef >= 0 else 0
 
     source_attack_rating = (source.stats.STR * pdiff) + (source.stats.MND * mdiff)
 

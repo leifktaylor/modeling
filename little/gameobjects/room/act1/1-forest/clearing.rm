@@ -1,5 +1,5 @@
 # Room template
-# Room templates must contain these four sections, delimited by '*** section_name ***'
+# Room templates must contain these four sections, delimited by '*** section_name ***', even if sections left empty
 
 *** settings ***
 name:Forest Clearing
