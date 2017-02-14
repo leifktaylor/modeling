@@ -14,12 +14,17 @@ def basic_attack(source, target):
 
     source_pdmg = 0
     source_mdmg = 0
-    for hand in [right_hand, left_hand]:
-        if hand:
-            if hand.stats.MDMG:
-                source_mdmg += hand.stats.MDMG
-            if hand.stats.PDMG:
-                source_pdmg += hand.stats.PDMG
+    # if weapon(s) equipped, use their MDMG and PDMG stats
+    if right_hand or left_hand:
+        for hand in [right_hand, left_hand]:
+            if hand:
+                if hand.stats.MDMG:
+                    source_mdmg += hand.stats.MDMG
+                if hand.stats.PDMG:
+                    source_pdmg += hand.stats.PDMG
+    else:
+        # if no weapon equipped just use STR stat
+        source_pdmg = source.stats.STR
 
     target_pdef = target.stats.PDEF
     target_mdef = target.stats.MDEF

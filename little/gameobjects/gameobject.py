@@ -7,7 +7,7 @@ import gc
 import itm_parser
 import lfm_parser
 import rm_parser
-
+import pickle
 
 # gc.collect()   -- this will garbage collect actively
 def print_room_contents(room):
@@ -158,6 +158,19 @@ def create_room_from_template(filename):
     room = Room(name=settings['name'], atenter=settings['atenter'], atexit=settings['atexit'], look=settings['look'],
                 listen=settings['listen'], lifeforms=lifeforms, items=items, links=links)
     return room
+
+
+def save_lifeform(lifeform, filename):
+    with open(filename, 'wb') as f:
+        pickle.dump(lifeform, f, protocol=pickle.HIGHEST_PROTOCOL)
+        f.close()
+
+
+def load_lifeform(filename):
+    with open(filename, 'rb') as f:
+        lifeform = pickle.load(f)
+        f.close()
+    return lifeform
 
 
 # Classes
