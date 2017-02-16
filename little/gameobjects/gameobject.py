@@ -9,6 +9,7 @@ import lfm_parser
 import rm_parser
 import pickle
 
+
 # gc.collect()   -- this will garbage collect actively
 def print_room_contents(room):
     """
@@ -70,6 +71,7 @@ def dict_gameobjects(type='GameObject'):
 
 
 def get_object_by_id(id, type='GameObject'):
+    id = int(id)
     try:
         game_object = dict_gameobjects(type=type)[id]
         return game_object
@@ -200,10 +202,12 @@ class Room(object):
 
 
 class GameObject(object):
-    def __init__(self, id, name='unnamed_gameobject', **kwargs):
+    def __init__(self, id, name='unnamed_gameobject', coords=(0, 0), graphic=None, **kwargs):
         self.id = id
         self.name = name
         self.destroyed = False
+        self.coords = coords
+        self.graphic = graphic
 
         # Update all attributes with kwargs
         self.__dict__.update(kwargs)
@@ -214,8 +218,8 @@ class GameObject(object):
 
 
 class LifeForm(GameObject):
-    def __init__(self, id, name='unnamed_lifeform', stats=None, inventory=None, **kwargs):
-        super(LifeForm, self).__init__(id=id, name=name, **kwargs)
+    def __init__(self, id, name='unnamed_lifeform', coords=(0, 0), stats=None, inventory=None, graphic=None, **kwargs):
+        super(LifeForm, self).__init__(id=id, name=name, coords=coords, graphic=graphic, **kwargs)
         if not stats:
             self.stats = Stats()
         else:
@@ -224,6 +228,36 @@ class LifeForm(GameObject):
             self.inventory = Inventory()
         else:
             self.inventory = inventory
+
+    def move(self, direction):
+        pass
+
+    def teleport(self, room, coords):
+        pass
+
+    def talk(self, dialogue):
+        pass
+
+    def cast(self, targetid=None, spellid=None):
+        pass
+
+    def attack(self, targetid):
+        pass
+
+    def equip_item(self, id):
+        return self.inventory.equip_item(id)
+
+    def unequip_item(self, equip_slot):
+        return self.inventory.unequip_item(equip_slot)
+
+    def add_item(self, id):
+        return self.inventory.add_item(id)
+
+    def drop_item(self, id):
+        return self.inventory.drop_item(id)
+
+    def use_item(self, id):
+        return self.inventory.use_item(id)
 
 
 class Inventory(object):
@@ -256,15 +290,6 @@ class Inventory(object):
             if slot is None:
                 self.slots.insert(i, item_to_add)
                 break
-
-    def drop_item(self, id):
-        # Confirm item is in inventory
-        # Confirm item is not equipped
-        # Drop item from inventory (replace with None) | later put on ground?
-        pass
-
-    def trade_item(self, item_id, target_id):
-        pass
 
     def item_in_inventory(self, id):
         return get_object_by_id(id) in self.slots
@@ -318,8 +343,17 @@ class Inventory(object):
         # Remove item from equipped slot
         self.equip_slots[equip_slot] = None
 
-    def use_item(self):
+    def use_item(self, id):
         # Check if item has 'OnUse'
+        pass
+
+    def drop_item(self, id):
+        # Confirm item is in inventory
+        # Confirm item is not equipped
+        # Drop item from inventory (replace with None) | later put on ground?
+        pass
+
+    def trade_item(self, item_id, target_id):
         pass
 
 
@@ -341,46 +375,73 @@ class ItemStats(object):
 
 
 class ItemGeneric(GameObject):
-    def __init__(self, id, name='unnamed_generic_item', description='', equippable_slot=None):
-        super(ItemGeneric, self).__init__(id=id)
+    def __init__(self, id, name='unnamed_generic_item', coords=(0, 0), description='', graphic=None,
+                 equippable_slot=None):
+        super(ItemGeneric, self).__init__(id=id, coords=coords, graphic=graphic)
         self.name = name
         self.description = description
         self.equippable_slot = equippable_slot
         self.anchored = False
+        # Only if the object is in the room will the coords and graphic will be displayed.
+        self.coords = coords
 
 
 class ItemWeapon(ItemGeneric):
-    def __init__(self, id, name='unnamed_weapon', item_stats=None, description='', equippable_slot=None):
-        super(ItemWeapon, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+    def __init__(self, id, name='unnamed_weapon', item_stats=None, description='', equippable_slot=None,
+                 coords=(0, 0), graphic=None):
+        super(ItemWeapon, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot,
+                                         coords=coords, graphic=graphic)
         self.stats = item_stats
 
 
 class ItemIngredient(ItemGeneric):
-    def __init__(self, id, name='unnamed_ingredient', item_stats=None, description='', equippable_slot=None):
-        super(ItemIngredient, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+    def __init__(self, id, name='unnamed_ingredient', item_stats=None, description='', equippable_slot=None,
+                 coords=(0, 0), graphic=None):
+        super(ItemIngredient, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot,
+                                             coords=coords, graphic=graphic)
         self.stats = item_stats
 
 
 class ItemApparel(ItemGeneric):
-    def __init__(self, id, name='unnamed_apparel', item_stats=None, description='', equippable_slot=None):
-        super(ItemApparel, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+    def __init__(self, id, name='unnamed_apparel', item_stats=None, description='', equippable_slot=None,
+                 coords=(0, 0), graphic=None):
+        super(ItemApparel, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot,
+                                          coords=coords, graphic=graphic)
         self.stats = item_stats
 
 
 class ItemPotion(ItemGeneric):
-    def __init__(self, id, name='unnamed_potion', item_stats=None, description='', equippable_slot=None):
-        super(ItemPotion, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+    def __init__(self, id, name='unnamed_potion', item_stats=None, description='', equippable_slot=None,
+                 coords=(0, 0), graphic=None):
+        super(ItemPotion, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot,
+                                         coords=coords, graphic=graphic)
         self.stats = item_stats
 
 
 class ItemMisc(ItemGeneric):
-    def __init__(self, id, name='unnamed_misc', item_stats=None, description='', equippable_slot=None):
-        super(ItemMisc, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+    def __init__(self, id, name='unnamed_misc', item_stats=None, description='', equippable_slot=None,
+                 coords=(0, 0), graphic=None):
+        super(ItemMisc, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot,
+                                       coords=coords, graphic=graphic)
         self.stats = item_stats
 
 
 class ItemProp(ItemGeneric):
-    def __init__(self, id, name='unnamed_prop', item_stats=None, description='', equippable_slot=None):
-        super(ItemProp, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot)
+    def __init__(self, id, name='unnamed_prop', item_stats=None, description='', equippable_slot=None,
+                 coords=(0, 0), graphic=None):
+        super(ItemProp, self).__init__(id=id, name=name, description=description, equippable_slot=equippable_slot,
+                                       coords=coords, graphic=graphic)
         self.stats = item_stats
         self.anchored = True
+
+
+class Graphic(object):
+    def __init__(self, images=None):
+        """
+        :param images: list of paths to images
+        """
+        self.images = images
+        if images:
+            self.image = images[0]
+        else:
+            self.image = None

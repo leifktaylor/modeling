@@ -1,11 +1,29 @@
 import socket, select, pickle
 import atexit
 import time
+from gameobjects.gameobject import get_object_by_id, get_room_from_lifeform
+import sys
+import StringIO
+import contextlib
 
 
-class Thingy(object):
-    def __init__(self, name='Harold'):
-        self.name = name
+@contextlib.contextmanager
+def stdoutIO(stdout=None):
+    old = sys.stdout
+    if stdout is None:
+        stdout = StringIO.StringIO()
+    sys.stdout = stdout
+    yield stdout
+    sys.stdout = old
+
+
+def execute_command(command):
+    with stdoutIO() as s:
+        try:
+            exec(command)
+            return s.getvalue()
+        except:
+            return 'ERROR'
 
 
 class GameServer(object):
@@ -51,21 +69,30 @@ class GameServer(object):
                 request = client.recv(1024)
                 if request:
                     data = pickle.loads(request)
-                    username = data[0][0]
-                    password = data[0][1]
-                    command = data[1]
-                    print('Username: {0}, Password: {1}, Request: {2}'.format(username, password, command))
-                    response = self.decode_and_respond(command)
+                    print(data)
+                    response = self.decode_and_respond(data)
                     client.send(pickle.dumps(response))
                 client.close()
 
     def decode_and_respond(self, data):
-        action = self.parse_request(data)
-        # Then do the action server side
-        # Then return that action's output to the client
+        if 'login:' in data[1]:
+            # TODO:
+            items = data[1].split()
+            playername = items[0].split(':')[1]
+            username = items[1].split(':')[1]
+            password = items[1].split(':')[1]
+            # find player json matching playername, make sure username and password correct
 
-        # temp
-        return action
+            # instantiate player and place in player's current room
+
+            # return object id to client and room instance
+            response = [5, room_instance]
+        else:
+            # Execute cli command from client
+            r = execute_command(data[1])
+            # Return updated room of player instance
+            response = get_room_from_lifeform(data[0])
+        return response
 
     def parse_request(self, request):
         """
