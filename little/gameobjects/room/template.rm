@@ -3,6 +3,7 @@
 
 *** settings ***
 name:Dark Hallway
+uniquename:dk_hallway1
 atenter:As you enter the hallway, you hear nothing but water dripping and a slight breeze.
 atexit:You proceed down the hallway.
 look:The walls are covered in slime.  What a horrid place.

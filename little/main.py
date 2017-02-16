@@ -60,8 +60,6 @@ if client.action or heartbeat == timer:
         client.update_room_graphics()  # Update room graphics (objects on tiles, etc)
 """
 
-
-
 def main():
     # initialize pygame
     pygame.init()

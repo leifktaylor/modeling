@@ -22,7 +22,7 @@ class GameClient(object):
     use_item <itemid>
 
     """
-    def __init__(self, playername=None, ip='127.0.0.1', username='admin', password='password'):
+    def __init__(self, playername='Mike', ip='127.0.0.1', username='leif', password='mypw'):
         # Character is the unique character name on server
         self.playername = playername
         self.playerid = None
@@ -46,11 +46,22 @@ class GameClient(object):
     def send(self, request):
         if not self.server:
             self.connect(ip=self.ip)
-        if not self.clisession:
-            self.load_player_on_server()
+            print('Connected')
+        if not self.playerid:
+            return self.load_player_on_server()
+
+        # Ask for broadcasts from other players
+        self.server.send(pickle.dumps('broadcast?'))
+        data = self.server.recv(1024)
+        if data:
+            data = pickle.loads(data)
+            print(data)
+        # TODO: This broadcast data needs something to be done with it
+
+        # Issue command on server
         request = pickle.dumps([self.playerid, request])
         self.server.send(request)
-        data = self.server.recv(1024)
+        data = self.server.recv(256000)
         if data:
             data = pickle.loads(data)
         self.disconnect()
@@ -78,13 +89,17 @@ class GameClient(object):
         # Send playername, username and password to server
         request = pickle.dumps([None, 'login:{0} username:{1} password:{2}'.format(self.playername,
                                                                                    self.username, self.password)])
+        print('sending:\n{0}'.format(request))
         self.server.send(request)
 
         # Server queries list of json files and finds player, instantiates in game, and returns gameobject id, and
         # current room instance
-        data = self.server.recv(1024)
+        print('Awaiting response from server...')
+        data = self.server.recv(256000)
+        print('Received response:\n{0}'.format(data))
         if data:
             data = pickle.loads(data)
+            print('Unpickled data:\n{0}'.format(data))
         self.disconnect()
 
         # Server returns objectid of player instance
@@ -97,7 +112,8 @@ class GameClient(object):
 
         # Player is granted control of character
 
-
+        # TODO: just for now!
+        return data
 
 # if __name__ == '__main__':
 #     a = GameClient()
