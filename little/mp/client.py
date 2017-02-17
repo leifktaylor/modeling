@@ -11,6 +11,7 @@ class GameClient(object):
         (up, left, right, down)
     teleport <zone> <x> <y>
 
+    talk <dialogue> <targetid>
     attack <id>
     cast <id> <spell>
 
@@ -18,7 +19,7 @@ class GameClient(object):
     unequip_item <equip_slot>
     drop_item <itemid>
     add_item <itemid>
-    trade_item <itemid> <targetid>
+    give_item <itemid> <targetid>
     use_item <itemid>
 
     """
@@ -26,6 +27,9 @@ class GameClient(object):
         # Character is the unique character name on server
         self.playername = playername
         self.playerid = None
+
+        # Gameplay attributes
+        self.target = None
 
         self.ip = ip
         self.password = password
@@ -72,7 +76,7 @@ class GameClient(object):
         Convert cli command like:
             'move right'
         To python command like:
-            get_object_by_id(5).move('right')
+            'get_object_by_id(5).move('right')'
         :param cli_command: valid cli command (see class docstring)
         :return: python command as string
         """
@@ -114,6 +118,12 @@ class GameClient(object):
 
         # TODO: just for now!
         return data
+
+    # Gameplay methods
+    def talk(self, dialogue):
+        if not self.target:
+
+
 
 # if __name__ == '__main__':
 #     a = GameClient()

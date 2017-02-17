@@ -1,5 +1,5 @@
 import os
-from gameobject import save_lifeform, create_lifeform_from_template
+from gameobjects.gameobject import save_lifeform, create_lifeform_from_template
 
 
 def calculate_stats(STR, MND, STA, SPD):
@@ -83,12 +83,12 @@ while True:
     if choice.lower() == 'y':
         break
 
-cwd = os.getcwd()
-filepath = '{0}/lifeform/{1}'.format(cwd, filename)
+# cwd = os.getcwd()
+filepath = 'gameobjects/lifeform/{0}'.format(filename)
 with open(filepath, 'w+') as f:
     for line in [name, lifeform_type, description, STR, STA, MND, SPD, HP, MP, MDEF, PDEF]:
         f.write('{0}\n'.format(line))
     f.close()
 
 lifeform_instance = create_lifeform_from_template(filepath)
-save_lifeform(lifeform_instance, '{0}.sav'.format(name.replace('name:', '')))
+save_lifeform(lifeform_instance, 'mp/users/{0}.sav'.format(name.replace('name:', '')))

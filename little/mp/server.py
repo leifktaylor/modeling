@@ -84,6 +84,8 @@ class GameServer(object):
                         print(data)
                         client.send(data)
                     else:
+                        # This was most likely a log in message in this case, so decode and respond to it.
+                        # In the event that it was not a login message, this may err.
                         response = self.decode_and_respond(request)
                         response = pickle.dumps(response)
                         client.send(response)
@@ -91,6 +93,7 @@ class GameServer(object):
                         return
 
                 # Send updated room instance (big data)
+                # TODO eventually, send some sort of facimili-reduced version of a room instance
                 request = client.recv(256000)
                 if request:
                     data = pickle.loads(request)

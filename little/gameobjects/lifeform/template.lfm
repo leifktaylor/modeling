@@ -2,6 +2,7 @@
 lifeform_type:LifeForm
 name:generic_lifeform
 description:a lonely gentlemen
+dialogue:gameobjects/lifeform/dialogue/template.dlg
 
 # Stats
 HP:4

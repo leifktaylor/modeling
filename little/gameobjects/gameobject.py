@@ -7,6 +7,7 @@ import gc
 import itm_parser
 import lfm_parser
 import rm_parser
+import dlg_parser
 import pickle
 import json
 import os
@@ -157,7 +158,14 @@ def create_lifeform_from_template(filename):
 
     # Drop rate TODO
 
-    lifeform = create_gameobject(type='LifeForm', name=properties['name'], stats=stats, inventory=inventory)
+    # Dialogue fix if no dialogue
+    try:
+        dialogue = properties['dialogue']
+    except KeyError:
+        dialogue = None
+
+    lifeform = create_gameobject(type='LifeForm', name=properties['name'], stats=stats, inventory=inventory,
+                                 dialogue=dialogue)
     return lifeform
 
 
@@ -172,6 +180,10 @@ def create_room_from_template(filename):
                 listen=settings['listen'], lifeforms=lifeforms, items=items, links=links,
                 uniquename=settings['uniquename'])
     return room
+
+
+def create_dialogue_from_template(filename):
+    return dlg_parser.dict_lines(filename)
 
 
 def save_lifeform(lifeform, filename):
@@ -237,18 +249,36 @@ class Room(object):
         self.links = {i+next_i: link for i, link in enumerate(links)} if links else {}
 
     def remove_gameobject_by_id(self, id):
+        # TODO: Make this work for items and links
         for k, lifeform in self.lifeforms.items():
             if lifeform.id == id:
                 del self.lifeforms[k]
 
+    def add_lifeform_by_id(self, id, coords):
+        lifeform = get_object_by_id(id)
+        new_lifeform_key = max(self.lifeforms.keys()) + 1
+        self.lifeforms[new_lifeform_key] = lifeform
+        lifeform.coords = coords
+
+    def add_item_by_id(self, id, coords):
+        item = get_object_by_id(id)
+        new_item_key = max(self.items.keys()) + 1
+        self.items[new_item_key] = item
+        item.coords = coords
+
+    def add_link(self, filename):
+        new_link_key = max(self.links.keys()) + 1
+        self.links[new_link_key] = filename
+
 
 class GameObject(object):
-    def __init__(self, id, name='unnamed_gameobject', coords=(0, 0), graphic=None, **kwargs):
+    def __init__(self, id, name='unnamed_gameobject', coords=(0, 0), graphic=None, dialogue=None, **kwargs):
         self.id = id
         self.name = name
         self.destroyed = False
         self.coords = coords
         self.graphic = graphic
+        self.dialogue = create_dialogue_from_template(dialogue) if dialogue else None
 
         # Update all attributes with kwargs
         self.__dict__.update(kwargs)
@@ -259,8 +289,9 @@ class GameObject(object):
 
 
 class LifeForm(GameObject):
-    def __init__(self, id, name='unnamed_lifeform', coords=(0, 0), stats=None, inventory=None, graphic=None, **kwargs):
-        super(LifeForm, self).__init__(id=id, name=name, coords=coords, graphic=graphic, **kwargs)
+    def __init__(self, id, name='unnamed_lifeform', coords=(0, 0), stats=None, inventory=None, graphic=None,
+                 dialogue=None, target=None, **kwargs):
+        super(LifeForm, self).__init__(id=id, name=name, coords=coords, graphic=graphic, dialogue=dialogue, **kwargs)
         if not stats:
             self.stats = Stats()
         else:
@@ -269,6 +300,8 @@ class LifeForm(GameObject):
             self.inventory = Inventory()
         else:
             self.inventory = inventory
+
+        self.target = target
 
     def move(self, direction):
         pass
@@ -299,6 +332,127 @@ class LifeForm(GameObject):
 
     def use_item(self, id):
         return self.inventory.use_item(id)
+
+    def give_item(self, id, targetid):
+        pass
+
+    def talk(self, dialogue, targetid):
+        other = get_object_by_id(targetid)
+        try:
+            response = other.respond([self.id, dialogue])
+        except AttributeError:
+            response = 'Cannot speak to that!'
+        return response
+
+    def respond(self, dialogue_command):
+        """
+        Parse dialogue command and respond with conversation string as well as perform any required actions
+        :param dialogue_command: list like: [<playerid>, 'hello how are you?']
+        :return: respone dialogue string
+        """
+        if not self.dialogue:
+            return None
+        otherid = dialogue_command[0]
+        dialogue = dialogue_command[1]
+        response_list = []
+        for word in dialogue.split():
+            if word[-1] == '?' or word[-1] == '.':
+                word = word[:-1]
+            if word in self.dialogue.keys():
+                response_list = self.dialogue[word]
+                break
+        if response_list:
+            dialogue_actions = [line for line in response_list if line[0] == '{' and line[-1] == '}']
+            dialogue_actions = [line.replace('{', '').replace('}', '') for line in dialogue_actions]
+            # Check if there is a prerequisite (need) block in the actions and abort if not satisfied
+            for i, action in enumerate(dialogue_actions):
+                if action.split()[0] == 'need':
+                    required_item_template = action.split()[1]
+                    required_item = create_item_from_template(required_item_template)
+                    if get_object_by_id(otherid).inventory.item_name_in_inventory(required_item.name):
+                        dialogue_actions.pop(i)
+            # Now confirm if all needed items are popped from list, if not, don't allow conversation
+            for action in dialogue_actions:
+                if action.split()[0] == 'need':
+                    return 'You lack a required item'
+
+            # If this block is reached, all 'need' checks have passed, perform required actions
+            err = self.parse_and_execute_dialogue_actions(dialogue_actions, otherid)
+            if err:
+                return 'Something went wrong'
+
+            # Lastly, return dialogue response
+            return [line for line in response_list if line[0] != '{' and line[-1] != '}']
+        else:
+            return None
+
+    def parse_and_execute_dialogue_actions(self, dialogue_actions, targetid):
+        for action in dialogue_actions:
+            try:
+                targetplayer = get_object_by_id(targetid)
+                command = action.split()[0]
+                params = action.split()[1:]
+
+                if command == 'give':
+                    # Create item and give to target player
+                    item = create_item_from_template(params[0])
+                    targetplayer.add_item(item.id)
+
+                elif command == 'take':
+                    # If player has item in inventory, take it, if item is equipped, unequip it first
+                    required_item_template = params[0]
+                    required_item = create_item_from_template(required_item_template)
+                    if targetplayer.inventory.item_name_in_inventory(required_item.name):
+                        itemid = targetplayer.inventory.get_itemid_in_inventory_by_name(required_item.name)
+                        if itemid:
+                            if targetplayer.inventory.is_equipped(itemid):
+                                targetplayer.unequip_item(itemid)
+                            targetplayer.drop_item(itemid)
+                        else:
+                            pass
+
+                elif command == 'teleport':
+                    # Teleport player to target room and coords
+                    room = get_room_from_uniquename(params[0])
+                    coords = (int(params[1]), int(params[2]))
+                    targetplayer.teleport(room, coords)
+
+                elif command == 'cast':
+                    # Cast spell on player
+                    self.cast(targetplayer.id, params[0])
+
+                elif command == 'dialogue':
+                    # Switch to new dialogue script
+                    dialogue = create_dialogue_from_template(params[0])
+                    self.dialogue = dialogue
+
+                elif command == 'remove self':
+                    # Remove self from game
+                    room = get_room_from_lifeform(self.id)
+                    room.remove_gameobject_by_id(self.id)
+
+                elif command == 'spawn':
+                    # Spawn lifeform in room
+                    lifeform = create_lifeform_from_template(params[0])
+                    coords = (int(params[1]), int(params[2]))
+                    room = get_room_from_lifeform(self.id)
+                    room.add_lifeform_by_id(lifeform.id, coords)
+            except:
+                return 1
+        return 0
+
+
+        # give
+
+        # take
+
+        # teleport
+
+        # cast
+
+        # dialogue
+
+        pass
 
 
 class Inventory(object):
@@ -334,6 +488,20 @@ class Inventory(object):
 
     def item_in_inventory(self, id):
         return get_object_by_id(id) in self.slots
+
+    def item_name_in_inventory(self, name):
+        for item in self.slots:
+            if item:
+                if item.name == name:
+                    return True
+        return False
+
+    def get_itemid_in_inventory_by_name(self, name):
+        for item in self.slots:
+            if item:
+                if item.name == name:
+                    return item.id
+        return None
 
     def is_equipped(self, id):
         item_slot = get_object_by_id(id).equippable_slot
@@ -394,7 +562,7 @@ class Inventory(object):
         # Drop item from inventory (replace with None) | later put on ground?
         pass
 
-    def trade_item(self, item_id, target_id):
+    def give_item(self, item_id, target_id):
         pass
 
 
