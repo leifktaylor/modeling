@@ -60,6 +60,7 @@ if client.action or heartbeat == timer:
         client.update_room_graphics()  # Update room graphics (objects on tiles, etc)
 """
 
+
 def main():
     # initialize pygame
     pygame.init()
@@ -71,10 +72,10 @@ def main():
     # create an input with a max length of 45,
     # and a red color and a prompt saying 'type here: '
     text_box = eztext.Input(maxlength=90, color=(255, 255, 255), x=0, y=590,
-                            font=pygame.font.Font(None, 22), prompt=': ')
+                            font=pygame.font.Font(None, 24), prompt=': ')
 
     # Create InputLog
-    inputlog = InputLog(coords=(0, 570))
+    inputlog = InputLog(coords=(0, 570), size=24, max_length=10)
 
     # create the pygame clock
     clock = pygame.time.Clock()

@@ -1,6 +1,6 @@
 # Weapon Template
 lifeform_type:LifeForm
-name:generic_lifeform
+name:Old Joe
 description:a lonely gentlemen
 dialogue:gameobjects/lifeform/dialogue/template.dlg
 
