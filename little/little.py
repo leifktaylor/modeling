@@ -10,72 +10,58 @@ pip install pytmx
 """
 from __future__ import division
 
-
 import pygame
 from pygame.locals import *
+
 from pytmx.util_pygame import load_pygame
-
-from mp.client import PacketSizeMismatch
-
 import pyscroll
 import pyscroll.data
 from pyscroll.group import PyscrollGroup
 
 import graphics.eztext as eztext
-
 from graphics.graphictext import draw_lines, draw_text, InputLog, InventoryBox
-from mp.client import GameClient
 
+from functions.math import negpos
+from mp.client import PacketSizeMismatch
+from mp.client import GameClient
 from gameobjects.gameobject import load_lifeform, get_object_by_id
 
 
-# define tile size
+# Player starting room
+STARTING_ROOM = 'gameobjects/room/test8.tmx'
+# Player starting position
+STARTING_POSITION = [160, 160]
+# Default run speed
+MOVE_TIME = 8
+
+# Default Resolution
+DEFAULT_RESOLUTION = (1600, 900)
+# Default Font
+FONT = None
+
+# size of walkable tile
 TILE_SIZE = 8
 # define rate that the server is polled, lower number means more polling
 POLL_RATE = 10
-# debug mode
+# debug messages displayed on screen
 DEBUG_MODE = True
+# Pyscroll default layer
+DEFAULT_LAYER = 2
 
 
-def negpos(number):
-    if number < 0:
-        return -1
-    elif number > 0:
-        return 1
-    else:
-        return 0
-
-
-# simple wrapper to keep the screen resizeable
 def init_screen(width, height):
+    """Simple wrapper to keep the screen resizeable"""
     screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
     return screen
 
 
-# make loading maps a little easier
-def get_map(filename):
-    return filename
-
-
-# make loading sprites a little easier
 def load_sprite(filename):
     return pygame.image.load(filename)
 
 
-# make loading tilesets a little easier
-def load_tileset(filename):
-    return pygame.image.load(filename)
-
-
-def isclose(a, b, allowed_error=.05):
-    return abs(a - b) <= allowed_error
-
-
 class Camera(object):
+    """Invisible object that slowly follows player, screen locks onto this object"""
     def __init__(self, hero):
-        """
-        :param lifeform: Lifeform to stick to
-        """
         self.hero = hero
         x, y = self.hero.position[0], self.hero.position[1]
         self.rect = pygame.Rect(x, y, 8, 8)
@@ -184,7 +170,7 @@ class Hero(pygame.sprite.Sprite):
         self.camera = Camera(self)
 
         # 'move_time' is determined by speed stat, the lower this is, the faster you can move from tile to tile
-        self.move_time = 7
+        self.move_time = MOVE_TIME
         self.move_timer = self.move_time
         self.moving = False
         self.target_coords = None
@@ -217,15 +203,10 @@ class Hero(pygame.sprite.Sprite):
         self.rect.topleft = self._position
 
 
-class QuestGame(object):
-    """ This class is a basic game.
-
-    This class will load data, create a pyscroll group, a hero object.
-    It also reads input and moves the Hero around the map.
-    Finally, it uses a pyscroll group to render the map and Hero.
-    """
+class Game(object):
+    """This class is essentially the Wizard of Oz"""
     def __init__(self, charactername='Mike', username='leif', password='mypw', ip='127.0.0.1',
-                 current_room='gameobjects/room/test8.tmx'):
+                 current_room=None):
         self.client = GameClient(charactername=charactername, username=username, password=password, ip=ip)
 
         # List of other lifeform Other objects
@@ -236,14 +217,12 @@ class QuestGame(object):
         self.poll_timer = self.poll_frequency
         self.out_going_message = None
 
-        # # Rate that coords are sent to server
-        # self.coord_frequency = 30
-        # self.coord_timer = self.coord_frequency
-
         # true while running
         self.running = False
 
         # load data from pytmx
+        if not current_room:
+            current_room = STARTING_ROOM
         tmx_data = load_pygame(current_room)
         self.map_data = tmx_data
 
@@ -254,11 +233,8 @@ class QuestGame(object):
         self.map_layer = pyscroll.BufferedRenderer(map_data, screen.get_size())
         self.map_layer.zoom = 5
 
-        # pyscroll supports layered rendering.  our map has 3 'under' layers
-        # layers begin with 0, so the layers are 0, 1, and 2.
-        # since we want the sprite to be on top of layer 1, we set the default
-        # layer for sprites as 2
-        self.group = PyscrollGroup(map_layer=self.map_layer, default_layer=2)
+        # pyscroll supports layered rendering.
+        self.group = PyscrollGroup(map_layer=self.map_layer, default_layer=DEFAULT_LAYER)
 
         # Login to server:
         # Get room instance and player object id
@@ -269,7 +245,7 @@ class QuestGame(object):
 
         # put the hero in the center of the map
         # TODO: Put here in coords on hero object
-        self.hero.position = [160, 160]
+        self.hero.position = STARTING_POSITION
         self.hero.lifeform.coords = self.hero.position
 
         # add our hero to the group
@@ -277,37 +253,62 @@ class QuestGame(object):
 
         # Create text box
         self.text_box = eztext.Input(maxlength=90, color=(255, 255, 255), x=30, y=860,
-                                     font=pygame.font.Font(None, 30), prompt=': ')
-
+                                     font=pygame.font.Font(FONT, 30), prompt=': ')
         # Create InputLog
-        self.inputlog = InputLog(coords=(30, 840), max_length=10, size=28, spacing=18)
+        self.inputlog = InputLog(coords=(30, 840), max_length=10, size=28, spacing=18, font=FONT)
         # Create Combatlog
-        self.combatlog = InputLog(coords=(1050, 860), max_length=10, size=28, spacing=18)
+        self.combatlog = InputLog(coords=(1050, 860), max_length=10, size=28, spacing=18, font=FONT)
 
-        # Create Inventory
-        # self.inventorybox = InventoryBox(self.hero.lifeform.inventory, (1000, 200))
-
-    def draw(self, surface):
-
-        # center the map/screen on our Hero
-        self.group.center(self.hero.camera.rect.center)
-
-        # draw the map and all sprites
-        self.group.draw(surface)
-
-    def populate_room(self):
-        """
-        Reads 'lifeforms' layer of current room's tileset and instantiates objects from templates
-        :return:
-        """
-        pass
-        # lifeforms = self.get_lifeforms()
-        # for lifeform in lifeforms:
-        #     self.current_room.
+    def parse_cli(self, msgvalue):
+        try:
+            # r = a.send(msgvalue)
+            self.inputlog.add_line(msgvalue)
+            self.out_going_message = msgvalue
+            if 'set' in msgvalue:
+                if len(msgvalue.split()) == 3:
+                    attribute = msgvalue.split()[1]
+                    value = msgvalue.split()[2]
+                    if value.isdigit():
+                        value = int(value)
+                    if hasattr(self.hero, attribute):
+                        setattr(self.hero, attribute, value)
+                        self.inputlog.add_line('System: Set {0} to {1}'.format(attribute, value))
+                    else:
+                        self.inputlog.add_line('System: {0} unknown attribute'.format(attribute))
+                else:
+                    self.inputlog.add_line('Help: set <attribute> <value>')
+            elif 'who room' in msgvalue:
+                lifeforms = self.current_room.lifeforms
+                for id, lifeform in lifeforms.items():
+                    self.inputlog.add_line('{0} : {1}'.format(id, lifeform.name))
+            elif 'get' in msgvalue:
+                if len(msgvalue.split()) == 3:
+                    instance = msgvalue.split()[1]
+                    attribute = msgvalue.split()[2]
+                    value = getattr(eval(instance), attribute)
+                    self.inputlog.add_line(str(value))
+                else:
+                    self.inputlog.add_line('Help: get <instance> <attribute>')
+            elif 'eval' in msgvalue:
+                result = eval(msgvalue.replace('eval', '').lstrip())
+                self.inputlog.add_line(str(result))
+            elif 'exec' in msgvalue:
+                exec (msgvalue.replace('exec', '').lstrip())
+            elif 'quit' == msgvalue.split()[0].lower():
+                self.running = False
+            elif 'camera' == msgvalue.split()[0].lower():
+                self.hero.camera.spd = int(msgvalue.split()[1])
+            elif 'debug' == msgvalue.split()[0].lower():
+                global DEBUG_MODE
+                if msgvalue.split()[1].lower() == 'on':
+                    DEBUG_MODE = True
+                else:
+                    DEBUG_MODE = False
+        except:
+            self.inputlog.add_line('Some unknown error occurred')
 
     def handle_input(self, dt):
-        """ Handle pygame input events
-        """
+        """ Handle pygame input events"""
         # event = poll()
         events = pygame.event.get()
 
@@ -376,57 +377,8 @@ class QuestGame(object):
                                      item for i, item in enumerate(target_coords)]
                     self.move_timer_reset()
                     self.move_lifeform(target_coords)
-
         else:
             return
-
-    def parse_cli(self, msgvalue):
-        try:
-            # r = a.send(msgvalue)
-            self.inputlog.add_line(msgvalue)
-            self.out_going_message = msgvalue
-            if 'set' in msgvalue:
-                if len(msgvalue.split()) == 3:
-                    attribute = msgvalue.split()[1]
-                    value = msgvalue.split()[2]
-                    if value.isdigit():
-                        value = int(value)
-                    if hasattr(self.hero, attribute):
-                        setattr(self.hero, attribute, value)
-                        self.inputlog.add_line('System: Set {0} to {1}'.format(attribute, value))
-                    else:
-                        self.inputlog.add_line('System: {0} unknown attribute'.format(attribute))
-                else:
-                    self.inputlog.add_line('Help: set <attribute> <value>')
-            elif 'who room' in msgvalue:
-                lifeforms = self.current_room.lifeforms
-                for id, lifeform in lifeforms.items():
-                    self.inputlog.add_line('{0} : {1}'.format(id, lifeform.name))
-            elif 'get' in msgvalue:
-                if len(msgvalue.split()) == 3:
-                    instance = msgvalue.split()[1]
-                    attribute = msgvalue.split()[2]
-                    value = getattr(eval(instance), attribute)
-                    self.inputlog.add_line(str(value))
-                else:
-                    self.inputlog.add_line('Help: get <instance> <attribute>')
-            elif 'eval' in msgvalue:
-                result = eval(msgvalue.replace('eval', '').lstrip())
-                self.inputlog.add_line(str(result))
-            elif 'exec' in msgvalue:
-                exec(msgvalue.replace('exec', '').lstrip())
-            elif 'quit' == msgvalue.split()[0].lower():
-                self.running = False
-            elif 'camera' == msgvalue.split()[0].lower():
-                self.hero.camera.spd = int(msgvalue.split()[1])
-            elif 'debug' == msgvalue.split()[0].lower():
-                global DEBUG_MODE
-                if msgvalue.split()[1].lower() == 'on':
-                    DEBUG_MODE = True
-                else:
-                    DEBUG_MODE = False
-        except:
-            self.inputlog.add_line('Some unknown error occurred')
 
     def move_timer_reset(self):
         self.hero.move_timer = self.hero.move_time
@@ -469,9 +421,32 @@ class QuestGame(object):
                 collide = True
         return collide
 
+    def poll_server(self, dt=60):
+        """Count down to next contact with server"""
+        self.poll_timer -= dt / 50.
+        if self.poll_timer <= 0:
+            self.poll_timer = self.poll_frequency
+            r = self.client.send_command('update_coords', [])
+            self.update_lifeforms(r['response'])
+
+    def update_lifeforms(self, lifeforms):
+        """Update current lifeforms with new information from server"""
+        # Update data on all lifeforms in room
+        self.current_room.lifeforms.update(lifeforms)
+
+        # If object exists on server but not on client yet, create it here.
+        for id, lifeform in self.current_room.lifeforms.items():
+            if id not in self.others.keys():
+                if lifeform.name != self.hero.lifeform.name:
+                    self.others[id] = RemoteSprite(lifeform=lifeform)
+                    self.group.add(self.others[id])
+
+        # Update positions of all gameobjects
+        for id, sprite in self.others.items():
+            self.others[id].position = self.current_room.lifeforms[id].coords
+
     def update(self, dt):
-        """ Tasks that occur over time should be handled here
-        """
+        """ Tasks that occur over time should be handled here"""
         self.group.update(dt)
         # update camera
         self.hero.camera.update(dt)
@@ -492,35 +467,15 @@ class QuestGame(object):
                 self.hero.position = self.hero.target_coords
                 self.hero.lifeform.coords = self.hero.target_coords
 
-    def poll_server(self, request=None, dt=60):
-        # Count down to next contact with server
-        self.poll_timer -= dt / 50.
-        if self.poll_timer <= 0:
-            self.poll_timer = self.poll_frequency
-            r = self.client.send_command('update_coords', [])
-            self.update_lifeforms(r['response'])
+    def draw(self, surface):
+        # center the map/screen on our Hero
+        self.group.center(self.hero.camera.rect.center)
 
-    def update_lifeforms(self, lifeforms):
-        """
-        Update current lifeforms with new information from server
-        :param lifeforms: 'lifeforms' attribute of Room instance
-        :return:
-        """
-        # TODO SHOW OTHER PLAYERS!
-        self.current_room.lifeforms.update(lifeforms)
-
-        for id, lifeform in self.current_room.lifeforms.items():
-            if id not in self.others.keys():
-                if lifeform.name != self.hero.lifeform.name:
-                    self.others[id] = RemoteSprite(lifeform=lifeform)
-                    self.group.add(self.others[id])
-
-        for id, sprite in self.others.items():
-            self.others[id].position = self.current_room.lifeforms[id].coords
+        # draw the map and all sprites
+        self.group.draw(surface)
 
     def run(self):
-        """ Run the game loop
-        """
+        """ Run the game loop"""
         clock = pygame.time.Clock()
         self.running = True
 
@@ -531,11 +486,10 @@ class QuestGame(object):
             while self.running:
                 dt = clock.tick(60)
                 times.append(clock.get_fps())
-                # print(sum(times) / len(times))
 
                 # Update From Server
                 try:
-                    self.poll_server(dt=dt)
+                    self.poll_server(dt)
                 except PacketSizeMismatch:
                     self.inputlog.add_line('Packet size mismatch!! Ignoring')
 
@@ -551,15 +505,11 @@ class QuestGame(object):
                     draw_text('lifeform.position:. . {0}'.format(str(self.hero.lifeform.coords)), screen, coords=(10, 25))
                     draw_text('delta t:. . . . . . . {0}'.format(str(dt)), screen, coords=(10, 40))
                     draw_text('server poll:. . . . . {0}'.format(str(self.poll_timer)), screen, coords=(10, 55))
-                    #draw_text('moving: . . . . . . . {0}'.format(str(self.hero.moving)), screen, coords=(10, 40))
-                    #draw_text('target_coords . . . . {0}'.format(str(self.hero.target_coords)), screen, coords=(10, 55))
-                    draw_text(str(self.client.current_room), screen, coords=(2, 80))
-                    draw_text(str(len(self.client.current_room.lifeforms)), screen, coords=(2, 90))
+                    draw_text('moving: . . . . . . . {0}'.format(str(self.hero.moving)), screen, coords=(10, 70))
+                    draw_text('target_coords . . . . {0}'.format(str(self.hero.target_coords)), screen, coords=(10, 85))
 
-                # blit text_box on the sceen
+                # blit text objects to screen
                 self.text_box.draw(screen)
-
-                # blit InputLog to screen
                 self.inputlog.draw(screen)
                 self.combatlog.draw(screen)
 
@@ -569,19 +519,21 @@ class QuestGame(object):
             self.running = False
 
 
-if __name__ == "__main__":
-    print('Testing Client::: PREALPHA')
-    charactername = raw_input('charactername: ')
-    username = raw_input('Username: ')
-    password = raw_input('Password: ')
+print('Testing Client::: PREALPHA')
+charactername = raw_input('charactername: ')
+username = raw_input('Username: ')
+password = raw_input('Password: ')
 
-    pygame.init()
-    pygame.font.init()
-    screen = init_screen(1600, 900)
-    pygame.display.set_caption('Little v0.0.1')
+pygame.init()
+pygame.font.init()
+screen = init_screen(DEFAULT_RESOLUTION[0], DEFAULT_RESOLUTION[1])
+pygame.display.set_caption('Little v0.0.1')
+game = Game(charactername=charactername, username=username, password=password)
 
+
+def start():
+    global game
     try:
-        game = QuestGame(charactername=charactername, username=username, password=password)
         game.run()
     except:
         pygame.quit()

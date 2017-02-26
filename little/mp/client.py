@@ -1,10 +1,6 @@
 import socket, pickle
 import atexit
-import json
-import select
 import sys
-
-from retrying import retry
 
 
 class PacketSizeMismatch(Exception):
@@ -173,6 +169,6 @@ class GameClient(object):
 
     def disconnect(self):
         if self.server:
-            print('--Disconnected')
+            print('--Socket closed')
             self.server.close()
             self.server = None

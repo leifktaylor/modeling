@@ -1,20 +1,11 @@
 import socket, select, pickle
 import atexit
-import time
-from gameobjects.gameobject import get_object_by_id, get_room_from_lifeform
+from gameobjects.gameobject import get_object_by_id
 from gameobjects.gameobject import load_user
 from gameobjects.gameobject import create_room_from_template, create_lifeform_from_template
-
-
-# from gameobjects.gameobject import get_coords_map
 import json
 import sys
 import pytmx
-import StringIO
-import contextlib
-
-from retrying import retry
-import random
 
 # constants
 USER_LIST = 'mp/users/users.json'
@@ -386,7 +377,7 @@ class GameServer(object):
 
                         # Client needs to confirm that it received payload
 
-                print('Disconnecting from client')
+                print('Socket closed with client')
                 client.close()
 
     @staticmethod
@@ -464,81 +455,3 @@ class GameServer(object):
                 print('Some message was lost...')
         return message_list
 
-if __name__ == '__main__':
-    a = GameServer()
-    while True:
-        a.listen_test(clients=a.get_clients())
-
-
-
-
-    # Backup of Listen method
-    # def listen_test(self, clients):
-    #     try:
-    #         clients_list, wlist, xlist = select.select(clients, [], [], 0.05)
-    #     except select.error:
-    #         pass
-    #     else:
-    #         for client in clients_list:
-    #             request = self.receive_packet(client, BUFFER_SIZE)
-    #
-    #             if request:
-    #                 if request == -1:
-    #                     print('Client returned error, disconnecting')
-    #                     client.close()
-    #                 else:
-    #                     # Here is where you generate the response, and determine its size
-    #                     # First send its size to the client, then send the object
-    #                     random_object = pickle.dumps(random.getrandbits(random.randint(1, 10000)))
-    #                     buffer_size = sys.getsizeof(random_object)
-    #                     response = pickle.dumps(buffer_size)
-    #
-    #                     print('Sending buffer size: {0}'.format(buffer_size))
-    #                     client.send(response)
-    #
-    #                     # Wait for confirmation from client for buffer size
-    #                     print('awaiting client response to send payload')
-    #                     client_response = self.receive_packet(client, BUFFER_SIZE)
-    #
-    #                     if client_response:
-    #                         if client_response == buffer_size:
-    #                             print('Sending payload (size): {0}'.format(buffer_size))
-    #                             client.send(random_object)
-    #                         elif client_response == -1:
-    #                             print('Received error message from client')
-    #             client.close()
-
-
-#
-# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server.bind(('', 4000))
-# server.listen(5)
-#
-#
-# while True:
-#     clients = []
-#     Connections, wlist, xlist = select.select([server], [], [], 0.05)
-#
-#     for Connection in Connections:
-#         client, Informations = Connection.accept()
-#         clients.append(client)
-#     try:
-#         clientsList, wlist, xlist = select.select(clients, [], [], 0.05)
-#     except select.error:
-#         pass
-#     else:
-#         for clientInList in clientsList:
-#             # data = clientInList.recv(256000)
-#             # data = pickle.loads(data)
-#             # print(data)
-#             # data = "Welcome"
-#             # data = pickle.dumps(data)
-#             # clientInList.send(data)
-#             request = clientInList.recv(256000)
-#             if request:
-#                 data = pickle.loads(request)
-#                 if data == 'give me a class':
-#                     response = pickle.dumps(Thingy('Mike'))
-#                     clientInList.send(response)
-#             clientInList.close()
-# server.close()
