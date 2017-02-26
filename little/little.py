@@ -33,6 +33,8 @@ from gameobjects.gameobject import load_lifeform, get_object_by_id
 TILE_SIZE = 8
 # define rate that the server is polled, lower number means more polling
 POLL_RATE = 10
+# debug mode
+DEBUG_MODE = True
 
 
 def negpos(number):
@@ -67,6 +69,47 @@ def load_tileset(filename):
 
 def isclose(a, b, allowed_error=.05):
     return abs(a - b) <= allowed_error
+
+
+class Camera(object):
+    def __init__(self, hero):
+        """
+        :param lifeform: Lifeform to stick to
+        """
+        self.hero = hero
+        x, y = self.hero.position[0], self.hero.position[1]
+        self.rect = pygame.Rect(x, y, 8, 8)
+        self._position = self.hero.position
+        self.spd = 100.
+
+    def update(self, dt):
+        self.x += (self.hero.x - self.x) * (dt / self.spd)
+        self.y += (self.hero.y - self.y) * (dt / self.spd)
+        self.rect.topleft = self._position
+
+    @property
+    def x(self):
+        return self._position[0]
+
+    @x.setter
+    def x(self, value):
+        self._position[0] = value
+
+    @property
+    def y(self):
+        return self._position[1]
+
+    @y.setter
+    def y(self, value):
+        self._position[1] = value
+
+    @property
+    def position(self):
+        return list(self._position)
+
+    @position.setter
+    def position(self, value):
+        self._position = list(value)
 
 
 class RemoteSprite(pygame.sprite.Sprite):
@@ -133,16 +176,15 @@ class Hero(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = load_sprite(lifeform.graphic).convert_alpha()
 
-        self.velocity = [0, 0]
-
         self.position = self.lifeform.coords
         self._position = self.position
         self.x = self.position[0]
         self.y = self.position[1]
         self.rect = self.image.get_rect()
+        self.camera = Camera(self)
 
         # 'move_time' is determined by speed stat, the lower this is, the faster you can move from tile to tile
-        self.move_time = 10
+        self.move_time = 7
         self.move_timer = self.move_time
         self.moving = False
         self.target_coords = None
@@ -194,9 +236,9 @@ class QuestGame(object):
         self.poll_timer = self.poll_frequency
         self.out_going_message = None
 
-        # Rate that coords are sent to server
-        self.coord_frequency = 30
-        self.coord_timer = self.coord_frequency
+        # # Rate that coords are sent to server
+        # self.coord_frequency = 30
+        # self.coord_timer = self.coord_frequency
 
         # true while running
         self.running = False
@@ -248,7 +290,7 @@ class QuestGame(object):
     def draw(self, surface):
 
         # center the map/screen on our Hero
-        self.group.center(self.hero.rect.center)
+        self.group.center(self.hero.camera.rect.center)
 
         # draw the map and all sprites
         self.group.draw(surface)
@@ -263,7 +305,7 @@ class QuestGame(object):
         # for lifeform in lifeforms:
         #     self.current_room.
 
-    def handle_input(self):
+    def handle_input(self, dt):
         """ Handle pygame input events
         """
         # event = poll()
@@ -279,7 +321,6 @@ class QuestGame(object):
 
             # This is where key press events go
             elif event.type == KEYDOWN:
-
                 msgvalue = self.text_box.update(events)
                 if msgvalue:
                     self.parse_cli(msgvalue)
@@ -369,10 +410,21 @@ class QuestGame(object):
                     self.inputlog.add_line(str(value))
                 else:
                     self.inputlog.add_line('Help: get <instance> <attribute>')
-
             elif 'eval' in msgvalue:
                 result = eval(msgvalue.replace('eval', '').lstrip())
                 self.inputlog.add_line(str(result))
+            elif 'exec' in msgvalue:
+                exec(msgvalue.replace('exec', '').lstrip())
+            elif 'quit' == msgvalue.split()[0].lower():
+                self.running = False
+            elif 'camera' == msgvalue.split()[0].lower():
+                self.hero.camera.spd = int(msgvalue.split()[1])
+            elif 'debug' == msgvalue.split()[0].lower():
+                global DEBUG_MODE
+                if msgvalue.split()[1].lower() == 'on':
+                    DEBUG_MODE = True
+                else:
+                    DEBUG_MODE = False
         except:
             self.inputlog.add_line('Some unknown error occurred')
 
@@ -396,28 +448,33 @@ class QuestGame(object):
             # Update server that we are moving
             self.client.send_command('move', [self.hero.target_coords])
 
-    def collision_check(self, position):
+    def collision_check(self, position, layers=None):
         """
         Checks if given coordinates are occupied by a tile marked 'wall'
         :param position:
         :return:
         """
-        # TODO: Fix diagonal
+        if not layers:
+            layers = [0, 1]
+        else:
+            layers = layers
+        # Get all tiles at this position, in all layers and check for 'wall' == 'true'
+        collide = False
         tile_pos_x = position[0] / TILE_SIZE
         tile_pos_y = position[1] / TILE_SIZE
-        try:
-            if self.map_data.get_tile_properties(tile_pos_x, tile_pos_y, 0)['wall'] == 'true':
-                return True
-            else:
-                return False
-        except ValueError:
-            # If off the map
-            return True
+        tiles = [self.map_data.get_tile_properties(tile_pos_x, tile_pos_y, layer) for layer in layers]
+        tiles = [tile['wall'] for tile in tiles if tile]
+        for wall in tiles:
+            if wall == 'true':
+                collide = True
+        return collide
 
     def update(self, dt):
         """ Tasks that occur over time should be handled here
         """
         self.group.update(dt)
+        # update camera
+        self.hero.camera.update(dt)
 
         # STATE: 'moving'
         # (If we are moving to another tile)
@@ -461,23 +518,6 @@ class QuestGame(object):
         for id, sprite in self.others.items():
             self.others[id].position = self.current_room.lifeforms[id].coords
 
-
-        # self.hero.lifeform = self.client.current_room.lifeforms[self.client.playerid]
-
-        # for id, lifeform in self.client.current_room.lifeforms.items():
-        #     if id not in self.others.keys():
-        #         sprite = RemoteSprite(id, 'graphics/sprites/goblins/sprites1140.png', screen)
-        #         self.group.add(sprite)
-        #
-        # for id, sprite in self.others.items():
-        #     sprite._position = sprite.lifeform.coords
-        #
-        # for id, lifeform in self.client.current_room.lifeforms.items():
-        #     if lifeform.name == 'Mike' and id not in self.others.keys():
-        #         sprite = RemoteSprite(id, 'graphics/sprites/goblins/sprites1140.png', screen)
-        #         self.others[id] = sprite
-        #         self.group.add(sprite)
-
     def run(self):
         """ Run the game loop
         """
@@ -500,20 +540,21 @@ class QuestGame(object):
                     self.inputlog.add_line('Packet size mismatch!! Ignoring')
 
                 # Handle input and render
-                self.handle_input()
+                self.handle_input(dt)
                 self.update(dt)
                 self.draw(screen)
 
                 # debug draw co-ordinates
-                # pos = [coord/16 for coord in self.hero.position]
-                draw_text('hero.position:. . . . {0}'.format(str(self.hero.position)), screen, coords=(10, 10))
-                draw_text('lifeform.position:. . {0}'.format(str(self.hero.lifeform.coords)), screen, coords=(10, 25))
-                draw_text('delta t:. . . . . . . {0}'.format(str(dt)), screen, coords=(10, 40))
-                draw_text('server poll:. . . . . {0}'.format(str(self.poll_timer)), screen, coords=(10, 55))
-                #draw_text('moving: . . . . . . . {0}'.format(str(self.hero.moving)), screen, coords=(10, 40))
-                #draw_text('target_coords . . . . {0}'.format(str(self.hero.target_coords)), screen, coords=(10, 55))
-                draw_text(str(self.client.current_room), screen, coords=(2, 80))
-                draw_text(str(len(self.client.current_room.lifeforms)), screen, coords=(2, 90))
+                if DEBUG_MODE:
+                    # pos = [coord/16 for coord in self.hero.position]
+                    draw_text('hero.position:. . . . {0}'.format(str(self.hero.position)), screen, coords=(10, 10))
+                    draw_text('lifeform.position:. . {0}'.format(str(self.hero.lifeform.coords)), screen, coords=(10, 25))
+                    draw_text('delta t:. . . . . . . {0}'.format(str(dt)), screen, coords=(10, 40))
+                    draw_text('server poll:. . . . . {0}'.format(str(self.poll_timer)), screen, coords=(10, 55))
+                    #draw_text('moving: . . . . . . . {0}'.format(str(self.hero.moving)), screen, coords=(10, 40))
+                    #draw_text('target_coords . . . . {0}'.format(str(self.hero.target_coords)), screen, coords=(10, 55))
+                    draw_text(str(self.client.current_room), screen, coords=(2, 80))
+                    draw_text(str(len(self.client.current_room.lifeforms)), screen, coords=(2, 90))
 
                 # blit text_box on the sceen
                 self.text_box.draw(screen)

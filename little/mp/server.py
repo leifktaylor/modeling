@@ -22,6 +22,7 @@ TILE_SIZE = 8
 BUFFER_SIZE = 1024
 HUB_ROOM = 'gameobjects/room/template.rm'
 VERBOSE = False
+OBJECT_LAYER = 2
 
 
 class RemoteClient(object):
@@ -320,7 +321,7 @@ class GameServer(object):
             room_instance.add_lifeform_by_id(instance.id, instance.coords)
         return room_instance
 
-    def get_lifeforms(self, tiledtmx, layer=1):
+    def get_lifeforms(self, tiledtmx, layer=2):
         """
         Searches each tile of the map and grabs lifeforms from given layer
 

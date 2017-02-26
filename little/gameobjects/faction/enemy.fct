@@ -1,0 +1,14 @@
+*** settings ***
+name: Enemy
+description: Beasts incapable of diplomacy, or without need for it.
+banner:graphics/sprites/weapons/sprites1020.png
+
+*** factions ***
+player:0
+enemy:50
+iron_covenant:20
+chand_baori:20
+de_incendio:20
+tramore_folk:20
+
+

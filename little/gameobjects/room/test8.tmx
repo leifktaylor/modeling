@@ -860,14 +860,87 @@
    <image width="8" height="8" source="../../graphics/sprites/goblins/sprites1143.png"/>
   </tile>
  </tileset>
+ <tileset firstgid="286" name="trees" tilewidth="16" tileheight="8" tilecount="12" columns="6">
+  <image source="../../graphics/sprites/trees/Tree pack 2.png" width="96" height="16"/>
+  <tile id="0">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
  <layer name="under0" width="50" height="50">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAAA+2Vzw6CMAyH9/5voAfPJnoDBT1povJasqRN6tL9obANTA9fQGLY72s79jDGPATsRvZwxXvkNNIDN3h2IFfJermgHteRI3Gw2d/AQJ6t3eMCLlj/wfz2x2a/g895Bdl9HntwwfqHZsv6NEBtB87D3R90tu7Eo2FYg4e7NzpwwDnqzW9faP4nUNMF87/gHvNj/bEnA/CBq+tRuze4t9GF5qf7nZsjtxe1Zw1dOoLNz9U+1IMQJV1sbnpeuJm52k/xKeUSmp3Y85ZQwyWWOdSDNkBJF84hluvJ/I/rSUkf972h+rYRh9h7crnE5iTFL2Vv5/TwzX9qjad8b3P1hPv2+GbF3eP0d+z8k9ZgSg9S1pp7VkhdUhx8OXy9kGZeesZSskj27hIevm8JV//U99Hvas5+xNbn6ujLJD2DQ0idpeuXmJ3cbN2h5D7OnX1rDlvP73OonWmuR+0scz1qZ1AURVEURVEURVEU5T/4AqpuUm8QJwAA
   </data>
  </layer>
+ <layer name="under1" width="50" height="50">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3WyQ2AMAwEwNALCPqvkGdeIIQ41jBTwVqr2GkNAOAfluHtBNvG4Gx0esqX0lFKjrtMBeY708FcYC5qSP5z7EnfXen5nlRhD1fmHsBxdvPzrroBbgl03gMAwPesVzws5xAnAAA=
+  </data>
+ </layer>
  <layer name="lifeforms" width="50" height="50">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAAA+3UsQ0AQAgDMRiD/Rf9/kskBIU9wSlFIgAAAO6q3C4A4Oeb59kYAAAAAHoeZOZE7xAnAAA=
+  </data>
+ </layer>
+ <layer name="over0" width="50" height="50">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3WQQqAMAwEwPoRRf//SI89WUS0bmDmBRuWJm0NAGDsWP5OcG0Nzkanp3wpHaXk+MpWYL4nHewF5qKG5D/HSPruSs83U4U9XJl7APfZzfO9dQPcEui8BwAAUp0cRKDjECcAAA==
   </data>
  </layer>
 </map>

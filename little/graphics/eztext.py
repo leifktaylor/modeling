@@ -30,6 +30,9 @@ class Input:
         self.prompt = self.options.prompt; self.value = ''
         self.shifted = False
 
+        self.key_time = 5
+        self.key_timer = self.key_time
+
     def set_pos(self, x, y):
         """ Set the position to x, y """
         self.x = x
@@ -47,6 +50,7 @@ class Input:
     def update(self, events):
         """ Update the input based on passed events """
         for event in events:
+            old_value = self.value
             if event.type == KEYUP:
                 if event.key == K_LSHIFT or event.key == K_RSHIFT:
                     self.shifted = False
@@ -160,7 +164,8 @@ class Input:
                         text_value = self.value
                         self.value = ''
                         return text_value
-
-        if len(self.value) > self.maxlength:
-            self.value = self.value[0: self.maxlength]
+            if self.value != old_value:
+                break
+            if len(self.value) > self.maxlength:
+                self.value = self.value[0: self.maxlength]
 

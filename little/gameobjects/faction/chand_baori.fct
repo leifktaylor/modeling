@@ -1,0 +1,14 @@
+*** settings ***
+name: Chand Baori
+description: Dasha bestowed her gift upon so few.
+banner:graphics/sprites/weapons/sprites1020.png
+
+*** factions ***
+player:50
+enemy:0
+iron_covenant:70
+chand_baori:70
+de_incendio:40
+tramore_folk:40
+
+

@@ -90,7 +90,14 @@ from gameobjects.gameobject import save_lifeform, create_lifeform_from_template
 #         f.write('{0}\n'.format(line))
 #     f.close()
 
-filepath = raw_input('Path to template: ')
-lifeform_instance = create_lifeform_from_template(filepath)
-name = lifeform_instance.name
-save_lifeform(lifeform_instance, 'mp/users/{0}.sav'.format(name))
+def make_player(filepath):
+    # filepath = raw_input('Path to template: ')
+    lifeform_instance = create_lifeform_from_template(filepath)
+    name = lifeform_instance.name
+    save_lifeform(lifeform_instance, 'mp/users/{0}.sav'.format(name))
+
+if __name__ == '__main__':
+    path = 'gameobjects/lifeform/'
+    templates = ['zaxim', 'madaar', 'liete']
+    for template in templates:
+        make_player('{0}/{1}.lfm'.join(template))

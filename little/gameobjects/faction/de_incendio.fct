@@ -1,0 +1,14 @@
+*** settings ***
+name: De Incendio
+description: The myth was that such magic had no consequence.
+banner:graphics/sprites/spells/sprites1287.png
+
+*** factions ***
+player:50
+enemy:0
+iron_covenant:40
+chand_baori:40
+de_incendio:70
+tramore_folk:50
+
+
