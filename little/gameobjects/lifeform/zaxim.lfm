@@ -1,6 +1,7 @@
 name:Zaxim
 lifeform_type:LifeForm
 description:Happy
+graphic:graphics/sprites/humans/17.png
 STR:10
 STA:30
 MND:50
@@ -10,5 +11,16 @@ MP:42
 MDEF:28
 PDEF:8
 
-slots:10
+slots:12
 slot0:gameobjects/apparel/linen_shirt.itm True 20
+slot1:gameobjects/potion/major_health_potion.itm False 20
+slot2:gameobjects/weapon/long_sword.itm True 20
+slot3:gameobjects/apparel/linen_shirt.itm False 20
+slot4:gameobjects/potion/major_health_potion.itm False 20
+slot5:gameobjects/weapon/long_sword.itm False 20
+slot6:gameobjects/apparel/linen_shirt.itm False 20
+slot7:gameobjects/potion/major_health_potion.itm False 20
+slot8:gameobjects/weapon/long_sword.itm False 20
+slot9:gameobjects/apparel/linen_shirt.itm False 20
+slot10:gameobjects/potion/major_health_potion.itm False 20
+slot11:gameobjects/weapon/long_sword.itm False 20

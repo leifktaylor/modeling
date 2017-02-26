@@ -1,2 +1,3 @@
-{"leif": {"password": "mypw", "characters": {"Mike": "Mike.sav", "Harold": "Harold.sav"}},
-  "ken": {"password": "mypw", "characters": {"Zaxim": "Zaxim.sav"}}}
+{"leif": {"password": "mypw", "characters": {"Mike": "Mike.sav", "Liete": "Liete.sav"}},
+  "ken": {"password": "mypw", "characters": {"Zaxim": "Zaxim.sav"}},
+  "nat": {"password": "mypw", "characters": {"Madaar": "Madaar.sav"}}}

@@ -11,7 +11,7 @@ import dlg_parser
 import pickle
 import json
 import os
-
+# import pytmx
 
 # gc.collect()   -- this will garbage collect actively
 
@@ -149,7 +149,7 @@ def create_lifeform_from_template(filename):
                   PDEF=properties['PDEF'], MDEF=properties['MDEF'])
 
     # Update inventory from response
-    inventory = Inventory()
+    inventory = Inventory(max_slots=properties['slots'])
     for i, item in enumerate(properties['inventory']):
         if item:
             inventory.slots[i] = create_item_from_template(item['path'])
@@ -165,7 +165,7 @@ def create_lifeform_from_template(filename):
         dialogue = None
 
     lifeform = create_gameobject(type='LifeForm', name=properties['name'], stats=stats, inventory=inventory,
-                                 dialogue=dialogue)
+                                 dialogue=dialogue, graphic=properties['graphic'])
     return lifeform
 
 
@@ -177,7 +177,7 @@ def create_room_from_template(filename):
     links = properties['links']
     settings = properties['settings']
     room = Room(name=settings['name'], atenter=settings['atenter'], atexit=settings['atexit'], look=settings['look'],
-                listen=settings['listen'], lifeforms=lifeforms, items=items, links=links,
+                listen=settings['listen'], tmx_map=settings['tmx_map'], lifeforms=lifeforms, items=items, links=links,
                 uniquename=settings['uniquename'])
     return room
 
@@ -221,29 +221,33 @@ def load_user(character, username, password, users_file='users.json'):
 
 
 def add_lifeform_to_room(lifeformid, room_instance, coords=(0, 0)):
+    # lifeform = get_object_by_id(lifeformid)
+    # new_lifeform_key = max(room_instance.lifeforms.keys()) + 1
+    # room_instance.lifeforms[new_lifeform_key] = lifeform
+    # lifeform.coords = coords
     lifeform = get_object_by_id(lifeformid)
-    new_lifeform_key = max(room_instance.lifeforms.keys()) + 1
-    room_instance.lifeforms[new_lifeform_key] = lifeform
     lifeform.coords = coords
+    room_instance.add_lifeform_by_id(lifeformid, coords)
 
 
 # Classes
-
-
 class Room(object):
     """
     This is a room class.
     """
     def __init__(self, name='unnamed_room', atenter='', atexit='', look='', listen='',
-                 lifeforms=None, items=None, links=None, uniquename=None):
+                 lifeforms=None, items=None, links=None, uniquename=None, tmx_map=None):
         self.name = name
         self.uniquename = uniquename
         self.atenter = atenter
         self.atexit = atexit
         self.look = look
         self.listen = listen
+        # Path to tmx map (not an instance of a pytmx)
+        self.tmx_map = tmx_map
         self.lifeforms = {i: lifeform for i, lifeform in enumerate(lifeforms)} if lifeforms else {}
         next_i = len(self.lifeforms)
+        self.lifeforms = {lifeform.id: lifeform for rm_index, lifeform in self.lifeforms.items()}
         self.items = {i+next_i: item for i, item in enumerate(items)} if items else {}
         next_i = len(self.items) + len(self.lifeforms)
         self.links = {i+next_i: link for i, link in enumerate(links)} if links else {}
@@ -254,10 +258,17 @@ class Room(object):
             if lifeform.id == id:
                 del self.lifeforms[k]
 
+    def remove_lifeform_by_id(self, id):
+        for k, lifeform in self.lifeforms.items():
+            if lifeform.id == id:
+                del self.lifeforms[k]
+
     def add_lifeform_by_id(self, id, coords):
         lifeform = get_object_by_id(id)
-        new_lifeform_key = max(self.lifeforms.keys()) + 1
-        self.lifeforms[new_lifeform_key] = lifeform
+        lifeform.current_room = self
+        # new_lifeform_key = max(self.lifeforms.keys()) + 1
+        # self.lifeforms[new_lifeform_key] = lifeform
+        self.lifeforms[lifeform.id] = lifeform
         lifeform.coords = coords
 
     def add_item_by_id(self, id, coords):
@@ -272,26 +283,26 @@ class Room(object):
 
 
 class GameObject(object):
-    def __init__(self, id, name='unnamed_gameobject', coords=(0, 0), graphic=None, dialogue=None, **kwargs):
+    def __init__(self, id, name='unnamed_gameobject', coords=[0, 0], graphic=None, dialogue=None,
+                 current_room=None, **kwargs):
+
         self.id = id
         self.name = name
         self.destroyed = False
         self.coords = coords
         self.graphic = graphic
         self.dialogue = create_dialogue_from_template(dialogue) if dialogue else None
+        self.current_room = current_room
 
         # Update all attributes with kwargs
         self.__dict__.update(kwargs)
 
-        # If no name is given, give default name
-        if 'name' not in self.__dict__.keys():
-            self.name = 'unnamed'
-
 
 class LifeForm(GameObject):
-    def __init__(self, id, name='unnamed_lifeform', coords=(0, 0), stats=None, inventory=None, graphic=None,
-                 dialogue=None, target=None, **kwargs):
-        super(LifeForm, self).__init__(id=id, name=name, coords=coords, graphic=graphic, dialogue=dialogue, **kwargs)
+    def __init__(self, id, name='unnamed_lifeform', coords=[0, 0], stats=None, inventory=None, graphic=None,
+                 dialogue=None, target=None, current_room=None,  **kwargs):
+        super(LifeForm, self).__init__(id=id, name=name, current_room=current_room, coords=coords,
+                                       graphic=graphic, dialogue=dialogue, **kwargs)
         if not stats:
             self.stats = Stats()
         else:
@@ -301,18 +312,16 @@ class LifeForm(GameObject):
         else:
             self.inventory = inventory
 
+        # Target points to an gameobject id (not an object instance)
         self.target = target
 
-    def move(self, direction):
+    def change_room(self, roomname):
         pass
 
-    def teleport(self, room, coords):
-        pass
+    def change_target(self, targetid):
+        self.target = targetid
 
-    def talk(self, dialogue):
-        pass
-
-    def cast(self, targetid=None, spellid=None):
+    def cast(self, spellid=None, targetid=None):
         pass
 
     def attack(self, targetid):
@@ -336,7 +345,7 @@ class LifeForm(GameObject):
     def give_item(self, id, targetid):
         pass
 
-    def talk(self, dialogue, targetid):
+    def say(self, dialogue, targetid):
         other = get_object_by_id(targetid)
         try:
             response = other.respond([self.id, dialogue])
@@ -414,7 +423,7 @@ class LifeForm(GameObject):
                 elif command == 'teleport':
                     # Teleport player to target room and coords
                     room = get_room_from_uniquename(params[0])
-                    coords = (int(params[1]), int(params[2]))
+                    coords = [int(params[1]), int(params[2])]
                     targetplayer.teleport(room, coords)
 
                 elif command == 'cast':
@@ -434,7 +443,7 @@ class LifeForm(GameObject):
                 elif command == 'spawn':
                     # Spawn lifeform in room
                     lifeform = create_lifeform_from_template(params[0])
-                    coords = (int(params[1]), int(params[2]))
+                    coords = [int(params[1]), int(params[2])]
                     room = get_room_from_lifeform(self.id)
                     room.add_lifeform_by_id(lifeform.id, coords)
             except:
@@ -442,21 +451,8 @@ class LifeForm(GameObject):
         return 0
 
 
-        # give
-
-        # take
-
-        # teleport
-
-        # cast
-
-        # dialogue
-
-        pass
-
-
 class Inventory(object):
-    def __init__(self, max_slots=8):
+    def __init__(self, max_slots=20):
         self.slots = [None]*max_slots
         self.equip_slots = {'head': None, 'mask': None, 'neck': None,
                             'chest': None, 'wrist1': None, 'wrist2': None,
@@ -503,10 +499,14 @@ class Inventory(object):
                     return item.id
         return None
 
-    def is_equipped(self, id):
-        item_slot = get_object_by_id(id).equippable_slot
+    def is_equipped(self, id=None, instance=None):
+        if instance:
+            item_slot = instance.equippable_slot
+        else:
+            instance = get_object_by_id(id)
+            item_slot = item.equippable_slot
         if item_slot:
-            return self.equip_slots[item_slot] == get_object_by_id(id)
+            return self.equip_slots[item_slot] == instance
         else:
             return False
 

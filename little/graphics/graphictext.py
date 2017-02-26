@@ -4,10 +4,11 @@ import pygame
 from pygame.locals import *
 
 
-def draw_text(string, surface, size=22, coords=(0, 0), color=(255, 255, 255), background=None):
-    font = pygame.font.Font(None, size)
+def draw_text(string, surface, size=22, coords=(0, 0), color=(255, 255, 255), background=None, font=None):
+    font = pygame.font.Font(font, size)
     text = font.render(string, True, color, background)
     surface.blit(text, coords)
+    return text
 
 
 def draw_lines(line_list, surface, spacing=16, size=22, coords=(0, 0)):
@@ -54,6 +55,77 @@ class InputLog(object):
                 y -= self.spacing
             else:
                 y += self.spacing
+
+
+class InventoryBox(object):
+    def __init__(self, inventory, coords=(0, 0), spacing=22, size=34,
+                 color=(255, 255, 255), background=(0, 0, 0), font=None):
+        self.slots = None
+        self.equipped_list = None
+
+        self.rects = []
+        self.coords = coords
+        self.spacing = spacing
+        self.size = size
+        self.color = color
+        self.background = background
+        self.font = font
+
+        self.update_inventory(inventory)
+
+    def update_inventory(self, inventory):
+        # List of any non-empty (is not None) slots in inventory
+        self.slots = [item for item in inventory.slots if item]
+        # List of equipped item id's
+        self.equipped_list = [item.id for item in self.slots if inventory.is_equipped(instance=item)]
+
+        # Create rectangles for mouse collision
+        x = self.coords[0]
+        y = self.coords[1]
+
+        self.rects = []
+        for item in self.slots:
+            rect = pygame.Rect(0, 0, 100, 22)
+            rect.topleft = (x, y)
+            self.rects.append(rect)
+            y += self.spacing
+
+    def collision_check(self, surface):
+        ev = pygame.event.get()
+        for event in ev:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                pos = pygame.mouse.get_pos()
+                # get a list of all sprites that are under the mouse cursor
+                clicked_objects = [s for s in self.rects if s.collidepoint(pos)]
+                if clicked_objects:
+                    self.color = (100, 100, 240)
+
+                draw_text(str(clicked_objects), surface, coords=(100, 300), color=(0, 0, 0))
+        pos = pygame.mouse.get_pos()
+        draw_text(str(pos), surface, coords=(50, 200), color=(0, 0, 0))
+        draw_text(str(self.rects), surface, coords=(80, 400), color=(0, 0, 0))
+
+
+    def draw(self, surface):
+        x = self.coords[0]
+        y = self.coords[1]
+        for item in self.slots:
+            # If item is equipped
+            if item.id in self.equipped_list:
+                color = (255, 255, 0)
+            # If item is not equipped
+            else:
+                color = self.color
+
+            # Draw text to screen, and rectangles
+
+            text = draw_text(string=item.name, surface=surface, size=self.size, color=color,
+                             background=self.background, font=self.font, coords=(x, y))
+            y += self.spacing
+            self.collision_check(surface)
+
+
+
 
 #
 # def main():

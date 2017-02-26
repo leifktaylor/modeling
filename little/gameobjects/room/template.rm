@@ -8,15 +8,12 @@ atenter:As you enter the hallway, you hear nothing but water dripping and a slig
 atexit:You proceed down the hallway.
 look:The walls are covered in slime.  What a horrid place.
 listen:You think you hear a distant moaning sound.
+tmx_map:gameobjects/room/test8.tmx
 
 *** lifeforms ***
-gameobjects/lifeform/rat_man.lfm
-gameobjects/lifeform/rat_man.lfm
-gameobjects/lifeform/rat_man.lfm
+
 
 *** items ***
-gameobjects/potion/minor_health_potion.itm
-gameobjects/weapon/rusty_shiv.itm
+
 
 *** links ***
-gameobjects/rooms/anotherroom.rm

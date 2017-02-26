@@ -10,7 +10,7 @@ def list_lines_from_template(filename):
 
 def template_lines_to_dict(line_list):
     base_dict = {'settings': {'atenter': None, 'atexit': None, 'look': None, 'listen': None, 'name': None},
-                 'lifeforms': None, 'items': None, 'links': None}
+                 'lifeforms': None, 'items': None, 'links': None, 'tmx_map': None}
 
     # Get rid of all comments in all lines
     uncommented = [line.split('#', 1)[0].rstrip() for line in line_list]
