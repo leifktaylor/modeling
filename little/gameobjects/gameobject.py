@@ -4,6 +4,7 @@ Test based mushy fun!
 import logging
 import template_constants
 import gc
+import template_parser
 import itm_parser
 import lfm_parser
 import rm_parser
@@ -82,6 +83,85 @@ def get_object_by_id(id, type='GameObject'):
         return game_object
     except KeyError:
         raise RuntimeError('Game object {0} does not exist'.format(id))
+
+
+class GameobjectController(object):
+    """
+    Contain list of active lifeform instances, and the room they are in
+    Can generate lifeforms and add room
+    Can create rooms from tmx files
+    Can terminate gameobjects from its list
+    """
+    def __init__(self):
+        self.tp = template_parser.TemplateParser()
+
+        # Lists where gameobject.id is index
+        self._gameobjects = []
+
+    def add_gameobject(self, template, room=None, coords=None):
+        """
+        :param template: template file
+        :param room: modifies current_room value on gameobject
+        :param coords: modifies co-ords of gameobject
+        :return: gameobject id
+        """
+        # Dictionary like {'settings': [{key: value}, {key: value}], 'othersection': [{key ... }
+        input_data = self.tp.load_data(template)
+        gameobject, id = self._create_gameobject(self.tp.class_type, **input_data)
+
+        # Update gameobject from input params, and return id
+        gameobject.current_room = room
+        gameobject.coords = coords
+        self._gameobjects[id] = gameobject
+        return id
+
+    def remove_gameobject(self, id):
+        self._gameobjects[id] = None
+
+    def gameobject(self, id):
+        """ Returns gameobject instance """
+        return self._gameobjects[id]
+
+    @property
+    def lifeforms(self):
+        return {id: go for id, go in enumerate(self._gameobjects) if isinstance(go, LifeForm)}
+
+    @property
+    def props(self):
+        pass
+
+    @property
+    def rooms(self):
+        """ {'roomname': [<id>, <id>, <id>], 'another_room': [<id>, <id>, ...], ...} """
+        pass
+
+    @property
+    def players(self):
+        """ All player's gameobjects """
+        return {id: go for id, go in enumerate(self.lifeforms) if go.player}
+
+    @property
+    def npcs(self):
+        """ All non-player lifeforms """
+        return {id: go for id, go in enumerate(self.lifeforms) if not go.player}
+
+    @property
+    def treasure(self):
+        pass
+
+    @property
+    def destroyed(self):
+        """ All destroyed game objects """
+        return {id: go for id, go in enumerate(self._gameobjects) if go.destroyed}
+
+    def _create_gameobject(self, type='GameObject', **input_data):
+        if self._gameobjects:
+            id = max(id_list) + 1
+        else:
+            id = 0
+        gameobject = eval(type)(id, **input_data)
+        gameobject.id = id
+        return gameobject, id
 
 
 def get_room_from_lifeform(id):
@@ -449,6 +529,22 @@ class LifeForm(GameObject):
             except:
                 return 1
         return 0
+
+def create_lifeform_from_template(template_data):
+    """
+    Create Lifeform gameobject from template.
+    :param template_data: dictionary in TemplateParser.data
+    :return: Lifeform instance
+    """
+    # Create stats object
+    stats = Stats(**template_data['stats'])
+    # Create inventory
+
+    # Create lifeform
+
+    # Add AI if needed
+
+    # Add dialogue
 
 
 class Inventory(object):

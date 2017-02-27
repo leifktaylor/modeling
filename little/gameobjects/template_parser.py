@@ -2,14 +2,16 @@ TEMPLATE_FILE = 'gameobjects/faction/chand_baori.fct'
 
 
 class TemplateParser(object):
-    def __init__(self, templatefile):
+    def __init__(self, templatefile=None):
+        self.templatefile = templatefile
         self.data = {'filename': templatefile}
-        self.initialize()
+        if templatefile:
+            self._initialize()
 
     @property
     def class_type(self):
         try:
-            class_type = self.data['settings']['gameobject']
+            class_type = self.data['settings']['class_type']
         except KeyError:
             class_type = 'GameObject'
         return class_type
@@ -29,7 +31,7 @@ class TemplateParser(object):
         unspaced = [line for line in uncommented if line]
         # divide into sections (section markers in .rm file are '*** section_name ***')
         base_dict = {}
-        sections = [line.replace('***', '').lstrip().rstrip() for line in unspaced if '***' in line]
+        sections = [line.replace('***', '').lstrip().rstrip().lower() for line in unspaced if '***' in line]
         indices = [i for i, line in enumerate(unspaced) if '***' in line]
         for i, number in enumerate(indices):
             if i + 1 == len(indices):
@@ -38,9 +40,17 @@ class TemplateParser(object):
                 base_dict[sections[i]] = self.key_values(unspaced[number + 1:indices[i + 1]])
         return base_dict
 
-    def initialize(self):
-        new_data = self.template_lines_to_dict(self.list_lines_from_template(self.data['filename']))
-        self.data.update(new_data)
+    def _initialize(self):
+        self.data = self.template_lines_to_dict(self.list_lines_from_template(self.templatefile))
+
+    def load_data(self, templatefile):
+        """
+        Return list of dictionaries with all template data
+        :param templatefile:
+        :return: list of dictionaries of template sections
+        """
+        self.data = self.template_lines_to_dict(self.list_lines_from_template(templatefile))
+        return self.data
 
     def key_values(self, lines):
         key_values = {}
@@ -49,11 +59,21 @@ class TemplateParser(object):
         return key_values
 
     def _parse_key_values(self, line):
-        try:
-            key, value = line.split(':')[0], self.string_literal(line.split(':')[1])
-            return {key: value}
-        except IndexError:
-            return {line: None}
+        # Return first element of split line, and list of all other values
+        if ':' not in line:
+            if len(line.split()) > 1:
+                return {line.split()[0]: line.split()[1:]}
+            else:
+                return {line: None}
+        # Get key and values from line, convert values to True/False/None/Int if needed
+        key, values = line.split(':')[0].strip(), line.split(':')[1:][0].split().strip()
+        values = [self.string_literal(value) for value in values]
+
+        # Return either {key: value} or {key: ['list', 'of', 'values']}
+        if len(values) == 1:
+            return {key: values[0]}
+        else:
+            return {key: values}
 
     @staticmethod
     def list_lines_from_template(filename):

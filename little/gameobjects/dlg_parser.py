@@ -24,7 +24,6 @@ def template_lines_to_dict(line_list):
     # Get rid of empty lines
     unspaced = [line for line in uncommented if line]
 
-    # divide into sections (section markers in .rm file are '*** section_name ***')
     indices = [i for i, item in enumerate(unspaced) if item[0] == '[' and item[-1] == ']' and i is not 0]
     sections = [unspaced[i: j] for i, j in zip([0] + indices, indices + [None])]
     # convert to dictionary with section headers as keys

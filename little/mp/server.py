@@ -3,6 +3,12 @@ import atexit
 from gameobjects.gameobject import get_object_by_id
 from gameobjects.gameobject import load_user
 from gameobjects.gameobject import create_room_from_template, create_lifeform_from_template
+
+# Pathfinding A* scripts
+from pathfinding.core.diagonal_movement import DiagonalMovement
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
+
 import json
 import sys
 import pytmx
@@ -312,6 +318,16 @@ class GameServer(object):
             room_instance.add_lifeform_by_id(instance.id, instance.coords)
         return room_instance
 
+    def remove_lifeform(self, id):
+        # Check rooms for object to be removed, remove when found
+        for template, room in self.rooms:
+            if id in room['instance'].lifeforms.keys():
+                room.remove_lifeform_by_id(id)
+        # Check if removed object was player and disconnect player
+        for username, lifeformid in self.remote_clients.items():
+            if id == lifeformid:
+                del self.remote_clients[username]
+
     def get_lifeforms(self, tiledtmx, layer=2):
         """
         Searches each tile of the map and grabs lifeforms from given layer
@@ -335,6 +351,37 @@ class GameServer(object):
                     except KeyError:
                         print('Lifeform in tmx map missing required custom properties')
         return lifeforms
+
+    @staticmethod
+    def path(start, end, tmx, layers=None):
+        """
+        Use A* pathing algorythm to return a list of sequential tuples where each tuple is the
+            co-ordinates of the tile along the path.  Will avoid tiles with 'wall' property == 'true'
+        :param start: (x1, y1)
+        :param end: (x2, y2)
+        :param tmx: tmx map, see self.rooms[key]['tmx_map']
+        :param layers: layers to check for walls in, defau.t is [0, 1]
+        :return: list of tuples like [(0, 0), (0, 1), (0, 2)]
+        """
+        # Create matrix for A* to read
+        if not layers:
+            layers = [0, 1]
+        matrix = [[0] * tmx.width for row in range(0, tmx.height)]
+        for layer in layers:
+            for row in range(0, tmx.height):
+                for column in range(0, tmx.width):
+                    tile = tmx.get_tile_properties(column, row, layer)
+                    if tile:
+                        if tile['wall'] == 'true':
+                            matrix[column][row] = 1
+
+        # Calculate path and return list of tiles along route
+        grid = Grid(matrix=matrix)
+        start = grid.node(*start)  # format (30, 30)
+        end = grid.node(*end)
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+        path, runs = finder.find_path(start, end, grid)
+        return path
 
     def listen(self, clients):
         try:

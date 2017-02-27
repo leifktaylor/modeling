@@ -12,8 +12,8 @@ from __future__ import division
 
 import pygame
 from pygame.locals import *
-
 from pytmx.util_pygame import load_pygame
+
 import pyscroll
 import pyscroll.data
 from pyscroll.group import PyscrollGroup
@@ -35,7 +35,9 @@ STARTING_POSITION = [160, 160]
 MOVE_TIME = 8
 
 # Default Resolution
-DEFAULT_RESOLUTION = (1600, 900)
+DEFAULT_RESOLUTION = [900, 506]
+# Map camera zoom
+MAP_ZOOM = 4.5
 # Default Font
 FONT = None
 
@@ -51,7 +53,8 @@ DEFAULT_LAYER = 2
 
 def init_screen(width, height):
     """Simple wrapper to keep the screen resizeable"""
-    screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+    # screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+    screen = pygame.display.set_mode((width, height))
     return screen
 
 
@@ -209,7 +212,7 @@ class Game(object):
                  current_room=None):
         self.client = GameClient(charactername=charactername, username=username, password=password, ip=ip)
 
-        # List of other lifeform Other objects
+        # List of other lifeform Other objects [{id: RemoteSprite}, ...]
         self.others = {}
 
         # Rate that chat polls are sent to server
@@ -231,7 +234,7 @@ class Game(object):
 
         # create new renderer (camera)
         self.map_layer = pyscroll.BufferedRenderer(map_data, screen.get_size())
-        self.map_layer.zoom = 5
+        self.map_layer.zoom = MAP_ZOOM
 
         # pyscroll supports layered rendering.
         self.group = PyscrollGroup(map_layer=self.map_layer, default_layer=DEFAULT_LAYER)
@@ -252,12 +255,17 @@ class Game(object):
         self.group.add(self.hero)
 
         # Create text box
-        self.text_box = eztext.Input(maxlength=90, color=(255, 255, 255), x=30, y=860,
-                                     font=pygame.font.Font(FONT, 30), prompt=': ')
+        text_box_x, text_box_y = self.screen_coords((3, 95))
+        self.text_box = eztext.Input(maxlength=90, color=(255, 255, 255), x=text_box_x, y=text_box_y,
+                                     font=pygame.font.Font(FONT, 26), prompt=': ')
         # Create InputLog
-        self.inputlog = InputLog(coords=(30, 840), max_length=10, size=28, spacing=18, font=FONT)
+        self.inputlog = InputLog(coords=self.screen_coords((3, 92)), max_length=10, size=22, spacing=18, font=FONT)
         # Create Combatlog
-        self.combatlog = InputLog(coords=(1050, 860), max_length=10, size=28, spacing=18, font=FONT)
+        self.combatlog = InputLog(coords=(1050, 860), max_length=10, size=22, spacing=18, font=FONT)
+
+    @property
+    def screen_size(self):
+        return pygame.display.Info().current_w, pygame.display.Info().current_h
 
     def parse_cli(self, msgvalue):
         try:
@@ -331,10 +339,10 @@ class Game(object):
                     break
 
                 elif event.key == K_EQUALS:
-                    self.map_layer.zoom += .25
+                    self.map_layer.zoom += .1
 
                 elif event.key == K_MINUS:
-                    value = self.map_layer.zoom - .25
+                    value = self.map_layer.zoom - .1
                     if value > 0:
                         self.map_layer.zoom = value
 
@@ -434,12 +442,17 @@ class Game(object):
         # Update data on all lifeforms in room
         self.current_room.lifeforms.update(lifeforms)
 
-        # If object exists on server but not on client yet, create it here.
+        # If object exists on server but not on client yet, create it
         for id, lifeform in self.current_room.lifeforms.items():
             if id not in self.others.keys():
                 if lifeform.name != self.hero.lifeform.name:
                     self.others[id] = RemoteSprite(lifeform=lifeform)
                     self.group.add(self.others[id])
+
+        # If object doesn't exist on server but exists here, remove it
+        for id, sprite in self.others.items():
+            if id not in self.current_room.lifeforms.keys():
+                del self.others[id]
 
         # Update positions of all gameobjects
         for id, sprite in self.others.items():
@@ -474,6 +487,16 @@ class Game(object):
         # draw the map and all sprites
         self.group.draw(surface)
 
+    def screen_coords(self, coords):
+        """
+        :param coords: percentage of each axis.  i.e. (50, 50) will put an object in the center of the screen
+        :return: Actual co-ords per resolution
+        """
+        screen_x, screen_y = self.screen_size
+        new_x = (coords[0]/100) * screen_x
+        new_y = (coords[1]/100) * screen_y
+        return new_x, new_y
+
     def run(self):
         """ Run the game loop"""
         clock = pygame.time.Clock()
@@ -506,7 +529,10 @@ class Game(object):
                     draw_text('delta t:. . . . . . . {0}'.format(str(dt)), screen, coords=(10, 40))
                     draw_text('server poll:. . . . . {0}'.format(str(self.poll_timer)), screen, coords=(10, 55))
                     draw_text('moving: . . . . . . . {0}'.format(str(self.hero.moving)), screen, coords=(10, 70))
-                    draw_text('target_coords . . . . {0}'.format(str(self.hero.target_coords)), screen, coords=(10, 85))
+                    draw_text('target_coords:. . . . {0}'.format(str(self.hero.target_coords)), screen, coords=(10, 85))
+                    draw_text('map_zoom: . . . . . . {0}'.format(str(self.map_layer.zoom)), screen, coords=(10, 100))
+                    draw_text('screen size:. . . . . {0}'.format(str(self.screen_size)), screen, coords=(10, 115))
+                    draw_text(str(pygame.display.Info().current_w), screen, coords=(10, 130))
 
                 # blit text objects to screen
                 self.text_box.draw(screen)
@@ -519,21 +545,19 @@ class Game(object):
             self.running = False
 
 
-print('Testing Client::: PREALPHA')
-charactername = raw_input('charactername: ')
-username = raw_input('Username: ')
-password = raw_input('Password: ')
+if __name__ == "__main__":
+    print('Testing Client::: PREALPHA')
+    charactername = raw_input('charactername: ')
+    username = raw_input('Username: ')
+    password = raw_input('Password: ')
 
-pygame.init()
-pygame.font.init()
-screen = init_screen(DEFAULT_RESOLUTION[0], DEFAULT_RESOLUTION[1])
-pygame.display.set_caption('Little v0.0.1')
-game = Game(charactername=charactername, username=username, password=password)
+    pygame.init()
+    pygame.font.init()
+    screen = init_screen(*DEFAULT_RESOLUTION)
+    pygame.display.set_caption('Little v0.0.1')
 
-
-def start():
-    global game
     try:
+        game = Game(charactername=charactername, username=username, password=password)
         game.run()
     except:
         pygame.quit()

@@ -1,0 +1,12 @@
+*** combat ***
+stat HP<10 flee
+stat MP>10 cast fire any enemy stat HP<20
+cast heal any ally stat HP<10
+attack nearest enemy
+
+*** idle ***
+move (5,4)
+move (5,2)
+wait 20
+say "hello there!" any player faction iron_covenant>90
+timer 60 cast shielding self

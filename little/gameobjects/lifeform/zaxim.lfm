@@ -1,14 +1,15 @@
 *** settings ***
 name:Zaxim
-lifeform_type:LifeForm
+class_type:LifeForm
 description:Happy
 # todo deprecate graphic and move to sprites
 graphic:graphics/sprites/humans/17.png
+player:True
 
 *** sprites ***
 # <path> <tag> <frame>
 # e.g. path/to/somesprite.png attack 0
-graphics/sprites/humans/17.png main 0
+graphic:graphics/sprites/humans/17.png
 
 *** stats ***
 STR:10
