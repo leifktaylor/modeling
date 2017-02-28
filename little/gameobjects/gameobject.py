@@ -14,6 +14,33 @@ from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.grid import Grid
 
 
+class GameController(object):
+    """
+    Controls all aspect of the game engine, hosts server, interfaces with clients
+    """
+    def __init__(self):
+        """
+        :param world: wld template file
+        """
+        self.goc = GameObjectController()
+
+        # {'playername': <lifeformid>, 'playername': <lifeformid>, ... }
+        self.server = None
+
+    def load_game(self, save_file):
+        pass
+
+    def save_game(self, save_file):
+        pass
+
+    def update(self, dt):
+        self.goc.update(dt)
+        self.server.update(dt)
+
+    def run(self):
+        pass
+
+
 class GameObjectController(object):
     """
     Contain list of active lifeform instances, and the room they are in
@@ -49,57 +76,68 @@ class GameObjectController(object):
         return gameobject, id
 
     def add_room(self, template):
-        """
-        Add room dictionary
-        :param template: room template file (.rm)
-        :return:
-        """
+        """ Add room to game """
         input_data = self.tp.load_data(template)
         room = Room(**input_data)
         self._rooms[room.uniquename] = room
         return room
 
     def remove_gameobject(self, id):
-        self._gameobjects[id] = None
+        """ Delete gameobject from game """
+        del self._gameobjects[id]
 
     def get_object(self, id):
-        """ Returns gameobject instance """
+        """ Returns gameobject instance from id """
         return self._gameobjects[id]
 
     @property
     def gameobjects(self):
+        """ Dictionary like { <id>: <gameobject>, <id>: <gameobject>, <id>: <gameobject>, ... } """
         return self._gameobjects
 
     @property
+    def coords_map(self):
+        """ All objects and their coordinates {1: [30,40], 2: [56,43], ... } """
+        return {go.id: go.coords for go in self.gameobjects}
+
+    @property
     def lifeforms(self):
+        """ Only lifeforms { <id>: <gameobject>, <id>: <gameobject>, <id>: <gameobject>, ... } """
         return {id: go for id, go in enumerate(self._gameobjects) if isinstance(go, LifeForm)}
 
     @property
     def props(self):
+        """ Non-item, Non-lifeforms { <id>: <gameobject>, <id>: <gameobject>, <id>: <gameobject>, ... } """
         pass
 
     @property
     def rooms(self):
-        """ ['uniquename', 'uniquename', 'uniquename'] """
+        """ Dictionary like {<uniquename>: <room_instance>, <uniquename>: <room_instance> ... } """
         return self._rooms
 
     @property
     def players(self):
-        """ All player's gameobjects """
+        """ All player gameobjects { <id>: <gameobject>, <id>: <gameobject> """
         return {id: go for id, go in enumerate(self.lifeforms) if go.player}
 
     @property
+    def playernames(self):
+        """ Players by name { <playername>: <gameobject>, <playername>: <gameobject>, ... } """
+        return {go.name: go for go in self.players}
+
+    @property
     def npcs(self):
-        """ All non-player lifeforms """
+        """ All non-player lifeforms { <id>: <lifeform>, <id>: <lifeform>, ...} """
         return {id: go for id, go in enumerate(self.lifeforms) if not go.player}
 
     @property
     def treasure(self):
+        """ All Item type objects in room and not in inventory { <id>: <Item>, <id>, <Item>, ... } """
         pass
 
     @property
     def destroyed(self):
-        """ All destroyed game objects """
+        """ All destroyed game objects { <id>: <gameobject>, <id>: <gameobject>, ... } """
         return {id: go for id, go in enumerate(self._gameobjects) if go.destroyed}
 
     # File handling
@@ -212,32 +250,6 @@ class GameObject(object):
         return self.goc.get_object(id)
 
 
-class Item(GameObject):
-    def __init__(self, id, goc=None, coords=[0, 0], current_room=None,
-                 settings=None, sprites=None, stats=None, scripts=None):
-        super(Item, self).__init__(id=id, goc=goc, coords=coords, current_room=current_room)
-        self.settings = settings
-        self.sprites = sprites
-        self.stats = stats
-        self.scripts = scripts
-
-    @property
-    def weight(self):
-        return self._value(self.settings['weight'])
-
-    @property
-    def fullname(self):
-        return self._value(self.settings['fullname'])
-
-    @property
-    def item_type(self):
-        return self._value(self.settings['item_type'])
-
-    @property
-    def equippable_slot(self):
-        return self._value(self.settings['equippable_slot'])
-
-
 class LifeForm(GameObject):
     def __init__(self, id, coords=[0, 0], goc=None, settings=None, sprites=None, stats=None,
                  inventory=None, factions=None, dialogue=None, target=None, current_room=None):
@@ -246,7 +258,7 @@ class LifeForm(GameObject):
         self.settings = settings
         self.sprites = sprites
         self.stats = stats
-        self.inventory = Inventory(inventory)
+        self.inventory = Inventory(inventory, self)
         self.factions = factions
 
         a = TemplateParser()
@@ -271,6 +283,13 @@ class LifeForm(GameObject):
     @property
     def alive(self):
         return self.stats['HP'] > 0
+
+    @property
+    def player(self):
+        if self.ai:
+            return False
+        else:
+            return True
 
     # Actions
 
@@ -425,43 +444,79 @@ class LifeForm(GameObject):
         return 0
 
 
+class Item(GameObject):
+    def __init__(self, id=None, goc=None, coords=[0, 0], current_room=None,
+                 settings=None, sprites=None, stats=None, scripts=None):
+        super(Item, self).__init__(id=id, goc=goc, coords=coords, current_room=current_room)
+        self.settings = settings
+        self.sprites = sprites
+        self.stats = stats
+        self.scripts = scripts
+
+    @property
+    def weight(self):
+        return self._value(self.settings['weight'])
+
+    @property
+    def fullname(self):
+        return self._value(self.settings['fullname'])
+
+    @property
+    def item_type(self):
+        return self._value(self.settings['item_type'])
+
+    @property
+    def equippable_slot(self):
+        return self._value(self.settings['equippable_slot'])
+
+
 class Inventory(object):
-    def __init__(self, owner, max_slots=20):
+    def __init__(self, inventory_data, owner):
+        """
+        Inventory data is created from .lfm template
+        :param inventory_data: dictionary of key values
+        :param owner: Lifeform who owns this inventory
+        """
         self.owner = owner
-        self.slots = [None]*max_slots
+        self.slots = [None]*inventory_data['slots']
         self.equip_slots = {'head': None, 'mask': None, 'neck': None,
                             'chest': None, 'wrist1': None, 'wrist2': None,
                             'ring1': None, 'ring2': None, 'idol': None,
                             'belt': None, 'legs': None, 'boots': None,
                             'right_hand': None, 'left_hand': None,
                             'ranged': None, 'ammo': None}
-        self.max_slots = max_slots
-        self.weight = 0
+        self.max_slots = inventory_data['slots']
+        # Populate Slots with item instances, and equip if required by template
+        a = TemplateParser()
+        for slot, item_data in inventory_data.items():
+            if slot == 'slots':
+                pass
+            else:
+                self.slots[slot] = Item(**a.load_data(item_data[0]))
+                if item_data[1]:
+                    self.equip_item(self.slots[slot])
 
-    def get_object(self, id):
-        return self.owner.get_object(id)
-
-    def get_weight(self):
+    @property
+    def weight(self):
         weight = 0
         for item in self.slots:
             if item.stats.weight:
                 weight += item.stats.weight
         return weight
 
-    def add_item(self, id):
+    def add_item(self, item):
         # If inventory is full
         if None not in self.slots:
             raise RuntimeError('Inventory is full, cannot add item')
 
         # Add item to first available slot in inventory
-        item_to_add = self.get_object(id)
         for i, slot in enumerate(self.slots):
             if slot is None:
-                self.slots.insert(i, item_to_add)
+                self.slots.insert(i, item)
                 break
 
-    def item_in_inventory(self, id):
-        return self.get_object(id) in self.slots
+    def item_in_inventory(self, item):
+        return item in self.slots
 
     def item_name_in_inventory(self, name):
         for item in self.slots:
@@ -470,51 +525,38 @@ class Inventory(object):
                     return True
         return False
 
-    def get_itemid_in_inventory_by_name(self, name):
-        for item in self.slots:
-            if item:
-                if item.name == name:
-                    return item.id
-        return None
-
-    def is_equipped(self, id=None, instance=None):
-        if instance:
-            item_slot = instance.equippable_slot
-        else:
-            instance = self.get_object(id)
-            item_slot = instance.equippable_slot
+    def is_equipped(self, item):
+        item_slot = item.equippable_slot
         if item_slot:
-            return self.equip_slots[item_slot] == instance
+            return self.equip_slots[item_slot] == item
         else:
             return False
 
-    def equip_item(self, id):
-        new_item = self.get_object(id)
-        equip_slot = new_item.equippable_slot
+    def equip_item(self, item):
+        equip_slot = item.equippable_slot
 
         # If item isn't in inventory
-        if not self.item_in_inventory(id):
-            raise RuntimeError('{0} is not in inventory'.format(new_item))
+        if not self.item_in_inventory(item):
+            raise RuntimeError('{0} is not in inventory'.format(item))
 
         # If item doesn't have an equippable slot
-        if not new_item.equippable_slot:
-            raise RuntimeError('{0} is not equipabble'.format(new_item.name))
+        if not item.equippable_slot:
+            raise RuntimeError('{0} is not equipabble'.format(item.name))
 
         # Confirm object is equippable in given slot
-        if new_item.equippable_slot != equip_slot:
+        if item.equippable_slot != equip_slot:
             logging.info('Tried to equip item in improper slot')
-            raise RuntimeError('{0} only equippable in {1} slot'.format(new_item.name, new_item.equippable_slot))
+            raise RuntimeError('{0} only equippable in {1} slot'.format(item.name, item.equippable_slot))
 
-        if self.equip_slots[equip_slot] and self.equip_slots[equip_slot] != new_item:
+        if self.equip_slots[equip_slot] and self.equip_slots[equip_slot] != item:
             # If a different item already equipped, unequip it
-            item_id = self.equip_slots[equip_slot].id
-            self.unequip_item(item_id)
-        elif self.equip_slots[equip_slot] and self.equip_slots[equip_slot] == new_item:
+            self.unequip_item(equip_slot)
+        elif self.equip_slots[equip_slot] and self.equip_slots[equip_slot] == item:
             # If this item already equipped do nothing
             logging.debug('Trying to equip item that is already equipped, doing nothing')
             return
 
-        self.equip_slots[equip_slot] = new_item
+        self.equip_slots[equip_slot] = item
 
     def unequip_item(self, equip_slot):
         equipped_item = self.equip_slots[equip_slot]
@@ -538,28 +580,4 @@ class Inventory(object):
 
     def give_item(self, item_id, target_id):
         pass
-
-
-def regression_tests():
-    import pprint
-    a = TemplateParser()
-    print(' TEST 1 : Lifeform ')
-    pprint.pprint(a.load_data('gameobjects/lifeform/zaxim.lfm'))
-    print(' TEST 2 : Item ')
-    pprint.pprint(a.load_data('gameobjects/weapon/long_sword.itm'))
-    print(' TEST 3 : Room ')
-    pprint.pprint(a.load_data('gameobjects/room/template.rm'))
-    print(' TEST 4 : Faction ')
-    pprint.pprint(a.load_data('gameobjects/faction/chand_baori.fct'))
-    print(' TEST 5 : AI ')
-    pprint.pprint(a.load_data('gameobjects/ai/healer.ai'))
-    print(' TEST 6 : DIALOGUE ')
-    pprint.pprint(a.load_data('gameobjects/dialogue/template.dlg'))
-
-    # GameObjectController Tests
-    GOC = GameObjectController()
-    GOC.add_room('gameobjects/room/template.rm')
-
-
-
 

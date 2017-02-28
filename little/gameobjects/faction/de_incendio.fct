@@ -1,6 +1,7 @@
 *** settings ***
-name: De Incendio
-description: The myth was that such magic had no consequence.
+name: "De Incendio"
+uniquename:de_incendio
+description: "The myth was that such magic had no consequence."
 banner:graphics/sprites/spells/sprites1287.png
 
 *** factions ***

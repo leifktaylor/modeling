@@ -1,7 +1,5 @@
-# Ingredient Template
+*** settings ***
 item_type:ingredient
 name:name of ingredient
 description:description of ingredient
-
-# misc stuff
 weight:1

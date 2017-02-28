@@ -1,6 +1,7 @@
 *** settings ***
 name: Enemy
-description: Beasts incapable of diplomacy, or without need for it.
+uniquename:enemy
+description: "Beasts incapable of diplomacy, or without need for it."
 banner:graphics/sprites/weapons/sprites1020.png
 
 *** factions ***

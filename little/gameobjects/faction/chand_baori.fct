@@ -1,6 +1,7 @@
 *** settings ***
-name: Chand Baori
-description: Dasha bestowed her gift upon so few.
+name: "Chand Baori"
+uniquename:chand_baori
+description: "Dasha bestowed her gift upon so few."
 banner:graphics/sprites/weapons/sprites1020.png
 
 *** factions ***

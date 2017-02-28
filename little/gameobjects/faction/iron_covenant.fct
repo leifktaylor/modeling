@@ -1,6 +1,7 @@
 *** settings ***
-name: The Iron Covenant
-description: Those that learned to work metal, lorded over all men.
+name: "The Iron Covenant"
+uniquename:iron_covenant
+description: "Those that learned to work metal, lorded over all men."
 banner:graphics/sprites/weapons/sprites1012.png
 
 *** factions ***

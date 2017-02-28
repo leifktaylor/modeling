@@ -1,11 +1,9 @@
-# Potion Template
+*** settings ***
 item_type:potion
-name:name of potion
-description:description of potion
-
-# When used as an item
-OnUse:path/to/spell.spl
-uses:1
-
-# misc stuff
+name:"Minor Health Potion"
+description:"A small jolt of energy is in this bottle."
 weight:2
+
+*** scripts ***
+# When used as an item
+use 0 cast heal self

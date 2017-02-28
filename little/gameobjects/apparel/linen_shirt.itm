@@ -1,8 +1,8 @@
 *** settings ***
 item_type:apparel
 equippable_slot:chest
-name:linen shirt
-description:description of weapon
+name:"linen shirt"
+description:"description of weapon"
 weight:4
 
 *** sprites ***

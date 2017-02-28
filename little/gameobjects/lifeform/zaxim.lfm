@@ -2,9 +2,6 @@
 name:Zaxim
 class_type:LifeForm
 description:Happy
-# todo deprecate graphic and move to sprites
-graphic:graphics/sprites/humans/17.png
-player:True
 ai:None
 
 *** sprites ***
@@ -23,18 +20,18 @@ PDEF:8
 
 *** inventory ***
 slots:12
-slot0:gameobjects/apparel/linen_shirt.itm True 20
-slot1:gameobjects/potion/major_health_potion.itm False 20
-slot2:gameobjects/weapon/long_sword.itm True 20
-slot3:gameobjects/apparel/linen_shirt.itm False 20
-slot4:gameobjects/potion/major_health_potion.itm False 20
-slot5:gameobjects/weapon/long_sword.itm False 20
-slot6:gameobjects/apparel/linen_shirt.itm False 20
-slot7:gameobjects/potion/major_health_potion.itm False 20
-slot8:gameobjects/weapon/long_sword.itm False 20
-slot9:gameobjects/apparel/linen_shirt.itm False 20
-slot10:gameobjects/potion/major_health_potion.itm False 20
-slot11:gameobjects/weapon/long_sword.itm False 20
+0:gameobjects/apparel/linen_shirt.itm True 20
+1:gameobjects/potion/major_health_potion.itm False 20
+2:gameobjects/weapon/long_sword.itm True 20
+3:gameobjects/apparel/linen_shirt.itm False 20
+4:gameobjects/potion/major_health_potion.itm False 20
+5:gameobjects/weapon/long_sword.itm False 20
+6:gameobjects/apparel/linen_shirt.itm False 20
+7:gameobjects/potion/major_health_potion.itm False 20
+8:gameobjects/weapon/long_sword.itm False 20
+9:gameobjects/apparel/linen_shirt.itm False 20
+10:gameobjects/potion/major_health_potion.itm False 20
+11:gameobjects/weapon/long_sword.itm False 20
 
 *** factions ***
 player:100

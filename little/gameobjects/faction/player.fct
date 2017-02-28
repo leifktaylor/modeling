@@ -1,6 +1,7 @@
 *** settings ***
 name:Player
-description: An awakened mind separates us from all others.
+uniquename:player
+description: "An awakened mind separates us from all others."
 banner:graphics/sprites/trinkets/05.png
 
 *** factions ***

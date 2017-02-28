@@ -1,6 +1,7 @@
 *** settings ***
-name:Tramore Folk
-description:We grew up too fast here. We had no choice.
+name:"Tramore Folk"
+uniquename:tramore_folk
+description:"We grew up too fast here. We had no choice."
 banner:graphics/sprites/keys/sprites1003.png
 
 *** factions ***

@@ -3,6 +3,9 @@ TemplateParser can parse .lfm, .itm, .fct, .rm
 """
 
 
+import shlex
+
+
 class TemplateParser(object):
     def __init__(self, templatefile=None):
         self.templatefile = templatefile
@@ -86,13 +89,18 @@ class TemplateParser(object):
         # Return first element of split line, and list of all other values
         if ':' not in line:
             if len(line.split()) > 1:
-                return {line.split()[0]: line.split()[1:]}
+                key = line.split()[0]
+                value = ' '.join(line.split()[1:])
+                # Split line, but if section enclosed in quotes keep it together
+                value = shlex.split(value)
+                return {key: value}
             else:
                 return line
 
         # Get key and values from line, convert values to True/False/None/Int if needed
         split_line = [item.strip() for item in line.split(':')]
-        key, values = split_line[0], [item.strip() for item in split_line[1].split()]
+        shlexed_values = shlex.split(split_line[1])
+        key, values = self.string_literal(split_line[0]), [item.strip() for item in shlexed_values]
         values = [self.string_literal(value) for value in values]
 
         # Return either {key: value} or {key: ['list', 'of', 'values']}
@@ -244,22 +252,3 @@ class DialogueParser(object):
 
     def load_data(self, filename):
         return self.template_lines_to_dict(self.list_lines_from_template(filename))
-
-
-if __name__ == '__main__':
-    import pprint
-    a = TemplateParser()
-    print(' TEST 1 : Lifeform ')
-    pprint.pprint(a.load_data('gameobjects/lifeform/zaxim.lfm'))
-    print(' TEST 2 : Item ')
-    pprint.pprint(a.load_data('gameobjects/weapon/long_sword.itm'))
-    print(' TEST 3 : Room ')
-    pprint.pprint(a.load_data('gameobjects/room/template.rm'))
-    print(' TEST 4 : Faction ')
-    pprint.pprint(a.load_data('gameobjects/faction/chand_baori.fct'))
-    print(' TEST 5 : AI ')
-    pprint.pprint(a.load_data('gameobjects/ai/healer.ai'))
-    print(' TEST 6 : DIALOGUE ')
-    pprint.pprint(a.load_data('gameobjects/dialogue/template.dlg'))
-
-
