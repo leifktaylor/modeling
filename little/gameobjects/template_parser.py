@@ -1,6 +1,6 @@
-TEMPLATE_FILE = 'gameobjects/faction/chand_baori.fct'
-
-
+"""
+TemplateParser can parse .lfm, .itm, .fct, .rm
+"""
 class TemplateParser(object):
     def __init__(self, templatefile=None):
         self.templatefile = templatefile
@@ -54,12 +54,16 @@ class TemplateParser(object):
 
     def key_values(self, lines):
         key_values = {}
+        line_list = []
         for i, line in enumerate(lines):
-            if len(line.split()) == 1:
-                return lines
-            else:
+            try:
                 key_values.update(self._parse_key_values(line))
-        return key_values
+            except ValueError:
+                line_list.append(line)
+        if line_list:
+            return line_list
+        else:
+            return key_values
 
     def _parse_key_values(self, line):
         """
@@ -76,9 +80,12 @@ class TemplateParser(object):
         if ':' not in line:
             if len(line.split()) > 1:
                 return {line.split()[0]: line.split()[1:]}
+            else:
+                return line
 
         # Get key and values from line, convert values to True/False/None/Int if needed
-        key, values = line.split(':')[0].strip(), [line.strip() for line in line.split(':')[1:][0].split()]
+        split_line = [item.strip() for item in line.split(':')]
+        key, values = split_line[0], [item.strip() for item in split_line[1].split()]
         values = [self.string_literal(value) for value in values]
 
         # Return either {key: value} or {key: ['list', 'of', 'values']}
@@ -107,11 +114,15 @@ class TemplateParser(object):
 
 
 if __name__ == '__main__':
-    a = TemplateParser(TEMPLATE_FILE)
-    a.initialize()
     import pprint
-    print('Class Type: . . {0}'.format(a.class_type))
-    print('Sections: . . . {0}'.format(a.sections))
-    pprint.pprint(a.data)
+    a = TemplateParser()
+    print(' TEST 1 : Lifeform ')
+    pprint.pprint(a.load_data('gameobjects/lifeform/zaxim.lfm'))
+    print(' TEST 2 : Item ')
+    pprint.pprint(a.load_data('gameobjects/weapon/long_sword.itm'))
+    print(' TEST 3 : Room ')
+    pprint.pprint(a.load_data('gameobjects/room/template.rm'))
+    print(' TEST 4 : Faction ')
+    pprint.pprint(a.load_data('gameobjects/faction/chand_baori.fct'))
 
 
