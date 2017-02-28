@@ -8,4 +8,4 @@ Yes! You're so incredibly handsome.. heck I'd date you!
 Yes! Why don't you go meet her! She's somewhere in this weird place.
 Take this sword; it may impress her!
 {give gameobjects/weapon/long_sword.itm}
-{dialogue gameobjects/lifeform/dialogue/template2.dlg}
+{dialogue 1}

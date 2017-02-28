@@ -54,19 +54,31 @@ class TemplateParser(object):
 
     def key_values(self, lines):
         key_values = {}
-        for line in lines:
-            key_values.update(self._parse_key_values(line))
+        for i, line in enumerate(lines):
+            if len(line.split()) == 1:
+                return lines
+            else:
+                key_values.update(self._parse_key_values(line))
         return key_values
 
     def _parse_key_values(self, line):
+        """
+        Lines in a template can be in 3 formats:
+
+        <item:value> --> in this case a dictionary like {'item': 'value'} will be returned
+        <item value value value ...> --> in this case a dictionary like {'item': [value, value, value]}
+        <a_single_item_with_no_spaces> --> lines like this should never reach this method
+
+        :param line: a single line from a template file
+        :return: see above
+        """
         # Return first element of split line, and list of all other values
         if ':' not in line:
             if len(line.split()) > 1:
                 return {line.split()[0]: line.split()[1:]}
-            else:
-                return {line: None}
+
         # Get key and values from line, convert values to True/False/None/Int if needed
-        key, values = line.split(':')[0].strip(), line.split(':')[1:][0].split().strip()
+        key, values = line.split(':')[0].strip(), [line.strip() for line in line.split(':')[1:][0].split()]
         values = [self.string_literal(value) for value in values]
 
         # Return either {key: value} or {key: ['list', 'of', 'values']}

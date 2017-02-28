@@ -1,19 +1,7 @@
-# Room template
-# Room templates must contain these four sections, delimited by '*** section_name ***'
-
 *** settings ***
-name:Dark Hallway
-uniquename:dk_hallway1
-atenter:As you enter the hallway, you hear nothing but water dripping and a slight breeze.
-atexit:You proceed down the hallway.
-look:The walls are covered in slime.  What a horrid place.
-listen:You think you hear a distant moaning sound.
+name:dk_hallway1
 tmx_map:gameobjects/room/test8.tmx
-
-*** lifeforms ***
-
-
-*** items ***
+bgm:None
+bgs:None
 
 
-*** links ***

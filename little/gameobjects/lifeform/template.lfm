@@ -5,6 +5,7 @@ description:Happy
 # todo deprecate graphic and move to sprites
 graphic:graphics/sprites/humans/17.png
 player:True
+ai:gameobjects/ai/healer.ai
 
 *** sprites ***
 # <path> <tag> <frame>
@@ -39,4 +40,8 @@ slot11:gameobjects/weapon/long_sword.itm False 20
 *** factions ***
 player:100
 enemy:0
-iron covenant:50
+iron_covenant:50
+
+*** dialogue ***
+gameobjects/dialogue/template.dlg
+gameobjects/dialogue/template2.dlg

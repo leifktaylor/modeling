@@ -38,4 +38,4 @@ slot11:gameobjects/weapon/long_sword.itm False 20
 *** factions ***
 player:100
 enemy:0
-iron covenant:50
+iron_covenant:50

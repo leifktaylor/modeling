@@ -1,14 +1,15 @@
 *** settings ***
-name:Orc Pawn
+name:Zaxim
 class_type:LifeForm
 description:Happy
 # todo deprecate graphic and move to sprites
-graphic:graphics/sprites/goblins/sprites1140.png
+graphic:graphics/sprites/humans/17.png
+player:True
+ai:gameobjects/ai/healer.ai
 
 *** sprites ***
-# <path> <tag> <frame>
-# e.g. path/to/somesprite.png attack 0
-graphic:graphics/sprites/humans/17.png
+# <tag> <path> <params> ...
+main graphics/sprites/humans/17.png
 
 *** stats ***
 STR:10
@@ -38,4 +39,11 @@ slot11:gameobjects/weapon/long_sword.itm False 20
 *** factions ***
 player:100
 enemy:0
-iron covenant:50
+iron_covenant:50
+
+*** dialogue ***
+conversation1.dlg
+conversation2.dlg
+conversation3.dlg
+
+
