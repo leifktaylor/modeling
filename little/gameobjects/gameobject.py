@@ -2,9 +2,7 @@
 Test based mushy fun!
 """
 import logging
-import template_constants
-import template_parser
-import dlg_parser
+from template_parser import TemplateParser
 
 import pickle
 import json
@@ -24,10 +22,10 @@ class GameObjectController(object):
     Can terminate gameobjects from its list
     """
     def __init__(self):
-        self.tp = template_parser.TemplateParser()
+        self.tp = TemplateParser()
 
-        # Lists where gameobject.id is index
-        self._gameobjects = []
+        # Dictionary like {<id>: <gameobject instance>, <id>: <gameobject instance>, ...}
+        self._gameobjects = {}
 
         # Dictionary like {<room_unique_name>: <room_instance>, <room_unique_name>: <room_instance>, ... }
         self._rooms = {}
@@ -67,6 +65,10 @@ class GameObjectController(object):
     def get_object(self, id):
         """ Returns gameobject instance """
         return self._gameobjects[id]
+
+    @property
+    def gameobjects(self):
+        return self._gameobjects
 
     @property
     def lifeforms(self):
@@ -171,7 +173,7 @@ class Room(object):
                     if tile:
                         if tile['wall'] == 'true':
                             matrix[column][row] = 1
-        grid = Grid(matrix=self.matrix)
+        grid = Grid(matrix=matrix)
         return grid
 
 
@@ -246,7 +248,9 @@ class LifeForm(GameObject):
         self.stats = stats
         self.inventory = Inventory(inventory)
         self.factions = factions
-        self.dialogue = [dlg_parser.dict_lines(conversation) for conversation in dialogue]
+
+        a = TemplateParser()
+        self.dialogue = [a.load_data(line) for line in dialogue]
         self.current_dialogue = 0
 
         # List of status objects
@@ -488,10 +492,6 @@ class Inventory(object):
         new_item = self.get_object(id)
         equip_slot = new_item.equippable_slot
 
-        # If item has no equip slot, or has an invalid equip slot
-        if equip_slot not in template_constants.all_equip_slots:
-            raise RuntimeError('{0} is not a valid equip_slot'.format(equip_slot))
-
         # If item isn't in inventory
         if not self.item_in_inventory(id):
             raise RuntimeError('{0} is not in inventory'.format(new_item))
@@ -540,15 +540,26 @@ class Inventory(object):
         pass
 
 
-# TODO some class to handle sprites
-class Sprite(object):
-    def __init__(self, images=None):
-        """
-        :param images: list of paths to images
-        """
-        self.images = images
-        if images:
-            self.image = images[0]
-        else:
-            self.image = None
+def regression_tests():
+    import pprint
+    a = TemplateParser()
+    print(' TEST 1 : Lifeform ')
+    pprint.pprint(a.load_data('gameobjects/lifeform/zaxim.lfm'))
+    print(' TEST 2 : Item ')
+    pprint.pprint(a.load_data('gameobjects/weapon/long_sword.itm'))
+    print(' TEST 3 : Room ')
+    pprint.pprint(a.load_data('gameobjects/room/template.rm'))
+    print(' TEST 4 : Faction ')
+    pprint.pprint(a.load_data('gameobjects/faction/chand_baori.fct'))
+    print(' TEST 5 : AI ')
+    pprint.pprint(a.load_data('gameobjects/ai/healer.ai'))
+    print(' TEST 6 : DIALOGUE ')
+    pprint.pprint(a.load_data('gameobjects/dialogue/template.dlg'))
+
+    # GameObjectController Tests
+    GOC = GameObjectController()
+    GOC.add_room('gameobjects/room/template.rm')
+
+
+
 

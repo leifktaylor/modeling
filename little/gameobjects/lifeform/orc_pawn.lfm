@@ -4,7 +4,7 @@ class_type:LifeForm
 description:Happy
 # todo deprecate graphic and move to sprites
 graphic:graphics/sprites/humans/17.png
-player:True
+player:False
 ai:gameobjects/ai/healer.ai
 
 *** sprites ***

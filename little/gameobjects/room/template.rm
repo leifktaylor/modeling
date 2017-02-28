@@ -1,5 +1,6 @@
 *** settings ***
 name:dk_hallway1
+uniquename:template_room
 tmx_map:gameobjects/room/test8.tmx
 bgm:None
 bgs:None

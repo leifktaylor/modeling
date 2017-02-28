@@ -2,6 +2,7 @@
 TemplateParser can parse .lfm, .itm, .fct, .rm
 """
 
+
 class TemplateParser(object):
     def __init__(self, templatefile=None):
         self.templatefile = templatefile
