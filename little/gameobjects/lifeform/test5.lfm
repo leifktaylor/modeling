@@ -1,5 +1,5 @@
 *** settings ***
-name:Zaxim
+name:Test5
 class_type:LifeForm
 description:Happy
 ai:None

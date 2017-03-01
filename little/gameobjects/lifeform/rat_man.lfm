@@ -1,5 +1,5 @@
 *** settings ***
-name:Rat Man
+name:"Rat Man"
 class_type:LifeForm
 description:Happy
 ai:gameobjects/ai/healer.ai

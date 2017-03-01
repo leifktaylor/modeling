@@ -1,13 +1,7 @@
 import socket, select, pickle
 import atexit
-from gameobjects.gameobject import get_object_by_id
-from gameobjects.gameobject import load_user
-from gameobjects.gameobject import create_room_from_template, create_lifeform_from_template
-
-# Pathfinding A* scripts # TODO: Should this be commented out?
-from pathfinding.core.diagonal_movement import DiagonalMovement
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
+# from gameobjects.gameobject import get_object_by_id
+# from gameobjects.gameobject import load_user
 
 import json
 import sys
@@ -178,14 +172,74 @@ class RemoteClient(object):
         pass
 
 
+class RequestProcessor(object):
+    def __init__(self, goc=None, server=None):
+        self.goc = goc
+        self.server = server
+
+    def get_payload(self, request):
+        """
+        Takes request from client and processes payload using GOC
+        Request in format:
+        {'username': <user>, 'charactername': <name>, 'password': <pass>,
+        'id': <playerid>, 'request': <req>, 'args': <args>}
+
+        :param request: dictionary sent from client
+        :return: {'status': 0, 'response': { <response object> } }
+        """
+        return getattr(self, request['request'])(request)
+
+    def coords(self, request):
+        """ Return Co-ords to client of all gameobjects in room """
+        all_coords = [coords for id, coords in self.goc.coords_map.items()
+                      if self.goc.get_object(id).current_room == self.goc.get_object(request['id']).current_room]
+        return {'status': 0, 'response': all_coords}
+
+    def login(self, request):
+        if self.server.authenticate_credentials(request):
+            if request['charactername'] not in self.goc.playernames:
+                print('Player logging in, adding player Lifeform to GOC')
+                gameobject, id = self.goc.load_gameobject('mp/users/{0}.sav'.format(request['charactername']))
+                print('Created gameobject with id: {0}'.format(id))
+                return {'status': 0, 'response': {'id': id, 'coords': gameobject.coords}}
+            else:
+                return {'status': -1, 'response': {'message': 'Character already logged in'}}
+        else:
+            return {'status': -1, 'response': {'message': 'Credentials invalid'}}
+
+    def logout(self, request):
+        if self.server.authenticate_credentials(request):
+            if request['charactername'] in self.goc.playernames:
+                print('Removing gameobject with id: {0}'.format(request['id']))
+                self.goc.remove_gameobject(request['id'])
+                return {'status': 0, 'response': {'message': 'Logout successful'}}
+            else:
+                return {'status': -1, 'response': {'message': 'Character is not logged in'}}
+        else:
+            print('User had invalid credentials, halting action')
+            return {'status': -1, 'response': {'message': 'Credentials invalid'}}
+
+    def test(self, request):
+        playername = request['username']
+        return {'status': 0, 'response': {'message': 'Hello {0}!'.format(playername)}}
+
+    def evaluate(self, request):
+        """ Allows client to get variable values from GOC, debugging only """
+        result = eval('self.goc.{0}'.format(request['args']))
+        return {'status': 0, 'response': {'message': result}}
+
+
 class GameServer(object):
-    def __init__(self):
-        self.server = None
+    def __init__(self, goc=None):
+        # GOC is a GameObjectController, this will grant GameServer access to game data to send to clients
+        self.goc = goc
+        # RequestProcessor will respond to client request and deliver payload from the goc
+        self.processor = RequestProcessor(self.goc, self)
+
         # dictionary containing {<charactername>:<player gameobject id>, ...}
         self.remote_clients = {}
-        # contains pointers to all the rooms currently instantiated
-        # {<path/to/template.rm>: 'instance': <room_instance>, 'tmx_map': <pytmx TiledMap instance>}
-        self.rooms = {}
+
+        self.server = None
 
         with open(USER_LIST, 'r') as f:
             self.user_data = json.load(f)
@@ -261,10 +315,10 @@ class GameServer(object):
         # Check that character isn't already logged in
         if charactername in self.remote_clients.keys():
             print('User is already logged in')
-            return {'status': -1, 'response': 'Password was invalid, or character/user does not exist'}
+            return {'status': -1, 'response': 'Character is already logged in!'}
 
         # Find player json matching charactername, make sure username and password correct and instantiate
-        player = self.load_player_from_json(charactername, username, password)
+        player = self.goc.load_player_from_json(charactername, username, password)
         if player == -1:
             print('Password was invalid, or character/user does not exist')
             return {'status': -1, 'response': 'Password was invalid, or character/user does not exist'}
@@ -287,102 +341,6 @@ class GameServer(object):
         print('Login successful on serverside, sending response to client...')
         response = {'status': 0, 'response': {'playerid': playerid, 'current_room': room}}
         return response
-
-    def add_room(self, template):
-        # Create the room instance and add to server's room list
-        if template not in self.rooms.keys():
-            print('Loading room from template: {0}'.format(template))
-            new_room = create_room_from_template(template)
-            print('Loading Tiled .tmx file: {0}'.format(new_room.tmx_map))
-            tmx_map = pytmx.TiledMap(new_room.tmx_map)
-            # Instantiate all lifeforms required by room tmx file
-            print('Spawning lifeforms from pytmx TiledMap: {0}'.format(tmx_map))
-            new_room = self.spawn_room_lifeforms(new_room, tmx_map)
-            self.rooms[template] = {'instance': new_room, 'tmx_map': tmx_map}
-        return self.rooms[template]
-    
-    def spawn_room_lifeforms(self, room_instance, tiledtmx):
-        """
-        Instantiates all lifeform objects by reading Tiled tmx map
-        :param room_instance: instantiated room object
-        :param tiledtmx: pytmx TiledMap instance
-        :return: 
-        """
-        lifeforms = self.get_lifeforms(tiledtmx)
-        print('Lifeforms loaded from tmx: {0}'.format(lifeforms))
-        for lifeform in lifeforms:
-            # Instantiate each lifeform and add to room
-            instance = create_lifeform_from_template(lifeform['template'])
-            instance.coords = [lifeform['x'] * TILE_SIZE, lifeform['y'] * TILE_SIZE]
-            print('Spawned: {0}'.format(instance.name))
-            room_instance.add_lifeform_by_id(instance.id, instance.coords)
-        return room_instance
-
-    def remove_lifeform(self, id):
-        # Check rooms for object to be removed, remove when found
-        for template, room in self.rooms:
-            if id in room['instance'].lifeforms.keys():
-                room.remove_lifeform_by_id(id)
-        # Check if removed object was player and disconnect player
-        for username, lifeformid in self.remote_clients.items():
-            if id == lifeformid:
-                del self.remote_clients[username]
-
-    def get_lifeforms(self, tiledtmx, layer=2):
-        """
-        Searches each tile of the map and grabs lifeforms from given layer
-
-        Lifeforms require these specific custom properties (make them in Tiled editor):
-            template: string: path to .lfm template
-            spawn_time: int: length of respawn timer when killed, if set to None, will not respawn
-
-        :param tiledtmx: pytmx TiledMap instance
-        :param layer: map layer to search for lifeforms (default is 1)
-        :return: list of dictionaries
-        """
-        lifeforms = []
-        for y in range(0, tiledtmx.height):
-            for x in range(0, tiledtmx.width):
-                lifeform = tiledtmx.get_tile_properties(x, y, layer)
-                if lifeform:
-                    try:
-                        lifeforms.append({'x': x, 'y': y, 'template': lifeform['template'],
-                                         'spawn_time': lifeform['spawn_time']})
-                    except KeyError:
-                        print('Lifeform in tmx map missing required custom properties')
-        return lifeforms
-
-    @staticmethod
-    def path(start, end, tmx, matrix=None, layers=None):
-        """
-        Use A* pathing algorythm to return a list of sequential tuples where each tuple is the
-            co-ordinates of the tile along the path.  Will avoid tiles with 'wall' property == 'true'
-        :param start: (x1, y1)
-        :param end: (x2, y2)
-        :param tmx: tmx map, see self.rooms[key]['tmx_map']
-        :param layers: layers to check for walls in, defau.t is [0, 1]
-        :return: list of tuples like [(0, 0), (0, 1), (0, 2)]
-        """
-        # Create matrix for A* to read
-        if not layers:
-            layers = [0, 1]
-        if not matrix:
-            matrix = [[0] * tmx.width for row in range(0, tmx.height)]
-            for layer in layers:
-                for row in range(0, tmx.height):
-                    for column in range(0, tmx.width):
-                        tile = tmx.get_tile_properties(column, row, layer)
-                        if tile:
-                            if tile['wall'] == 'true':
-                                matrix[column][row] = 1
-
-        # Calculate path and return list of tiles along route
-        grid = Grid(matrix=matrix)
-        start = grid.node(*start)  # format (30, 30)
-        end = grid.node(*end)
-        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
-        path, runs = finder.find_path(start, end, grid)
-        return path
 
     def listen(self, clients):
         try:
@@ -442,18 +400,13 @@ class GameServer(object):
             return None
 
     def process_request(self, request):
+        """ Receive client request, process and form the Payload to be returned """
         # If request is in valid format
-        if {'username', 'charactername', 'password', 'request', 'args'} == set(request.keys()):
+        if {'username', 'charactername', 'password', 'request', 'id', 'args'} == set(request.keys()):
             if self.authenticate_credentials(request):
-                # Login request should be {..., 'request': 'login', ...}
-                if request['request'] == 'login':
-                    return self.login_client(request)
-                # Logout request should be {..., 'request': 'logout', ...}
-                elif request['request'] == 'logout':
-                    return self.logout_client(request)
-                # Verify that already logged in, and then process any other request type
-                elif request['charactername'] in self.remote_clients.keys():
-                    return self.remote_clients[request['charactername']].get_payload(request)
+
+                return self.processor.get_payload(request)
+
         else:
             raise RuntimeError('Request is not in valid format\n'
                                'should be dictionary with keys:\n '
@@ -473,15 +426,6 @@ class GameServer(object):
                 return False
         else:
             return False
-
-    def load_player_from_json(self, charactername, username, password):
-        # TODO: Add credentials check and non default lifeform value
-        print('Loading charactername: {0}, username: {1} password: {2}'.format(charactername, username, password))
-        try:
-            lifeform_instance = load_user(charactername, username, password)
-        except:
-            lifeform_instance = -1
-        return lifeform_instance
 
     def add_to_broadcast_que(self, originalplayerid, message):
         # TODO: Deprecated.. fix this

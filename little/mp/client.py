@@ -34,10 +34,10 @@ class GameClient(object):
     'change_room'           -->  change_room(self, roomname)
 
     """
-    def __init__(self, ip='127.0.0.1', charactername='Mike', username='leif', password='mypw'):
+    def __init__(self, ip='127.0.0.1', charactername='Zaxim', username='ken', password='mypw'):
         # Character is the unique character name on server
         self.charactername = charactername
-        self.playerid = None
+        self.id = None
         self.current_room = None
 
         # Gameplay attributes
@@ -51,59 +51,58 @@ class GameClient(object):
         # Incoming broadcast from server
         self.incoming_broadcast = None
 
+    def coords(self):
+        """ Request coords of all units in current room
+            Response like: {<id>: <coords>, <id>: <coords>, ...} """
+        return self.send('coords')
+
     def login(self):
         """
         Create character instance on the server.
-        Server will send response containing {..., 'playerid': <someid>, 'current_room': <room_instance>}
+        Server will send response containing {..., 'id': <someid>, 'current_room': <room_instance>}
         :return:
         """
-        response = self.send(self._request('login', []))
-        self.verify_response(response)
+        response = self.send('login')
+        try:
+            self.id = response['response']['id']
+        except KeyError:
+            pass
         print('Response from server:\n{0}'.format(response))
-        self.playerid = response['response']['playerid']
-        self.current_room = response['response']['current_room']
         return response
 
-    def verify_response(self, response):
-        """
-        Verifies that response from server is valid.
-        Will raise error if response invalid
-        :param response: dictionary like {'status': <rc>, 'response': <response object>}
-        :return:
-        """
-        if {'status', 'response'} == set(response.keys()):
-            if response['status'] == 0:
-                return 0
-            else:
-                raise RuntimeError('Server command failed with returncode: {0}'.format(response['status']))
-        else:
-            raise RuntimeError('Response from server is malformed!\n{0}'.format(response))
+    def logout(self):
+        """ Logout character from server """
+        response = self.send('logout')
+        return response
 
-    def _request(self, request, args):
+    def _request(self, request, args=None):
         """
         Form request dictionary to be pickled and sent to server.
         Convert request, and args to:
-        {'username': 'someuser', 'password': 'mypw', 'charactername': 'Zorax', 'request': request, 'args', args}
+        {'username': 'someuser', 'password': 'mypw', 'charactername': 'Zorax',
+         'id': id, 'request': request, 'args': args}
 
         :param request: string like 'login' or 'attack'
         :param args: list of arguments like [itemid, targetid]
         :return: dictionary like example above
         """
         request = {'username': self.username, 'password': self.password, 'charactername': self.charactername,
-                   'request': request, 'args': args}
+                   'id': self.id, 'request': request, 'args': args}
         return request
 
-    def send_command(self, request, args):
-        return self.send(self._request(request, args))
-
-    # @retry(stop_max_attempt_number=10)
-    def send(self, request):
+    def send(self, request, args=None):
         """
         Request format must be like:
-            {'charactername': 'Madaar', 'username': 'Nat', 'password': 'mypw', 'request': 'say', 'args': ['hello!']}
+            {'charactername': 'Madaar', 'username': 'Nat', 'password': 'mypw', 'id': id,
+             'request': 'say', 'args': ['hello!']}
+        Payload will be received in the following format:
+            {'status': 0, 'response': {'key': 'value', 'otherkey': 'value', ... } }
         :param request: dictionary like example above
         :return: payload from server
         """
+        # TODO: This change will break things
+        request = self._request(request, args)
+        print('Request to be sent: {0}'.format(request))
         # Bounce the server
         self.disconnect()
         print('****** Starting Request   *******')
@@ -122,7 +121,7 @@ class GameClient(object):
         except socket.error:
             print(socket.error.message)
             self.disconnect()
-            raise
+            return {'status': -1, 'response': {'message': 'Socket error'}}
 
         # Send confirmation to server that we are ready to receive payload
         if isinstance(buffer_size, int):
@@ -141,11 +140,15 @@ class GameClient(object):
         else:
             self.disconnect()
             print('****** Request Successful *******')
-            return payload
+            if {'status', 'response'} == set(payload.keys()):
+                return payload
+            else:
+                return {'status': -1, 'response': {'message': 'response from server malformed'}}
 
     def receive_packet(self, buffer_size, raise_error=False):
         print('Expecting packet size: {0}'.format(buffer_size))
         packet = self.server.recv(buffer_size)
+
         actual_size = sys.getsizeof(packet)
         print('Actual packet size: {0}'.format(actual_size))
         if raise_error:

@@ -14,31 +14,7 @@ from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.grid import Grid
 
 
-class GameController(object):
-    """
-    Controls all aspect of the game engine, hosts server, interfaces with clients
-    """
-    def __init__(self):
-        """
-        :param world: wld template file
-        """
-        self.goc = GameObjectController()
-
-        # {'playername': <lifeformid>, 'playername': <lifeformid>, ... }
-        self.server = None
-
-    def load_game(self, save_file):
-        pass
-
-    def save_game(self, save_file):
-        pass
-
-    def update(self, dt):
-        self.goc.update(dt)
-        self.server.update(dt)
-
-    def run(self):
-        pass
+TILE_SIZE = 8
 
 
 class GameObjectController(object):
@@ -60,7 +36,7 @@ class GameObjectController(object):
     def add_gameobject(self, template, room=None, coords=None):
         """
         :param template: template file
-        :param room: modifies current_room value on gameobject
+        :param room: room instance. modifies current_room value on gameobject
         :param coords: modifies co-ords of gameobject
         :return: gameobject id
         """
@@ -80,15 +56,20 @@ class GameObjectController(object):
         input_data = self.tp.load_data(template)
         room = Room(**input_data)
         self._rooms[room.uniquename] = room
+        # Instantiate all lifeforms required by tmxmap data
+        self._spawn_room_lifeforms(room)
         return room
 
     def remove_gameobject(self, id):
-        """ Delete gameobject from game """
-        del self._gameobjects[id]
+        """ Delete gameobject from game, will not err if object does not exist """
+        try:
+            del self._gameobjects[id]
+        except KeyError:
+            print('Gameobject with ID: {0}, did not exist, so could not delete'.format(id))
 
     def get_object(self, id):
         """ Returns gameobject instance from id """
-        return self._gameobjects[id]
+        return self.gameobjects[id]
 
     @property
     def gameobjects(self):
@@ -98,12 +79,12 @@ class GameObjectController(object):
     @property
     def coords_map(self):
         """ All objects and their coordinates {1: [30,40], 2: [56,43], ... } """
-        return {go.id: go.coords for go in self.gameobjects}
+        return {go.id: go.coords for id, go in self.gameobjects.items()}
 
     @property
     def lifeforms(self):
         """ Only lifeforms { <id>: <gameobject>, <id>: <gameobject>, <id>: <gameobject>, ... } """
-        return {id: go for id, go in enumerate(self._gameobjects) if isinstance(go, LifeForm)}
+        return {id: go for id, go in self._gameobjects.items() if isinstance(go, LifeForm)}
 
     @property
     def props(self):
@@ -118,17 +99,17 @@ class GameObjectController(object):
     @property
     def players(self):
         """ All player gameobjects { <id>: <gameobject>, <id>: <gameobject> """
-        return {id: go for id, go in enumerate(self.lifeforms) if go.player}
+        return {id: go for id, go in self.lifeforms.items() if go.player}
 
     @property
     def playernames(self):
         """ Players by name { <playername>: <gameobject>, <playername>: <gameobject>, ... } """
-        return {go.name: go for go in self.players}
+        return [go.name for id, go in self.lifeforms.items() if go.player]
 
     @property
     def npcs(self):
         """ All non-player lifeforms { <id>: <lifeform>, <id>: <lifeform>, ...} """
-        return {id: go for id, go in enumerate(self.lifeforms) if not go.player}
+        return {id: go for id, go in self.lifeforms.items() if not go.player}
 
     @property
     def treasure(self):
@@ -138,7 +119,17 @@ class GameObjectController(object):
     @property
     def destroyed(self):
         """ All destroyed game objects { <id>: <gameobject>, <id>: <gameobject>, ... } """
-        return {id: go for id, go in enumerate(self._gameobjects) if go.destroyed}
+        return {id: go for id, go in self._gameobjects.items() if go.destroyed}
+
+    def update(self, dt):
+        """
+        Updates all lifeforms
+        :param dt: deltatime must be passed in from GameController instance
+        :return:
+        """
+        # Update all game objects
+        for id, lifeform in self.lifeforms.items():
+            lifeform.update(dt)
 
     # File handling
 
@@ -149,13 +140,21 @@ class GameObjectController(object):
             pickle.dump(gameobject, f, protocol=pickle.HIGHEST_PROTOCOL)
             f.close()
 
-    @staticmethod
-    def load_gameobject(filename):
+    def load_gameobject(self, filename, room=None, coords=None):
         """ Instantiate gameobject from pickle """
         with open(filename, 'rb') as f:
             gameobject = pickle.load(f)
             f.close()
-        return gameobject
+        if self._gameobjects:
+            id = max(self._gameobjects) + 1
+        else:
+            id = 0
+        gameobject.id = id
+        gameobject.current_room = room
+        gameobject.coords = coords
+        gameobject.goc = self
+        self._gameobjects[id] = gameobject
+        return gameobject, id
 
     # Internal methods, not to be called directly
 
@@ -168,15 +167,20 @@ class GameObjectController(object):
         gameobject.id = id
         return gameobject, id
 
-    def load_user(self, character, username, password, users_file='users.json'):
-        with open('mp/users/{0}'.format(users_file), 'r') as f:
-            userdata = json.load(f)
-            f.close()
-        current_user = userdata[username]
-        if current_user['password'] != password:
-            raise RuntimeError('Incorrect password')
-        filename = current_user['characters'][character]
-        return self.load_gameobject('mp/users/{0}'.format(filename))
+    def _spawn_room_lifeforms(self, room_instance):
+        """
+        Instantiates all lifeform objects by reading Tiled tmx map
+        :param room_instance: instantiated room object
+        :param tiledtmx: pytmx TiledMap instance
+        :return:
+        """
+        lifeforms = room_instance.lifeforms
+        print('Lifeforms loaded from tmx: {0}'.format(lifeforms))
+        for lifeform in lifeforms:
+            # Instantiate each lifeform and add to room
+            coords = [lifeform['x'] * TILE_SIZE, lifeform['y'] * TILE_SIZE]
+            lifeform, id = self.add_gameobject(lifeform['template'], room_instance, coords)
+            print('Spawned: {0}'.format(lifeform.name))
 
 
 class Room(object):
@@ -198,6 +202,38 @@ class Room(object):
             return self.settings['uniquename']
         except KeyError:
             raise RuntimeError('Every room requires a uniquename!')
+
+    @property
+    def lifeforms(self):
+        """ List of lifeforms in map [ {'x': x, 'y': y, 'template': <templatefile>, 'spawn_time': 60} ]
+            These lifeforms are not instantiated yet,
+            rather this is the data on the map for what TO instantiate, using what template, at what coords.
+        """
+        return self.get_lifeforms(self.tmx_data)
+
+    def get_lifeforms(self, tiledtmx, layer=2):
+        """
+        Searches each tile of the map and grabs lifeforms from given layer
+
+        Lifeforms require these specific custom properties (make them in Tiled editor):
+            template: string: path to .lfm template
+            spawn_time: int: length of respawn timer when killed, if set to None, will not respawn
+
+        :param tiledtmx: pytmx TiledMap instance
+        :param layer: map layer to search for lifeforms (default is 1)
+        :return: list of dictionaries
+        """
+        lifeforms = []
+        for y in range(0, tiledtmx.height):
+            for x in range(0, tiledtmx.width):
+                lifeform = tiledtmx.get_tile_properties(x, y, layer)
+                if lifeform:
+                    try:
+                        lifeforms.append({'x': x, 'y': y, 'template': lifeform['template'],
+                                         'spawn_time': lifeform['spawn_time']})
+                    except KeyError:
+                        print('Lifeform in tmx map missing required custom properties')
+        return lifeforms
 
     def generate_grid(self, layers=None):
         tmx = self.tmx_data
@@ -232,6 +268,10 @@ class GameObject(object):
         self.destroyed = False
 
     @property
+    def room(self):
+        return self.current_room.uniquename
+
+    @property
     def graphic(self):
         return self._value(self.sprites['main'])
 
@@ -261,8 +301,9 @@ class LifeForm(GameObject):
         self.inventory = Inventory(inventory, self)
         self.factions = factions
 
-        a = TemplateParser()
-        self.dialogue = [a.load_data(line) for line in dialogue]
+        if dialogue:
+            tp = TemplateParser()
+            self.dialogue = [tp.load_data(line) for line in dialogue]
         self.current_dialogue = 0
 
         # List of status objects
@@ -286,7 +327,7 @@ class LifeForm(GameObject):
 
     @property
     def player(self):
-        if self.ai:
+        if self.settings['ai']:
             return False
         else:
             return True

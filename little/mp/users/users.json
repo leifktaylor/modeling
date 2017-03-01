@@ -1,3 +1,9 @@
 {"leif": {"password": "mypw", "characters": {"Mike": "Mike.sav", "Liete": "Liete.sav"}},
   "ken": {"password": "mypw", "characters": {"Zaxim": "Zaxim.sav"}},
-  "nat": {"password": "mypw", "characters": {"Madaar": "Madaar.sav"}}}
+  "nat": {"password": "mypw", "characters": {"Madaar": "Madaar.sav"}},
+  "test1": {"password": "mypw", "characters": {"Test1": "Test1.sav"}},
+  "test2": {"password": "mypw", "characters": {"Test2": "Test2.sav"}},
+  "test3": {"password": "mypw", "characters": {"Test3": "Test3.sav"}},
+  "test4": {"password": "mypw", "characters": {"Test4": "Test4.sav"}},
+  "test5": {"password": "mypw", "characters": {"Test5": "Test5.sav"}},
+  "test6": {"password": "mypw", "characters": {"Test6": "Test6.sav"}}}

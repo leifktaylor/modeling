@@ -1,5 +1,5 @@
 *** settings ***
-name:Zaxim
+name:"Orc Pawn"
 class_type:LifeForm
 description:Happy
 ai:gameobjects/ai/healer.ai
@@ -34,13 +34,8 @@ slots:12
 11:gameobjects/weapon/long_sword.itm False 20
 
 *** factions ***
-player:100
-enemy:0
+player:0
+enemy:100
 iron_covenant:50
-
-*** dialogue ***
-conversation1.dlg
-conversation2.dlg
-conversation3.dlg
 
 

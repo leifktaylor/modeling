@@ -24,7 +24,6 @@ from graphics.graphictext import draw_lines, draw_text, InputLog, InventoryBox
 from functions.math import negpos
 from mp.client import PacketSizeMismatch
 from mp.client import GameClient
-from gameobjects.gameobject import load_lifeform, get_object_by_id
 
 
 # Player starting room
@@ -102,11 +101,25 @@ class Camera(object):
 
 
 class RemoteSprite(pygame.sprite.Sprite):
-    def __init__(self, lifeform):
+    """
+    This object is the counterpart of a gameobject on the server side.  It holds a limited amount
+    of information about its sister game object.  This allows the server to expose a limited amount
+    of information to the client, and the client to render a representation of all the gameobjects
+    in the game world.
+    """
+    def __init__(self, id, sprite, coords):
+        """
+        :param id: id of sister gameobject on server side
+        :param sprite: image
+        :param coords: coordinates to render on screen (from remote gameobject)
+        :param stats: stats of Gameobject counterpart
+        """
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_sprite(lifeform.graphic).convert_alpha()
-        self._position = list(lifeform.coords)
         self.rect = self.image.get_rect()
+
+        self.id = id
+        self.image = load_sprite(sprite).convert_alpha()
+        self._position = coords
 
     def update(self, dt):
         self.rect.topleft = self._position
@@ -136,40 +149,21 @@ class RemoteSprite(pygame.sprite.Sprite):
         self._position = list(value)
 
 
-class Hero(pygame.sprite.Sprite):
-    """ Our Hero
+class Hero(object):
+    """ Our Hero """
 
-    The Hero has three collision rects, one for the whole sprite "rect" and
-    "old_rect", and another to check collisions with walls, called "feet".
-
-    The position list is used because pygame rects are inaccurate for
-    positioning sprites; because the values they get are 'rounded down'
-    as integers, the sprite would move faster moving left or up.
-
-    Feet is 1/2 as wide as the normal rect, and 8 pixels tall.  This size size
-    allows the top of the sprite to overlap walls.  The feet rect is used for
-    collisions, while the 'rect' rect is used for drawing.
-
-    There is also an old_rect that is used to reposition the sprite if it
-    collides with level walls.
-    """
-
-    def __init__(self, lifeform):
+    def __init__(self, id, sprite, coords):
         """
         :param lifeform: .sav file of lifeform class
         """
-        # TODO
-        # This will be done on server and then added to hero object, but for now just create here
-        self.lifeform = lifeform
-
-        pygame.sprite.Sprite.__init__(self)
-        self.image = load_sprite(lifeform.graphic).convert_alpha()
+        # RemoteSprite object
+        self.remotesprite = RemoteSprite(id=id, sprite=sprite, coords=coords)
 
         self.position = self.lifeform.coords
         self._position = self.position
         self.x = self.position[0]
         self.y = self.position[1]
-        self.rect = self.image.get_rect()
+
         self.camera = Camera(self)
 
         # 'move_time' is determined by speed stat, the lower this is, the faster you can move from tile to tile
@@ -179,28 +173,36 @@ class Hero(pygame.sprite.Sprite):
         self.target_coords = None
 
     @property
+    def id(self):
+        return self.remotesprite.id
+
+    @property
+    def rect(self):
+        return self.remotesprite.rect
+
+    @property
     def x(self):
-        return self._position[0]
+        return self.remotesprite.x
 
     @x.setter
     def x(self, value):
-        self._position[0] = value
+        self.remotesprite.x = value
 
     @property
     def y(self):
-        return self._position[1]
+        return self.remotesprite.y
 
     @y.setter
     def y(self, value):
-        self._position[1] = value
+        self.remotesprite.y = value
 
     @property
     def position(self):
-        return list(self._position)
+        return self.remotesprite.position
 
     @position.setter
     def position(self, value):
-        self._position = list(value)
+        self.remotesprite.position = list(value)
 
     def update(self, dt):
         self.rect.topleft = self._position
@@ -243,9 +245,12 @@ class Game(object):
         # Get room instance and player object id
         response = self.client.login()
         playerid = response['response']['playerid']
-        self.hero = Hero(lifeform=get_object_by_id(playerid))
-        self.current_room = response['response']['current_room']
+        sprite = response['response']['sprite']
+        coords = response['coords']['coords']
+        self.hero = Hero(id=playerid, sprite=sprite, coords=coords)
 
+        # This is late -- ???
+        self.current_room = response['response']['current_room']
         # put the hero in the center of the map
         # TODO: Put here in coords on hero object
         self.hero.position = STARTING_POSITION

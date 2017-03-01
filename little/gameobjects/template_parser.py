@@ -50,11 +50,11 @@ class TemplateParser(object):
         return base_dict
 
     def _initialize(self, templatefile):
-        if 'ai' in templatefile:
+        if '.ai' in templatefile:
             a = AIParser()
             self.data = a.load_data(templatefile)
             return self.data
-        elif 'dlg' in templatefile:
+        elif '.dlg' in templatefile:
             a = DialogueParser()
             self.data = a.load_data(templatefile)
             return self.data
@@ -120,7 +120,7 @@ class TemplateParser(object):
             return True
         elif string.lower() in ['no', 'false', 'n']:
             return False
-        elif string == ['None']:
+        elif string == 'None':
             return None
         elif string.isdigit():
             return int(string)

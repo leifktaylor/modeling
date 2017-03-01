@@ -1,0 +1,18 @@
+*** settings ***
+name: "The Tale of Dougl"
+uniquename:tale_of_dougl
+graphic:graphics/books/somebook.png
+
+*** 1 ***
+"This is the first page of the book."
+"Here is the second line of the first page."
+
+*** 2 ***
+"This is the second page of this book."
+"I can't believe you're actually taking the time to read this."
+
+*** 3 ***
+"Here is... Yes, you guessed it! The third page"
+
+*** 4 ***
+"Lastly, here is the fourth page.  We're done here"
