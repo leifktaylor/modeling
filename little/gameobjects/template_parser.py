@@ -93,7 +93,10 @@ class TemplateParser(object):
                 value = ' '.join(line.split()[1:])
                 # Split line, but if section enclosed in quotes keep it together
                 value = shlex.split(value)
-                return {key: value}
+                if len(value) == 1:
+                    return {key: value[0]}
+                else:
+                    return {key: value}
             else:
                 return line
 

@@ -5,7 +5,6 @@ import logging
 from template_parser import TemplateParser
 
 import pickle
-import json
 
 import pytmx
 
@@ -13,6 +12,9 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.grid import Grid
 
+
+START_ROOM = 'gameobjects/room/template.rm'
+START_COORDS = [160, 160]
 
 TILE_SIZE = 8
 
@@ -36,7 +38,7 @@ class GameObjectController(object):
     def add_gameobject(self, template, room=None, coords=None):
         """
         :param template: template file
-        :param room: room instance. modifies current_room value on gameobject
+        :param room: room uniquename
         :param coords: modifies co-ords of gameobject
         :return: gameobject id
         """
@@ -121,6 +123,24 @@ class GameObjectController(object):
         """ All destroyed game objects { <id>: <gameobject>, <id>: <gameobject>, ... } """
         return {id: go for id, go in self._gameobjects.items() if go.destroyed}
 
+    def coordsmap_for_room(self, uniquename):
+        """ Returns: {<id>: [x, y], <id>: [x, y], ... } for each object in current room """
+        coords_map = self.coords_map
+        room_coords = {}
+        for id, coords in coords_map.items():
+            if self.gameobjects[id].current_room == uniquename:
+                room_coords[id] = coords
+        return room_coords
+
+    def coords_sprite_map_for_room(self, uniquename):
+        """ Returns: {<id>:(<sprite>,[<coords>]), <id>:(<sprite>,[<coords>]), ... } for each object in current room """
+        coords_map = self.coords_map
+        room_coords = {}
+        for id, coords in coords_map.items():
+            if self.gameobjects[id].current_room == uniquename:
+                room_coords[id] = (self.gameobjects[id].graphic, coords)
+        return room_coords
+
     def update(self, dt):
         """
         Updates all lifeforms
@@ -179,7 +199,7 @@ class GameObjectController(object):
         for lifeform in lifeforms:
             # Instantiate each lifeform and add to room
             coords = [lifeform['x'] * TILE_SIZE, lifeform['y'] * TILE_SIZE]
-            lifeform, id = self.add_gameobject(lifeform['template'], room_instance, coords)
+            lifeform, id = self.add_gameobject(lifeform['template'], room_instance.uniquename, coords)
             print('Spawned: {0}'.format(lifeform.name))
 
 
@@ -229,6 +249,7 @@ class Room(object):
                 lifeform = tiledtmx.get_tile_properties(x, y, layer)
                 if lifeform:
                     try:
+                        # TODO: Give the whole properties dictionary
                         lifeforms.append({'x': x, 'y': y, 'template': lifeform['template'],
                                          'spawn_time': lifeform['spawn_time']})
                     except KeyError:
@@ -266,10 +287,6 @@ class GameObject(object):
 
         # Other attributes
         self.destroyed = False
-
-    @property
-    def room(self):
-        return self.current_room.uniquename
 
     @property
     def graphic(self):
@@ -375,7 +392,7 @@ class LifeForm(GameObject):
     def move(self, coords):
         """ Move to given coordinates """
         # TODO finish this
-        route = self._path(self.coords, coords, self.current_room.grid)
+        route = self._path(self.coords, coords, self.goc.rooms[self.current_room].grid)
         pass
 
     @staticmethod

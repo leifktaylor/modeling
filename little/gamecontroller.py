@@ -4,8 +4,6 @@ import pygame
 # from pygame.locals import *
 # from pytmx.util_pygame import load_pygame
 
-from functions.math import negpos
-
 from gameobjects.gameobject import *
 from mp.server import GameServer
 
@@ -18,7 +16,9 @@ class GameController(object):
         """
         :param world: wld template file
         """
+        # Instantiate goc and add default starting room
         self.goc = GameObjectController()
+        self.goc.add_room(START_ROOM)
 
         # {'playername': <lifeformid>, 'playername': <lifeformid>, ... }
         self.gameserver = GameServer(self.goc)

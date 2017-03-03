@@ -35,15 +35,10 @@ class GameClient(object):
 
     """
     def __init__(self, ip='127.0.0.1', charactername='Zaxim', username='ken', password='mypw'):
-        # Character is the unique character name on server
-        self.charactername = charactername
         self.id = None
-        self.current_room = None
-
-        # Gameplay attributes
-        self.target = None
 
         self.ip = ip
+        self.charactername = charactername
         self.password = password
         self.username = username
         self.server = None
@@ -51,15 +46,12 @@ class GameClient(object):
         # Incoming broadcast from server
         self.incoming_broadcast = None
 
-    def coords(self):
-        """ Request coords of all units in current room
-            Response like: {<id>: <coords>, <id>: <coords>, ...} """
-        return self.send('coords')
-
     def login(self):
         """
         Create character instance on the server.
-        Server will send response containing {..., 'id': <someid>, 'current_room': <room_instance>}
+
+        Server will send 'response' containing:
+        {'id': id, 'coords': gameobject.coords, 'sprite': gameobject.graphic}, 'current_room': gameobject.current_room}
         :return:
         """
         response = self.send('login')

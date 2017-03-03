@@ -5,6 +5,7 @@ import time
 import pprint
 from gamecontroller import GameController
 from mp import client, server
+from little import *
 
 
 def time_command(function, args):
@@ -172,12 +173,11 @@ def client_server_test():
     s.join()
 
 
-def gamecontroller_test():
+def gamecontroller_test_basic():
     print('-----------------------')
     print('Test 1 - Create GC, Add a room, Login player and verify player is added properly')
     print('Instantiating GameController')
     gc = GameController()
-    gc.goc.add_room('gameobjects/room/template.rm')
     # Start server on GC
     s = multiprocessing.Process(target=gc.run, name="Run", args=())
     s.start()
@@ -199,6 +199,7 @@ def gamecontroller_test():
     time.sleep(1)
     print('Attempting to login again with same character, should NOT succeed')
     c.login()
+    time.sleep(1)
 
     print('------------------------')
     print('Test 2 - Player logout')
@@ -233,8 +234,9 @@ def gamecontroller_test():
     for i in range(0, amount):
         c.login()
         c.logout()
-    print('Verifying No gameobjets in GOC')
+    print('Verifying no gameobjets in GOC')
     assert gc.goc.gameobjects == {}
+    print('Success! No hero zombies left over!')
     s.terminate()
     s.join()
 
@@ -249,13 +251,47 @@ def gamecontroller_test():
     time.sleep(2)
     c = client.GameClient()
     c.login()
-    c.send('evaluate', 'gameobjects[{0}].current_room.uniquename'.format(1))
-    c.coords()
+    c.send('evaluate', 'gameobjects[{0}].current_room'.format(c.id))
+    c.send('coords')
     s.terminate()
     s.join()
 
 
-templateparser_test()
-gameobjectcontroller_test()
-client_server_test()
-gamecontroller_test()
+def game_test():
+    gc = GameController()
+    # Start server on GC
+    s = multiprocessing.Process(target=gc.run, name="Run", args=())
+    s.start()
+
+    game = Game()
+
+
+def current_room_test():
+    gc = GameController()
+    gc.goc.add_room('gameobjects/room/template.rm')
+    # Start server on GC
+    for id, lf in gc.goc.lifeforms.items():
+        print(lf.current_room)
+
+    s = multiprocessing.Process(target=gc.run, name="Run", args=())
+    s.start()
+    time.sleep(2)
+    c = client.GameClient()
+    c.login()
+    c.send('evaluate', 'gameobjects[{0}].current_room'.format(c.id))
+    c.send('coords')
+    s.terminate()
+    s.join()
+
+
+
+# UNIT TESTS:
+# templateparser_test()
+# gameobjectcontroller_test()
+# client_server_test()
+# gamecontroller_test()
+# game_test()
+current_room_test()
+
+# SYSTEM TESTS:
+

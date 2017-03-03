@@ -11,9 +11,11 @@ import pytmx
 USER_LIST = 'mp/users/users.json'
 TILE_SIZE = 8
 BUFFER_SIZE = 1024
-HUB_ROOM = 'gameobjects/room/template.rm'
 VERBOSE = False
 OBJECT_LAYER = 2
+
+START_ROOM = 'template_room'
+START_COORDS = [160, 160]
 
 
 class RemoteClient(object):
@@ -54,7 +56,7 @@ class RemoteClient(object):
         self.charactername = charactername
 
         # TODO: This is a default value and should be changed
-        self.current_room = HUB_ROOM
+        self.current_room = START_ROOM
 
         # Pointer to player's lifeform gameobject instance
 
@@ -189,11 +191,18 @@ class RequestProcessor(object):
         """
         return getattr(self, request['request'])(request)
 
-    def coords(self, request):
+    def get_coords(self, request):
         """ Return Co-ords to client of all gameobjects in room """
-        all_coords = [coords for id, coords in self.goc.coords_map.items()
-                      if self.goc.get_object(id).current_room == self.goc.get_object(request['id']).current_room]
-        return {'status': 0, 'response': all_coords}
+        # Get coordinates of only objects in the client's current room:
+        current_room = self.goc.gameobjects[request['id']].current_room
+        room_coords = self.goc.coords_sprite_map_for_room(current_room)
+        return {'status': 0, 'response': room_coords}
+
+    def update_coords(self, request):
+        """ Update player's coords in the GOC """
+        self.goc.lifeforms[request['id']].coords = request['args']
+        name = request['charactername']
+        return {'status': 0, 'response': 'coordinates for {0} set to {1}'.format(name, request['args'])}
 
     def login(self, request):
         if self.server.authenticate_credentials(request):
@@ -201,7 +210,13 @@ class RequestProcessor(object):
                 print('Player logging in, adding player Lifeform to GOC')
                 gameobject, id = self.goc.load_gameobject('mp/users/{0}.sav'.format(request['charactername']))
                 print('Created gameobject with id: {0}'.format(id))
-                return {'status': 0, 'response': {'id': id, 'coords': gameobject.coords}}
+                # If the player has no coords, he's a fresh player, and should go to the starting room
+                if not gameobject.current_room:
+                    gameobject.current_room = START_ROOM
+                    gameobject.coords = START_COORDS
+                
+                return {'status': 0, 'response': {'id': id, 'coords': gameobject.coords, 'sprite': gameobject.graphic,
+                        'current_room': gameobject.current_room}}
             else:
                 return {'status': -1, 'response': {'message': 'Character already logged in'}}
         else:
@@ -331,7 +346,7 @@ class GameServer(object):
         # Put player in starting/current location
         # TODO: non default values here please ********
         print('Creating room instance')
-        room = self.add_room(HUB_ROOM)['instance']
+        room = self.add_room(START_ROOM)['instance']
         player.current_room = room
         coords = (132, 132)
         # Add player to room
