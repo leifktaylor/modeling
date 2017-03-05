@@ -2,7 +2,9 @@
 from pygame.locals import *
 import pygame, string
 
+
 class ConfigError(KeyError): pass
+
 
 class Config:
     """ A utility for configuration """

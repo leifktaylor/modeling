@@ -141,12 +141,19 @@ class GameObjectController(object):
                 room_coords[id] = (self.gameobjects[id].graphic, coords)
         return room_coords
 
+    def dead_check(self):
+        """ Cleanup dead lifeforms """
+        for id, lifeform in self.lifeforms.items():
+            if lifeform.dead:
+                self.remove_gameobject(id=id)
+
     def update(self, dt):
         """
         Updates all lifeforms
         :param dt: deltatime must be passed in from GameController instance
         :return:
         """
+        self.dead_check()
         # Update all game objects
         for id, lifeform in self.lifeforms.items():
             lifeform.update(dt)
@@ -314,7 +321,12 @@ class LifeForm(GameObject):
         # Settings like ai, and other metadata
         self.settings = settings
         self.sprites = sprites
+
+        # Handle stats
         self.stats = stats
+        self.stats['MAXHP'] = self.stats['HP']
+        self.stats['MAXMP'] = self.stats['MP']
+
         self.inventory = Inventory(inventory, self)
         self.factions = factions
 
@@ -349,6 +361,90 @@ class LifeForm(GameObject):
         else:
             return True
 
+    @property
+    def move_time(self):
+        moverate = 30 - self.stats['SPD']
+        if moverate < 6:
+            moverate = 6
+        return moverate
+
+    @property
+    def level(self):
+        stats = [self.stats[stat] for stat in ['STR', 'SPD', 'MND', 'STA']]
+        level = int(sum(stats)) / 10
+        return level
+
+    # TODO FINISH STATS / Make useful inventory functions for getting aggregate bonuses
+
+    @property
+    def ATTACK(self):
+        """ Result of STR and equipment stats """
+        return self.STR
+
+    @property
+    def DEFENSE(self):
+        """ Result of STA/SPD and equipment stats """
+        return self.STA
+
+    @property
+    def MATTACK(self):
+        """ Result of MND and equipment stats """
+        return self.MND
+
+    @property
+    def MDEFENSE(self):
+        """ Result of MND/STA and equipment stats """
+        return self.MND
+
+    @property
+    def ATTACK_SPD(self):
+        """ Rate it which hero can attack.
+        Determined by SPD stat and equipment stats """
+        delay = 100 - self.SPD
+        if delay < 30:
+            delay = 30
+        return delay
+
+    @property
+    def HP(self):
+        """ Current HP """
+        return self.stats['HP']
+
+    @property
+    def MAXHP(self):
+        """ Result of stats['HP'] and equipment stats """
+        return self.stats['MAXHP']
+
+    @property
+    def MP(self):
+        """ Current MP """
+        return self.stats['MP']
+
+    @property
+    def MAXMP(self):
+        """ Result of stats['MP'] and equipment stats """
+        return self.stats['MAXMP']
+
+    @property
+    def STR(self):
+        """ Result of stats['STR'] and equipment stats """
+        return self.stats['STR']
+
+    @property
+    def STA(self):
+        """ Result of stats['STA'] and equipment stats """
+        return self.stats['STA']
+
+    @property
+    def MND(self):
+        """ Result of stats['MND'] and equipment stats """
+        return self.stats['MND']
+
+    @property
+    def SPD(self):
+        """ Result of stats['SPD'] and equipment stats """
+        return self.stats['SPD']
+
     # Actions
 
     def change_room(self, roomname):
@@ -361,7 +457,12 @@ class LifeForm(GameObject):
         pass
 
     def attack(self, targetid):
-        pass
+        target = self.goc.lifeforms[targetid]
+        damage = (self.ATTACK - target.DEFENSE)
+        if damage < 1:
+            damage = 1
+        target.stats['HP'] -= damage
+        return damage
 
     def equip_item(self, id):
         return self.inventory.equip_item(id)

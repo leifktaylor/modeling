@@ -7,6 +7,10 @@ class PacketSizeMismatch(Exception):
     pass
 
 
+class ServerResponseError(Exception):
+    pass
+
+
 class GameClient(object):
     """
     Request is issued in the following format:
@@ -133,7 +137,10 @@ class GameClient(object):
             self.disconnect()
             print('****** Request Successful *******')
             if {'status', 'response'} == set(payload.keys()):
-                return payload
+                if payload['status'] != 0:
+                    raise ServerResponseError(payload['response']['message'])
+                else:
+                    return payload
             else:
                 return {'status': -1, 'response': {'message': 'response from server malformed'}}
 

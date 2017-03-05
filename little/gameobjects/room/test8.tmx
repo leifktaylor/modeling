@@ -418,6 +418,10 @@
   </tile>
   <tile id="69">
    <properties>
+    <property name="event" value="zone"/>
+    <property name="room" value="otherroomuniquename"/>
+    <property name="target_x" type="int" value="0"/>
+    <property name="target_y" type="int" value="0"/>
     <property name="template" value=""/>
     <property name="wall" type="bool" value="false"/>
    </properties>
@@ -822,45 +826,8 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="137" name="sprites" tilewidth="8" tileheight="8" tilecount="5" columns="0">
-  <tile id="0">
-   <properties>
-    <property name="spawn_time" type="int" value="300"/>
-    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
-   </properties>
-   <image width="8" height="8" source="../../graphics/sprites/goblins/41.png"/>
-  </tile>
-  <tile id="1">
-   <properties>
-    <property name="spawn_time" type="int" value="300"/>
-    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
-   </properties>
-   <image width="8" height="8" source="../../graphics/sprites/goblins/sprites1140.png"/>
-  </tile>
-  <tile id="2">
-   <properties>
-    <property name="spawn_time" type="int" value="300"/>
-    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
-   </properties>
-   <image width="8" height="8" source="../../graphics/sprites/goblins/sprites1141.png"/>
-  </tile>
-  <tile id="3">
-   <properties>
-    <property name="spawn_time" type="int" value="300"/>
-    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
-   </properties>
-   <image width="8" height="8" source="../../graphics/sprites/goblins/sprites1142.png"/>
-  </tile>
-  <tile id="4">
-   <properties>
-    <property name="spawn_time" type="int" value="300"/>
-    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
-   </properties>
-   <image width="8" height="8" source="../../graphics/sprites/goblins/sprites1143.png"/>
-  </tile>
- </tileset>
- <tileset firstgid="142" name="trees" tilewidth="16" tileheight="8" tilecount="12" columns="6">
-  <image source="../../graphics/sprites/trees/Tree pack 2.png" width="96" height="16"/>
+ <tileset firstgid="137" name="trees" tilewidth="16" tileheight="8" tilecount="12" columns="6">
+  <image source="../../graphics/sprites/trees/treepack.png" width="96" height="16"/>
   <tile id="0">
    <properties>
     <property name="wall" type="bool" value="false"/>
@@ -922,6 +889,15 @@
    </properties>
   </tile>
  </tileset>
+ <tileset firstgid="149" name="sprites" tilewidth="8" tileheight="8" tilecount="1" columns="0">
+  <tile id="0">
+   <properties>
+    <property name="spawn_time" type="int" value="300"/>
+    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
+   </properties>
+   <image width="8" height="8" source="../../graphics/sprites/monsters/140.png"/>
+  </tile>
+ </tileset>
  <layer name="under0" width="50" height="50">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAAA+2Vy46DMAxFs50uZj3SzA76XLVSp/z/nxUkW3ItO0kNSaDy4giKKnKP7YRrCOFq4GtkB1e8R35HTsAZnn2Tq2W9UlCPw8gPcZiy/wMDebZ2jz24YP0H1p8p+wV8/laQXfPYgQvWPzZbk08HtHaQPPj+oLN1IR6dwBo8+N44ggPO0Sm89oXmvwEtXTD/He4xP9YfezIAD7hyj9a9wb2NLjQ/3e/SHPFetJ41dDkSzkrtYz2IUdPlEV6/FzyzVPt3fGq5xGYn9bwntHBJZY71oI9Q00VySOW6Cf+TelLTh783Vt8+4ZB6TymX1Jzk+OXs7ZIe2vzn1vid87ZUT6SzR5sVvsfp79T3z1oD65mqrTX3W2F1yXHQcmi9sGZeesZyslj27hIe2llinSF+rpbsR2p9qY5aJus3OIbV2bp+jdkpzdYdau7j0tm35rD1/JpD60xzPVpnmevROoPjOI7jOI7jOI7jOJ/BE09ZpyMQJwAA
@@ -929,17 +905,22 @@
  </layer>
  <layer name="under1" width="50" height="50">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3WwQ2AIBAEQPp/a7Rcn/4IMcgdMFPBJhv2KAUAYA93dICKIzoATfSUX5aOsuT4yxkdoMGXDq7uKdhV5j9HTfbtyp5vpBl2eGbuAbSzzeP1ugFuCby8BwCA9Tz2MaCjECcAAA==
+   H4sIAAAAAAAAA+3WwQ2AIBAEQPr/aLRhn/4IMcgdMFPBJhv2KAUAYA93dICKIzoATfSUX5aOsuT4yxkdoMGXDq7uKdhV5j9HTfbtyp5vpBl2eGbuAbSzzeP1ugFuCby8BwCA9TwHiuxOECcAAA==
   </data>
  </layer>
- <layer name="lifeforms" width="50" height="50">
+ <layer name="lifeforms" width="50" height="50" visible="0">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3UMQ0AAAgDQezjGgFsJASGOwWfDo0AAAD4K68DAGh88z4bAwAAAMBMAZ4hqM4QJwAA
+   H4sIAAAAAAAAA+3TwQkAAAgDMff/u69DiIiYTHCPNgIAAIBJuR0Ah/kPHfYDAAAAAP8UgczVdBAnAAA=
   </data>
  </layer>
  <layer name="over0" width="50" height="50">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3WQQqAIBQEUO+/KOrELduJhOmI751gYHC+pQAA1N2zA1QcswPQRE/5UjpKyfGXc3aABl86uLqnYFfJf46a9O1KzzfSCju8MvcA2tnm8XrdALcEXt4DAACpHsaTs+YQJwAA
+   H4sIAAAAAAAAA+3WUQqAIBQEQK9f1J377E8kTFecOcHC4j5LAQCou2cHqDhmB6CJnvKldJSS4y/n7AANvnRwdU/BrpL/HDXp25Web6QVdnhl7gG0s83j9boBbgm8vAcAAFI9yoiqEBAnAAA=
+  </data>
+ </layer>
+ <layer name="event" width="50" height="50">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3OQREAAAgDoKWzfyRT7HwICUgAAAAAAH6Z6wAAAAAAFQtHuaxjECcAAA==
   </data>
  </layer>
 </map>

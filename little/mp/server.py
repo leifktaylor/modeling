@@ -18,160 +18,8 @@ START_ROOM = 'template_room'
 START_COORDS = [160, 160]
 
 
-class RemoteClient(object):
-    """
-    Represents remote client connection and relevant data.
-    Methods will change gameobject details and send relevant data back to actual remote client
-
-        Request from actual remote client is in format:
-        {'username': <username>, 'charactername': <charactername>, 'password': <password>,
-        'request': <cli_command>, 'args': [list, of, args]}
-
-        'request' possible values
-        Cli command from client     -->  RemoteClient method
-
-        'logout'                -->  logout()
-        'move'                  -->  move(coords) # coords is a list like [x, y]  Updates server-side player location
-        'target'                -->  target(targetid)
-        'say'                   -->  say(targetid, dialogue)
-        'ooc'                   -->  ooc(dialogue)
-        'use_item'              -->  use_item(itemid)
-        'equip_item'            -->  equip_item(self, itemid)
-        'unequip_item'          -->  unequip_item(self, itemid)
-        'add_item'              -->  add_item(self, itemid)
-        'drop_item'             -->  drop_item(self, itemid)
-        'give_item'             -->  give_item(itemid, targetid)
-        'cast'                  -->  cast(self, spellid)
-        'attack'                -->  attack(self, targetid)
-        'update_coords'         -->  update_coords(self)
-        'update_gameobjects'    -->  update_gameobjects(self)
-        'change_room'           -->  change_room(self, roomname)
-
-    """
-    def __init__(self, playerid, lifeform, username, password, charactername):
-        self.lifeform = lifeform
-        self.playerid = playerid
-        self.username = username
-        self.password = password
-        self.charactername = charactername
-
-        # TODO: This is a default value and should be changed
-        self.current_room = START_ROOM
-
-        # Pointer to player's lifeform gameobject instance
-
-        # Cli command  -->  Method mapping
-        self.request_matrix = {'move': self.move, 'target': self.change_target,
-                               'say': self.say, 'ooc': self.ooc, 'whisper': self.whisper,
-                               'use_item': self.use_item, 'equip_item': self.equip_item,
-                               'unequip_item': self.unequip_item, 'add_item': self.add_item,
-                               'drop_item': self.drop_item, 'give_item': self.give_item,
-                               'cast': self.cast, 'attack': self.attack, 'logout': self.logout,
-                               'update_coords': self.update_coords,
-                               'update_gameobjects': self.update_gameobjects,
-                               'change_room': self.change_room}
-
-    def get_payload(self, request):
-        """
-        This is the cornerstone of how this madness all works.
-
-        Request is received from client, like:
-            {...., 'request': <cli_command>, 'args': [list, of, arguments]}
-        'request' value is the name of a method (see self.request_matrix)
-        'args' are the arguments passed to that method
-
-        The method is executed on the server, and a payload of relevant data is constructed.
-
-        The return value of the executed method is returned from here, and then it should be passed on
-            to the client.
-        :param request:
-        :return: payload to be sent to client
-        """
-        try:
-            resp = self.request_matrix[request['request']](*request['args'])
-            print('Response to client: {0}'.format(resp))
-        except KeyError:
-            resp = {'status': -1,
-                    'response': 'Invalid CLI command, valid commands are:\n{0}'.format(str(self.request_matrix))}
-        return resp
-
-    # The following methods do:
-    # - Issue command on serverside lifeform instance(s)
-    # - Get return from that command
-    # - Broadcast relevant information to any number of other clients
-    # - Return payload to be sent to client
-
-    def change_room(self, roomname):
-        lifeform_return = self.lifeform.change_room(roomname)
-
-    def change_target(self, targetid):
-        lifeform_return = self.lifeform.change_target(targetid)
-
-    def cast(self, spellid=None, targetid=None):
-        lifeform_return = self.lifeform.cast(spellid, targetid)
-
-    def attack(self, targetid):
-        lifeform_return = self.lifeform.attack(targetid)
-
-    def equip_item(self, id):
-        lifeform_return = self.lifeform.inventory.equip_item(id)
-
-    def unequip_item(self, equip_slot):
-        lifeform_return = self.lifeform.inventory.unequip_item(equip_slot)
-
-    def add_item(self, id):
-        lifeform_return = self.lifeform.inventory.add_item(id)
-
-    def drop_item(self, id):
-        lifeform_return = self.lifeform.inventory.drop_item(id)
-
-    def use_item(self, id):
-        lifeform_return = self.lifeform.inventory.use_item(id)
-
-    def give_item(self, id, targetid):
-        lifeform_return = self.lifeform.give_item(id, targetid)
-
-    def say(self, dialogue, targetid):
-        lifeform_return = self.lifeform.say(dialogue, targetid)
-
-    def logout(self):
-        pass
-
-    def move(self, coords):
-        """
-        From client --> Update co-ordinates of Serverside player
-        :return:
-        """
-        print('{0}: Moving to {1}'.format(self.playerid, str(coords)))
-        self.lifeform.coords = coords
-        return {'status': 0, 'response': 'Moved {0} to {1}'.format(self.lifeform.id, self.lifeform.coords)}
-
-    def ooc(self, dialogue):
-        pass
-
-    def whisper(self, dialogue, targetid):
-        pass
-
-    def update_coords(self):
-        """
-        Send to client --> List of all lifeforms in room
-        :return:
-        """
-        return {'status': 0, 'response': self.lifeform.current_room.lifeforms}
-
-    def update_gameobjects(self):
-        """
-        *expensive* Send to client --> Update gameobjects in current room
-        :return:
-        """
-        pass
-
-    def update_target(self):
-        """
-        Send to client --> Recent gameobject instance of target
-        :return:
-        """
-        pass
+# ERRORS
+# 1001  :: Gameobject not exist
 
 
 class RequestProcessor(object):
@@ -190,6 +38,29 @@ class RequestProcessor(object):
         :return: {'status': 0, 'response': { <response object> } }
         """
         return getattr(self, request['request'])(request)
+
+    def attack(self, request):
+        """ Request like: {... 'request': 'attack', 'args': <enemy id>}
+        Return data like: {'status': 0, 'response': 'damage': <damage dealt> """
+        print('RECEIVED ATTACK REQUEST !!!!!!!!')
+        try:
+            enemyid = request['args']
+            playerid = request['id']
+            player = self.goc.gameobjects[playerid]
+            damage = player.attack(enemyid)
+            return {'status': 0, 'response': {'damage': damage}}
+        except KeyError:
+            return {'status': -1, 'response': {'Something went wrong, does current target still exist?'}}
+
+    def get_target(self, request):
+        """ Return target data like: {'name': <name>, 'stats': <stats dictionary>} """
+        id = request['args'][0]
+        try:
+            gameobject = self.goc.gameobjects[id]
+            name, stats = gameobject.name, gameobject.stats
+            return {'status': 0, 'response': {'stats': stats, 'name': name}}
+        except KeyError:
+            return {'status': 1001, 'response': {'message': 'ID Does not exist in Gameobject controller'}}
 
     def get_coords(self, request):
         """ Return Co-ords to client of all gameobjects in room """
