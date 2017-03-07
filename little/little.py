@@ -21,13 +21,15 @@ from pyscroll.group import PyscrollGroup
 import graphics.eztext as eztext
 from graphics.graphictext import draw_lines, draw_text, InputLog, InventoryBox
 
-from functions.math import negpos
+from functions.game_math import negpos, point_distance
 from mp.client import PacketSizeMismatch
 from mp.client import GameClient
 
 from local.remotesprite import Hero
 from local.input import PlayerController
-from local.remotesprite import RemoteSpriteController, RemoteSprite, point_distance
+from local.remotesprite import RemoteSpriteController, RemoteSprite
+
+from particles import PyIgnition
 
 
 # Player starting room
@@ -38,11 +40,11 @@ STARTING_POSITION = [160, 160]
 MOVE_TIME = 8
 
 # Default Resolution
-DEFAULT_RESOLUTION = [900, 506]
+DEFAULT_RESOLUTION = [1000, 563]
 # Map camera zoom
-MAP_ZOOM = 4.5
+MAP_ZOOM = 6.0
 # Default Font
-FONT = None
+FONT = 'graphics/fonts/november.ttf'
 
 # size of walkable tile
 TILE_SIZE = 8
@@ -52,6 +54,8 @@ POLL_RATE = 10
 DEBUG_MODE = True
 # Pyscroll default layer
 DEFAULT_LAYER = 2
+
+
 
 
 def init_screen(width, height):
@@ -99,9 +103,9 @@ class Game(object):
         # Create text box
         text_box_x, text_box_y = self.screen_coords((3, 95))
         self.text_box = eztext.Input(maxlength=90, color=(255, 255, 255), x=text_box_x, y=text_box_y,
-                                     font=pygame.font.Font(FONT, 26), prompt=': ')
+                                     font=pygame.font.Font(FONT, 22), prompt=': ')
         # Create InputLog
-        self.inputlog = InputLog(coords=self.screen_coords((3, 92)), max_length=10, size=22, spacing=18, font=FONT)
+        self.inputlog = InputLog(coords=self.screen_coords((3, 88)), max_length=10, size=18, spacing=18, font=FONT)
         # Create Combatlog
         self.combatlog = InputLog(coords=(1050, 860), max_length=10, size=22, spacing=18, font=FONT)
 
@@ -175,12 +179,16 @@ class Game(object):
 
     def update(self, dt):
         """ Tasks that occur over time should be handled here"""
+        # update all sprites in game world
         self.group.update(dt)
-        # update camera
+        # update camera position (follows player)
         self.hero.camera.update(dt)
+        # move player (including animation) if we're moving
+        self.move(dt)
+        # perform auto attack if we're autoattacking
+        self.autoattack(dt)
 
-        # STATE: 'moving'
-        # (If we are moving to another tile)
+    def move(self, dt):
         self.hero.move_timer -= dt / 100.
         if self.hero.moving:
             distance_x, distance_y = (self.hero.target_coords[0] - self.hero.x,
@@ -194,16 +202,17 @@ class Game(object):
                 self.hero.moving = False
                 self.hero.position = self.hero.target_coords
                 self.hero.position = self.hero.target_coords
-                self.client.send('update_coords', [self.hero.x, self.hero.y])
+                r = self.client.send('update_coords', [self.hero.x, self.hero.y])
+                self.hero.move_time = r['response']['move_time']
+                self.hero.attack_time = r['response']['attack_time']
 
-        # STATE: Auto Attacking
-        # Handle Autoattack
+    def autoattack(self, dt):
         if self.hero.attacking:
-            self.hero.attack_timer -= 1
+            self.hero.attack_timer -= dt / 100.
             if self.hero.attack_timer <= 0:
                 self.hero.attack_timer = self.hero.attack_time
                 if self.hero.tgh.target:
-                    if point_distance(self.hero.coords, self.hero.tgh.coords) < 12:
+                    if point_distance(self.hero.coords, self.hero.tgh.coords) < 14:
                         r = self.client.send('attack', self.hero.tgh.id)
                         # TODO: Display damage dealt in chat
 
@@ -251,28 +260,29 @@ class Game(object):
                     # draw_text('map_zoom: . . . . . . {0}'.format(str(self.map_layer.zoom)), screen, coords=(10, 100))
                     # draw_text('screen size:. . . . . {0}'.format(str(self.screen_size)), screen, coords=(10, 115))
                     # draw_text(str(pygame.display.Info().current_w), screen, coords=(10, 130))
+                    #
+                    # draw_text('Target ID: ', screen, coords=(10, 10))
+                    # draw_text('Name: ', screen, coords=(10, 25))
+                    # draw_text('Stats: ', screen, coords=(10, 40))
 
-                    draw_text('Target ID: ', screen, coords=(10, 10))
-                    draw_text('Name: ', screen, coords=(10, 25))
-                    draw_text('Stats: ', screen, coords=(10, 40))
+                    # draw_text('Center Offset: {0}'.format(offset), screen, coords=(10, 55))
+                    # draw_text('MousePos: {0}'.format(pygame.mouse.get_pos()), screen, coords=(10, 70))
+                    # draw_text('MousePosC: {0},{1}'.format(new_x, new_y), screen, coords=(10, 85))
+                    # draw_text('PlayerCoords: {0}'.format(self.hero.coords), screen, coords=(10, 100))
+                    # draw_text('CursorCoords: {0}'.format(cursor_coords), screen, coords=(10, 115))
+                    # draw_text('Zoom: {0}'.format(zoom), screen, coords=(10, 130))
 
-                    offset = self.map_layer.view_rect.topleft
-                    mousepos = pygame.mouse.get_pos()
-                    new_x = (.5*-offset[0]) + mousepos[0]
-                    new_y = (.5*-offset[1]) + mousepos[1]
-                    cursor_coords = self.input.cursor.coords
-                    draw_text('Center Offset: {0}'.format(offset), screen, coords=(10, 55))
-                    draw_text('MousePos: {0}'.format(pygame.mouse.get_pos()), screen, coords=(10, 70))
-                    draw_text('MousePosC: {0},{1}'.format(new_x, new_y), screen, coords=(10, 85))
-                    draw_text('PlayerCoords: {0}'.format(self.hero.coords), screen, coords=(10, 100))
-                    draw_text('CursorCoords: {0}'.format(cursor_coords), screen, coords=(10, 115))
-                    draw_text('Nearby Lifeforms: {0}'.format(self.hero.nearby_lifeforms), screen, coords=(10, 130))
+                    #draw_text('Nearby Lifeforms: {0}'.format(self.hero.nearby_lifeforms), screen, coords=(10, 130))
 
-                    if self.hero.tgh.target:
-                        distance = point_distance(self.hero.coords, self.hero.tgh.coords)
-                        draw_text('Target Distance: {0}'.format(distance), screen, coords=(10, 145))
+                    # if self.hero.tgh.target:
+                    #     distance = point_distance(self.hero.coords, self.hero.tgh.coords)
+                    #     draw_text('Target Distance: {0}'.format(distance), screen, coords=(10, 145))
+                    #
+                    # draw_text('Attacking: {0}'.format(self.hero.attacking), screen, coords=(10, 160))
+                    pass
 
-                    draw_text('Attacking: {0}'.format(self.hero.attacking), screen, coords=(10, 160))
+                if self.hero.particle:
+                    self.hero.particle.update()
 
                 # blit text objects to screen
                 self.text_box.draw(screen)
@@ -299,6 +309,7 @@ if __name__ == "__main__":
 
     try:
         game = Game(charactername=charactername, username=username, password=password)
+        game.screen = screen
         game.run()
     except:
         pygame.quit()

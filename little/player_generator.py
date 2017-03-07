@@ -9,6 +9,6 @@ def make_player(filepath):
 
 if __name__ == '__main__':
     path = 'gameobjects/lifeform/'
-    templates = ['zaxim']
+    templates = ['zaxim', 'madaar']
     for template in templates:
         make_player('{0}/{1}.lfm'.format(path, template))

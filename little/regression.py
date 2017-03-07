@@ -7,6 +7,8 @@ from gamecontroller import GameController
 from mp import client, server
 from little import *
 
+from mp.client import ServerResponseError
+
 
 def time_command(function, args):
     start = time.time()
@@ -198,7 +200,13 @@ def gamecontroller_test_basic():
     print('Character created successfully!')
     time.sleep(1)
     print('Attempting to login again with same character, should NOT succeed')
-    c.login()
+    failed = False
+    try:
+        c.login()
+    except ServerResponseError:
+        failed = True
+        print('Re-Login failed as expected!')
+    assert failed is True
     time.sleep(1)
 
     print('------------------------')
@@ -213,7 +221,13 @@ def gamecontroller_test_basic():
         raise RuntimeError('Player not successfully logged out')
     print('Player logged out and removed from GOC successfully!')
     print('Attempting to logout again, should not crash server...')
-    c.logout()
+    failed = False
+    try:
+        c.logout()
+    except ServerResponseError:
+        failed = True
+        print('Re-Logout failed as expected!')
+    assert failed is True
     print('Second logout attempted failed as expected')
     time.sleep(1)
     s.terminate()
@@ -225,6 +239,7 @@ def gamecontroller_test_basic():
     amount = 200
 
     gc = GameController()
+    gc.goc._gameobjects = {}
     s = multiprocessing.Process(target=gc.run, name="Run", args=())
     s.start()
     time.sleep(2)
@@ -252,18 +267,8 @@ def gamecontroller_test_basic():
     c = client.GameClient()
     c.login()
     c.send('evaluate', 'gameobjects[{0}].current_room'.format(c.id))
-    c.send('coords')
     s.terminate()
     s.join()
-
-
-def game_test():
-    gc = GameController()
-    # Start server on GC
-    s = multiprocessing.Process(target=gc.run, name="Run", args=())
-    s.start()
-
-    game = Game()
 
 
 def current_room_test():
@@ -279,19 +284,42 @@ def current_room_test():
     c = client.GameClient()
     c.login()
     c.send('evaluate', 'gameobjects[{0}].current_room'.format(c.id))
-    c.send('coords')
     s.terminate()
     s.join()
 
+
+def ai_gambits():
+    print('-------------------------')
+    print('Parse simple precondition: stat HP>10')
+    gc = GameController()
+    go, id = gc.goc.add_gameobject('gameobjects/regression/dummy.lfm')
+    print(go.ai)
+    print(go.aic.data)
+    aic = go.aic
+    r = aic.check_condition(['stat', 'HP<10'], go)
+    print(r)
+    assert r is False
+    r = aic.check_condition(['stat', 'MND>20'], go)
+    print(r)
+    assert r is True
+    r = aic.check_condition(['stat', 'MP>100'], go)
+    print(r)
+    assert r is False
+    r = aic.check_condition(['stat', 'MAXHP>11'], go)
+    print(r)
+    assert r is True
+    r = aic.check_condition(['stat', 'SPD<20'], go)
+    print(r)
+    assert r is True
 
 
 # UNIT TESTS:
 # templateparser_test()
 # gameobjectcontroller_test()
 # client_server_test()
-# gamecontroller_test()
-# game_test()
-current_room_test()
+# gamecontroller_test_basic()
+# current_room_test()
+ai_gambits()
 
 # SYSTEM TESTS:
 

@@ -2,16 +2,11 @@ from cli import CliParser
 from pygame.locals import *
 import math
 import pygame
+from particles import PyIgnition
+from particles.fire import FXFire
+
 # size of walkable tile
 TILE_SIZE = 8
-
-
-def point_distance(coords1, coords2):
-    """ Distance between two points, should be tuples or lists, Returns a float """
-    x, y = coords1
-    xx, yy = coords2
-    distances = (xx - x)**2 + (yy - y)**2
-    return math.sqrt(distances)
 
 
 class Cursor(pygame.sprite.Sprite):
@@ -21,10 +16,14 @@ class Cursor(pygame.sprite.Sprite):
         self.image = pygame.image.load('graphics/sprites/gems/067.png').convert_alpha()
         self.rect = self.image.get_rect()
         self._coords = [0, 0]
-        self.game.group.add(self)
+        self.game.group.add(self, layer='over0')
 
     def update(self, dt=None):
-        self.coords = list(pygame.mouse.get_pos())
+        zoom = self.game.map_layer.zoom
+        offset = self.game.map_layer.view_rect.topleft
+        mousepos = pygame.mouse.get_pos()
+        correct_pos = (mousepos[0] / zoom) + offset[0], (mousepos[1] / zoom) + offset[1]
+        self.coords = list(correct_pos)
         self.rect.center = self._coords
 
     @property
@@ -63,6 +62,8 @@ class PlayerController(object):
         self.cooldown = 20
         self.cooldowntimer = self.cooldown
 
+        self.dir = 'right'
+
     def handle_input(self, dt):
         """ Handle pygame input events"""
         def move_timer_reset():
@@ -81,13 +82,15 @@ class PlayerController(object):
 
             # Mouse click events
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                pos = pygame.mouse.get_pos()
+                pos = self.cursor.coords
                 clicked_sprites = [s for s in self.game.group if s.rect.collidepoint(pos) and not isinstance(s, Cursor)]
                 if clicked_sprites:
                     sprite = clicked_sprites[0]
                     response = self.game.client.send('get_target', [sprite.id])
                     name, stats = response['response']['name'], response['response']['stats']
                     self.hero.tgh.set_target(id=sprite.id, name=name, stats=stats)
+                if not clicked_sprites:
+                    self.hero.tgh.drop_target()
 
             # This is where key press events go
             elif event.type == KEYDOWN:
@@ -96,8 +99,14 @@ class PlayerController(object):
                     self.cli_parser.parse(msgvalue)
 
                 if event.key == K_ESCAPE:
-                    self.game.running = False
+                    self.hero.tgh.drop_target()
                     break
+
+                if event.key == K_SPACE:
+                    # TODO This is hilariously temporary
+                    if self.hero.tgh.target:
+                        self.hero.particle = FXFire(self.game)
+                        self.hero.particle.move(self.hero.coords, self.hero.tgh.coords)
 
                 if event.key == K_a:
                     if self.hero.attacking:
@@ -115,6 +124,7 @@ class PlayerController(object):
 
             # this will be handled if the window is resized
             elif event.type == VIDEORESIZE:
+                # TODO: Bug here
                 init_screen(event.w, event.h)
                 self.game.map_layer.set_size((event.w, event.h))
 
@@ -137,7 +147,7 @@ class PlayerController(object):
                 id_list = self.hero.nearby_lifeforms.keys()
                 for i, id in enumerate(id_list):
                     if self.hero.tgh.target:
-                        # If we already have an element selected
+                        # If we already have an targets selected
                         if self.hero.tgh.target['id'] == id or self.hero.tgh.target['id'] == self.hero.id:
                             if i + 1 < len(id_list):
                                 response = self.game.client.send('get_target', [id_list[i + 1]])
@@ -145,6 +155,7 @@ class PlayerController(object):
                                 self.hero.tgh.set_target(id=id_list[i + 1], name=name, stats=stats)
                                 break
                             else:
+
                                 response = self.game.client.send('get_target', [id_list[0]])
                                 name, stats = response['response']['name'], response['response']['stats']
                                 self.hero.tgh.set_target(id=id_list[0], name=name, stats=stats)
@@ -167,9 +178,22 @@ class PlayerController(object):
                         moved = True
 
                 if pressed[K_LEFT]:
+                    # Aim direction we're moving
+                    rs = self.hero.remotesprite
+                    if self.dir is not 'left':
+                        rs.image = pygame.transform.flip(rs.image, True, False)
+                        self.dir = 'left'
+
                     target_coords[0] = self.hero.x - TILE_SIZE
                     moved = True
                 elif pressed[K_RIGHT]:
+                    # Aim direction we're moving
+                    rs = self.hero.remotesprite
+                    if self.dir is not 'right':
+                        rs.image = pygame.transform.flip(rs.image, True, False)
+                        self.dir = 'right'
+
+                    pygame.transform.flip(self.hero.remotesprite.image, True, False)
                     target_coords[0] = self.hero.x + TILE_SIZE
                     moved = True
 

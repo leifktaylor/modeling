@@ -1,12 +1,13 @@
 import pygame
 from camera import Camera
 from graphics.graphictext import draw_text
-from input import point_distance
+from input import Cursor
+from functions.game_math import point_distance
 
 from mp.client import ServerResponseError
 
 TARGET_RANGE = 105
-
+FONT = 'graphics/fonts/november.ttf'
 TILE_SIZE = 8
 MOVE_TIME = 8
 
@@ -34,6 +35,8 @@ class TargetHandler(object):
         self.target = None
         # Make target reticle invisible
         self.reticle.image = self.reticle.images['none']
+        # Turn off auto attack if no target
+        self.hero.attacking = False
 
     def update_target(self, dt=None):
         if self.target:
@@ -66,8 +69,14 @@ class TargetHandler(object):
     @property
     def coords(self):
         if self.target:
-            return self.hero.game.rsc.remotesprites[self.target['id']].coords
-
+            try:
+                coords = self.hero.game.rsc.remotesprites[self.target['id']].coords
+                return coords[0] - 1, coords[1] - 1
+            except KeyError:
+                # TODO: This could be an issue
+                # Perhaps it the hero?
+                coords = self.hero.coords
+                return coords[0] - 1, coords[1] - 1
     @property
     def name(self):
         if self.target:
@@ -120,7 +129,7 @@ class TargetReticle(pygame.sprite.Sprite):
         self.image = self.images['none']
         self.rect = self.image.get_rect()
         self._coords = self.th.coords
-        self.th.hero.game.group.add(self, layer='over0')
+        self.th.hero.game.group.add(self, layer='under0')
 
     def update(self, dt=None):
         if self.th.target:
@@ -143,7 +152,7 @@ class TargetDisplay(object):
     Display this data:
     {'id': <id>, 'name': <name>, 'stats': <stats dictionary>}
     """
-    def __init__(self, targethandler, coords=(700, 10), size=30, font=None):
+    def __init__(self, targethandler, coords=(850, 10), size=18, font=FONT):
         self.th = targethandler
 
         self.font = font
@@ -196,6 +205,10 @@ class Hero(object):
         # TODO get the correct attack timer from hero stats
         self.attack_time = 50
         self.attack_timer = self.attack_time
+
+        self.casting = False
+        self.firing = False
+        self.particle = None
 
     @property
     def nearby_lifeforms(self):
@@ -259,20 +272,25 @@ class Hero(object):
         :param position:
         :return:
         """
+        collide = False
+        # First check for unit collision
+        if [s for s in self.game.group if s.rect.collidepoint(position) and not isinstance(s, Cursor)]:
+            return True
+        # Check for map / geometry collision
         if not layers:
             layers = [0, 1]
         else:
             layers = layers
         # Get all tiles at this position, in all layers and check for 'wall' == 'true'
-        collide = False
+
         tile_pos_x = position[0] / TILE_SIZE
         tile_pos_y = position[1] / TILE_SIZE
         tiles = [self.game.map_data.get_tile_properties(tile_pos_x, tile_pos_y, layer) for layer in layers]
         tiles = [tile['wall'] for tile in tiles if tile]
         for wall in tiles:
             if wall == 'true':
-                collide = True
-        return collide
+                return True
+        return False
 
 
 class RemoteSpriteController(object):

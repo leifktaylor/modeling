@@ -12,6 +12,12 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.grid import Grid
 
+from stat_calc import calc_stat
+from functions.game_math import clamp, point_distance
+
+from gameobjects.aicontroller import AIController
+
+import copy
 
 START_ROOM = 'gameobjects/room/template.rm'
 START_COORDS = [160, 160]
@@ -318,9 +324,12 @@ class LifeForm(GameObject):
     def __init__(self, id, coords=[0, 0], goc=None, settings=None, sprites=None, stats=None,
                  inventory=None, factions=None, dialogue=None, target=None, current_room=None):
         super(LifeForm, self).__init__(id=id, current_room=current_room, coords=coords, goc=goc)
+
         # Settings like ai, and other metadata
         self.settings = settings
         self.sprites = sprites
+        if self.ai:
+            self.aic = AIController(self)
 
         # Handle stats
         self.stats = stats
@@ -338,9 +347,15 @@ class LifeForm(GameObject):
         # List of status objects
         self.status = []
 
-        # Target points to a gameobject id (not an object instance)
+        # Target is a gameobject instance
         self.target = target
         self.state = 'idle'
+
+        # Get target sight range from templatedata if it's there, otherwise use default
+        if 'sight' in self.settings.keys():
+            self.sight = self.settings['sight']
+        else:
+            self.sight = 100
 
     @property
     def ai(self):
@@ -355,6 +370,11 @@ class LifeForm(GameObject):
         return self.stats['HP'] > 0
 
     @property
+    def weapon_range(self):
+        # TODO : If using a ranged weapon return blah, if physical blah
+        return 14
+
+    @property
     def player(self):
         if self.settings['ai']:
             return False
@@ -362,11 +382,22 @@ class LifeForm(GameObject):
             return True
 
     @property
+    def nearby_lifeforms(self):
+        return {lf.id: lf for id, lf in self.goc.lifeforms.items()
+                if point_distance(self.coords, lf.coords) < self.sight}
+
+    @property
     def move_time(self):
-        moverate = 30 - self.stats['SPD']
-        if moverate < 6:
-            moverate = 6
-        return moverate
+        """ Rate at which hero moves """
+        mv_rate = 20 - calc_stat(self.SPD, tier1=20, tier2=40, denom1=2, denom2=2.5)
+        return clamp(mv_rate, 2, 14)
+
+    @property
+    def attack_time(self):
+        """ Rate it which hero can attack.
+        Determined by SPD stat and equipment stats """
+        atk_spd = 40 - calc_stat(self.SPD)
+        return clamp(atk_spd, 2, 80)
 
     @property
     def level(self):
@@ -395,15 +426,6 @@ class LifeForm(GameObject):
     def MDEFENSE(self):
         """ Result of MND/STA and equipment stats """
         return self.MND
-
-    @property
-    def ATTACK_SPD(self):
-        """ Rate it which hero can attack.
-        Determined by SPD stat and equipment stats """
-        delay = 100 - self.SPD
-        if delay < 30:
-            delay = 30
-        return delay
 
     @property
     def HP(self):
@@ -457,6 +479,8 @@ class LifeForm(GameObject):
         pass
 
     def attack(self, targetid):
+        if targetid == self.id:
+            return 0
         target = self.goc.lifeforms[targetid]
         damage = (self.ATTACK - target.DEFENSE)
         if damage < 1:
@@ -492,9 +516,15 @@ class LifeForm(GameObject):
 
     def move(self, coords):
         """ Move to given coordinates """
-        # TODO finish this
-        route = self._path(self.coords, coords, self.goc.rooms[self.current_room].grid)
-        pass
+        start = self.coords[0] / 8, self.coords[1] / 8
+        end = coords[0] / 8, coords[1] / 8
+        grid = copy.deepcopy(self.goc.rooms[self.current_room].grid)
+        route = self._path(start, end, grid)
+        if len(route) > 2:
+            new_x, new_y = route[1][0] * 8, route[1][1] * 8
+            print('newx/newy {0},{1}'.format(new_x, new_y))
+            self.coords = [new_x, new_y]
+        return route
 
     @staticmethod
     def _path(start, end, grid):

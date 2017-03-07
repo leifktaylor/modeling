@@ -70,10 +70,11 @@ class RequestProcessor(object):
         return {'status': 0, 'response': room_coords}
 
     def update_coords(self, request):
-        """ Update player's coords in the GOC """
-        self.goc.lifeforms[request['id']].coords = request['args']
-        name = request['charactername']
-        return {'status': 0, 'response': 'coordinates for {0} set to {1}'.format(name, request['args'])}
+        """ Update player's coords in the GOC, also return some basic player stats to client like:
+         move_time, attack_speed """
+        lf = self.goc.lifeforms[request['id']]
+        lf.coords = request['args']
+        return {'status': 0, 'response': {'move_time': lf.move_time, 'attack_time': lf.attack_time}}
 
     def login(self, request):
         if self.server.authenticate_credentials(request):
