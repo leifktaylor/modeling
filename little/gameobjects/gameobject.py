@@ -12,8 +12,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.grid import Grid
 
-from stat_calc import calc_stat
-from functions.game_math import clamp, point_distance
+from functions.game_math import clamp, point_distance, calc_stat
 
 from gameobjects.aicontroller import AIController
 

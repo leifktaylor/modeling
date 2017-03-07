@@ -57,3 +57,6 @@ class GameController(object):
             self.running = False
         pass
 
+if __name__ == '__main__':
+    a = GameController()
+    a.run()

@@ -56,8 +56,6 @@ DEBUG_MODE = True
 DEFAULT_LAYER = 2
 
 
-
-
 def init_screen(width, height):
     """Simple wrapper to keep the screen resizeable"""
     # screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
