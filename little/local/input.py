@@ -1,29 +1,29 @@
 from cli import CliParser
 from pygame.locals import *
-import math
 import pygame
+
 from particles import PyIgnition
 from particles.fire import FXFire
 
+from functions.game_math import map_pos
+
 # size of walkable tile
 TILE_SIZE = 8
+CURSOR_GRAPHIC = 'graphics/sprites/gems/067.png'
 
 
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
         self.game = game
-        self.image = pygame.image.load('graphics/sprites/gems/067.png').convert_alpha()
+        self.image = pygame.image.load(CURSOR_GRAPHIC).convert_alpha()
         self.rect = self.image.get_rect()
         self._coords = [0, 0]
         self.game.group.add(self, layer='over0')
 
     def update(self, dt=None):
-        zoom = self.game.map_layer.zoom
-        offset = self.game.map_layer.view_rect.topleft
         mousepos = pygame.mouse.get_pos()
-        correct_pos = (mousepos[0] / zoom) + offset[0], (mousepos[1] / zoom) + offset[1]
-        self.coords = list(correct_pos)
+        self.coords = map_pos(self.game, mousepos)
         self.rect.center = self._coords
 
     @property

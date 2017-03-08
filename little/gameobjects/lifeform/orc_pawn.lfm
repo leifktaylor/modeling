@@ -2,7 +2,7 @@
 name:"Orc Pawn"
 class_type:LifeForm
 description:Happy
-ai:gameobjects/ai/healer.ai
+ai:gameobjects/ai/simple.ai
 
 *** sprites ***
 # <tag> <path> <params> ...

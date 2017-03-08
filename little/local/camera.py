@@ -8,11 +8,12 @@ class Camera(object):
         x, y = self.remotesprite.x, self.remotesprite.y
         self.rect = pygame.Rect(x, y, 8, 8)
         self._coords = self.remotesprite.coords
-        self.spd = 80.
+        self.spd = 100.
 
     def update(self, dt):
-        self.x += (self.remotesprite.x - self.x) * (dt / self.spd)
-        self.y += (self.remotesprite.y - self.y) * (dt / self.spd)
+        # self.x += (self.remotesprite.x - self.x) * (dt / self.spd)
+        # self.y += (self.remotesprite.y - self.y) * (dt / self.spd)
+        self._coords = self.remotesprite.coords
         self.rect.topleft = self._coords
 
     @property

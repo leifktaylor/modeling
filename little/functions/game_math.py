@@ -11,6 +11,13 @@ def negpos(number):
         return 0
 
 
+def map_pos(game, pos):
+    """ Converts screen position to map position """
+    zoom = game.map_layer.zoom
+    offset = game.map_layer.view_rect.topleft
+    return (pos[0] / zoom) + offset[0], (pos[1] / zoom) + offset[1]
+
+
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
 

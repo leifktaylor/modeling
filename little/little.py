@@ -21,7 +21,7 @@ from pyscroll.group import PyscrollGroup
 import graphics.eztext as eztext
 from graphics.graphictext import draw_lines, draw_text, InputLog, InventoryBox
 
-from functions.game_math import negpos, point_distance
+from functions.game_math import negpos, point_distance, map_pos
 from mp.client import PacketSizeMismatch
 from mp.client import GameClient
 
@@ -199,7 +199,6 @@ class Game(object):
             if self.hero.move_timer <= 0:
                 self.hero.moving = False
                 self.hero.position = self.hero.target_coords
-                self.hero.position = self.hero.target_coords
                 r = self.client.send('update_coords', [self.hero.x, self.hero.y])
                 self.hero.move_time = r['response']['move_time']
                 self.hero.attack_time = r['response']['attack_time']
@@ -247,8 +246,18 @@ class Game(object):
                 self.update(dt)
                 self.draw(screen)
 
+                if self.hero.particle:
+                    self.hero.particle.update()
+
+                # blit GUI objects to screen
+                self.text_box.draw(screen)
+                self.inputlog.draw(screen)
+                self.combatlog.draw(screen)
+                self.hero.tgh.display.draw(screen)
+
                 # debug draw co-ordinates
                 if DEBUG_MODE:
+
                     # # pos = [coord/16 for coord in self.hero.position]
                     # draw_text('hero.position:. . . . {0}'.format(str(self.hero.position)), screen, coords=(10, 10))
                     # draw_text('delta t:. . . . . . . {0}'.format(str(dt)), screen, coords=(10, 40))
@@ -278,15 +287,6 @@ class Game(object):
                     #
                     # draw_text('Attacking: {0}'.format(self.hero.attacking), screen, coords=(10, 160))
                     pass
-
-                if self.hero.particle:
-                    self.hero.particle.update()
-
-                # blit text objects to screen
-                self.text_box.draw(screen)
-                self.inputlog.draw(screen)
-                self.combatlog.draw(screen)
-                self.hero.tgh.display.draw(screen)
 
                 pygame.display.flip()
 

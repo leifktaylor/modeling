@@ -16,6 +16,7 @@ from functions.game_math import clamp, point_distance, calc_stat
 
 from gameobjects.aicontroller import AIController
 
+import random
 import copy
 
 START_ROOM = 'gameobjects/room/template.rm'
@@ -327,8 +328,6 @@ class LifeForm(GameObject):
         # Settings like ai, and other metadata
         self.settings = settings
         self.sprites = sprites
-        if self.ai:
-            self.aic = AIController(self)
 
         # Handle stats
         self.stats = stats
@@ -356,6 +355,11 @@ class LifeForm(GameObject):
         else:
             self.sight = 100
 
+        if self.ai:
+            self.aic = AIController(self)
+        else:
+            self.aic = None
+
     @property
     def ai(self):
         return self._value(self.settings['ai'])
@@ -380,10 +384,118 @@ class LifeForm(GameObject):
         else:
             return True
 
+    # TODO :: None of these seem to work .. ? Fix them - Generators would be ideal
+
     @property
     def nearby_lifeforms(self):
         return {lf.id: lf for id, lf in self.goc.lifeforms.items()
-                if point_distance(self.coords, lf.coords) < self.sight}
+                if point_distance(self.coords, lf.coords) < self.sight and lf != self}
+
+    @property
+    def nearby_allies(self):
+        return {lf.id: lf for id, lf in self.nearby_lifeforms.items() if self.is_ally(lf)}
+
+    @property
+    def nearby_enemies(self):
+        return {lf.id: lf for id, lf in self.nearby_lifeforms.items() if self.is_enemy(lf)}
+
+    @property
+    def nearby_players(self):
+        return {lf.id: lf for id, lf in self.nearby_lifeforms.items() if lf.player}
+
+    @property
+    def nearest_lifeform(self):
+        try:
+            return min({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_lifeforms.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def farthest_lifeform(self):
+        try:
+            return min({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_lifeforms.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def nearest_player(self):
+        try:
+            return min({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_players.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def farthest_player(self):
+        try:
+            return max({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_players.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def nearest_enemy(self):
+        try:
+            return min({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_enemies.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def farthest_enemy(self):
+        try:
+            return max({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_enemies.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def nearest_ally(self):
+        try:
+            return min({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_allies.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def farthest_ally(self):
+        try:
+            return max({point_distance(self.coords, lifeform.coords): lifeform
+                        for key, lifeform in self.nearby_allies.items()}.values())
+        except ValueError:
+            return {}
+
+    @property
+    def any_ally(self):
+        # This is written in this convoluted way because random.choice(Dict) is currently broken
+        nearby_allies = self.nearby_allies
+        if nearby_allies:
+            keys = nearby_allies.keys()
+            return nearby_allies[random.choice(keys)]
+        else:
+            return {}
+
+    @property
+    def any_player(self):
+        # This is written in this convoluted way because random.choice(Dict) is currently broken
+        nearby_players = self.nearby_players
+        if nearby_players:
+            keys = nearby_players.keys()
+            return nearby_players[random.choice(keys)]
+        else:
+            return {}
+
+    @property
+    def any_enemy(self):
+        # This is written in this convoluted way because random.choice(Dict) is currently broken
+        nearby_enemies = self.nearby_enemies
+        if nearby_enemies:
+            keys = nearby_enemies.keys()
+            return nearby_enemies[random.choice(keys)]
+        else:
+            return {}
 
     @property
     def move_time(self):
@@ -466,6 +578,35 @@ class LifeForm(GameObject):
         """ Result of stats['SPD'] and equipment stats """
         return self.stats['SPD']
 
+    @property
+    def primary_faction(self):
+        """ Returns lifeform's highest faction """
+        return max(self.factions, key=lambda key: self.factions[key])
+
+    @property
+    def hated_factions(self):
+        """ Returns list of hated factions ['antiquarian_society', 'stamp_collectors', 'food_network'] """
+        return [faction for faction, value in self.factions.items() if value == 0]
+
+    @property
+    def friendly_factions(self):
+        """ Returns list of liked factions """
+        return [faction for faction, value in self.factions.items() if value != 0]
+
+    # Queries
+
+    def is_enemy(self, lifeform):
+        if lifeform.primary_faction in self.hated_factions:
+            return True
+        else:
+            return False
+
+    def is_ally(self, lifeform):
+        if not self.is_enemy(lifeform):
+            return True
+        else:
+            return False
+
     # Actions
 
     def change_room(self, roomname):
@@ -485,6 +626,7 @@ class LifeForm(GameObject):
         if damage < 1:
             damage = 1
         target.stats['HP'] -= damage
+        print('{0} attacking {1} for {2} damage'.format(self.name, target.name, damage))
         return damage
 
     def equip_item(self, id):
@@ -523,7 +665,9 @@ class LifeForm(GameObject):
             new_x, new_y = route[1][0] * 8, route[1][1] * 8
             print('newx/newy {0},{1}'.format(new_x, new_y))
             self.coords = [new_x, new_y]
-        return route
+            return route
+        # Return None if we have arrived at our destination
+        return None
 
     @staticmethod
     def _path(start, end, grid):
@@ -547,7 +691,9 @@ class LifeForm(GameObject):
         :param dt: delta time (from pygame clock)
         :return:
         """
-        pass
+        if self.ai:
+            if self.aic.running:
+                self.aic.run(dt)
 
     # Dialogue Methods
 
