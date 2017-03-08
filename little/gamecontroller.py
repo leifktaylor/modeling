@@ -17,8 +17,10 @@ class GameController(object):
         :param world: wld template file
         """
         # Instantiate goc and add default starting room
-        self.goc = GameObjectController()
+        self.goc = GameObjectController(self)
         self.goc.add_room(START_ROOM)
+
+        self.dt = None
 
         # {'playername': <lifeformid>, 'playername': <lifeformid>, ... }
         self.gameserver = GameServer(self.goc)
@@ -44,10 +46,10 @@ class GameController(object):
 
         try:
             while self.running:
-                dt = clock.tick(60)
+                self.dt = clock.tick(60)
 
                 # Update Gameobjects
-                self.goc.update(dt)
+                self.goc.update(self.dt)
 
                 # Listen on server for client requests
                 # GameServer has access to GOC and can change gameobject's attributes directly

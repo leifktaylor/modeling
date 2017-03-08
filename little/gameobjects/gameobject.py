@@ -16,6 +16,9 @@ from functions.game_math import clamp, point_distance, calc_stat
 
 from gameobjects.aicontroller import AIController
 
+from pathfinding.astar2 import *
+import numpy
+
 import random
 import copy
 
@@ -32,8 +35,9 @@ class GameObjectController(object):
     Can create rooms from tmx files
     Can terminate gameobjects from its list
     """
-    def __init__(self):
+    def __init__(self, gc):
         self.tp = TemplateParser()
+        self.gc = gc
 
         # Dictionary like {<id>: <gameobject instance>, <id>: <gameobject instance>, ...}
         self._gameobjects = {}
@@ -164,6 +168,7 @@ class GameObjectController(object):
         for id, lifeform in self.lifeforms.items():
             lifeform.update(dt)
 
+
     # File handling
 
     @staticmethod
@@ -281,7 +286,7 @@ class Room(object):
                     if tile:
                         if tile['wall'] == 'true':
                             matrix[column][row] = 1
-        grid = Grid(matrix=matrix)
+        grid = numpy.array(matrix)
         return grid
 
 
@@ -348,6 +353,7 @@ class LifeForm(GameObject):
         # Target is a gameobject instance
         self.target = target
         self.state = 'idle'
+        self.route = []
 
         # Get target sight range from templatedata if it's there, otherwise use default
         if 'sight' in self.settings.keys():
@@ -657,17 +663,28 @@ class LifeForm(GameObject):
 
     def move(self, coords):
         """ Move to given coordinates """
-        start = self.coords[0] / 8, self.coords[1] / 8
-        end = coords[0] / 8, coords[1] / 8
-        grid = copy.deepcopy(self.goc.rooms[self.current_room].grid)
-        route = self._path(start, end, grid)
-        if len(route) > 2:
-            new_x, new_y = route[1][0] * 8, route[1][1] * 8
-            print('newx/newy {0},{1}'.format(new_x, new_y))
-            self.coords = [new_x, new_y]
-            return route
+        start = self.coords[0] / TILE_SIZE, self.coords[1] / TILE_SIZE
+        end = coords[0] / TILE_SIZE, coords[1] / TILE_SIZE
+        updated_grid = self.goc.rooms[self.current_room].grid
+        route = astar(updated_grid, start, end)
+        if point_distance(self.coords, coords) > 12:
+        #if len(route) > 2:
+            try:
+                new_x, new_y = route[1][0] * TILE_SIZE, route[1][1] * TILE_SIZE
+                print('newx/newy {0},{1}'.format(new_x, new_y))
+                self.coords = [new_x, new_y]
+                return route
+            except IndexError:
+                return None
         # Return None if we have arrived at our destination
         return None
+
+    def update_grid(self, grid):
+        coord_list = [(go.coords[0] / 8, go.coords[1] / 8) for go in self.goc.lifeforms.values()]
+        print(coord_list)
+        for coords in coord_list:
+            grid[coords[1]][coords[0]] = 1
+        return grid
 
     @staticmethod
     def _path(start, end, grid):

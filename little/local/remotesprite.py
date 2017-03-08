@@ -169,6 +169,7 @@ class TargetDisplay(object):
                       surface=surface, size=self.size, coords=(x, y+20), font=self.font)
             draw_text(string='LV: {0}'.format(self.th.level), surface=surface, size=self.size,
                       coords=(x, y+40), font=self.font)
+            draw_text(string=str(self.th.target['id']), surface=surface, size=self.size, coords=(x, y+60), font=self.font)
 
 
 class Hero(object):
