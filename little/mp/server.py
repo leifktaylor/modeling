@@ -85,7 +85,10 @@ class RequestProcessor(object):
         Request like: {... 'request': 'tell', {'message': message, 'target': target_player}} """
         message = request['args']['message']
         target_player = request['args']['target']
-        self.broadcastque.add(message=message, target=target_player, color=TELL_COLOR)
+        # Check if player is in remote clients, and correct for case sensitivity
+        if target_player.capitalize() not in self.server.remote_clients.keys():
+            return {'status': -1, 'response': {'message': 'Player not logged in'}}
+        self.broadcastque.add(message=message, target=target_player.capitalize, color=TELL_COLOR)
         return {'status': 0, 'response': 'echo'}
 
     def say(self, request):

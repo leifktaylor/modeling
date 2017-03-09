@@ -16,27 +16,6 @@ class GameClient(object):
     Request is issued in the following format:
     {'username': <username>, 'charactername': <charactername>, 'password': <password>,
     'request': <cli_command>, 'args': []}
-
-    Cli commands that can be sent to server --> Method called on server by RemoteClient class
-    (remember to also pass list of 'args')
-    
-    'logout'                -->  logout()
-    'move'                  -->  move(coords) # coords is a list like [x, y]  Updates server-side player location
-    'target'                -->  target(targetid)
-    'say'                   -->  say(targetid, dialogue)
-    'ooc'                   -->  ooc(dialogue)
-    'use_item'              -->  use_item(itemid)
-    'equip_item'            -->  equip_item(self, itemid)
-    'unequip_item'          -->  unequip_item(self, itemid)
-    'add_item'              -->  add_item(self, itemid)
-    'drop_item'             -->  drop_item(self, itemid)
-    'give_item'             -->  give_item(itemid, targetid)
-    'cast'                  -->  cast(self, spellid)
-    'attack'                -->  attack(self, targetid)
-    'update_coords'         -->  update_coords(self)
-    'update_gameobjects'    -->  update_gameobjects(self)
-    'change_room'           -->  change_room(self, roomname)
-
     """
     def __init__(self, ip='127.0.0.1', charactername='Zaxim', username='ken', password='mypw'):
         self.id = None

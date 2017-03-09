@@ -1,4 +1,5 @@
+numpy
 pygame
 pyscroll
 pytmx
-# retrying
+
