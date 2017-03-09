@@ -31,29 +31,7 @@ from local.remotesprite import RemoteSpriteController, RemoteSprite
 
 from particles import PyIgnition
 
-
-# Player starting room
-STARTING_ROOM = 'gameobjects/room/test8.tmx'
-# Player starting position
-STARTING_POSITION = [160, 160]
-# Default run speed
-MOVE_TIME = 8
-
-# Default Resolution
-DEFAULT_RESOLUTION = [1000, 563]
-# Map camera zoom
-MAP_ZOOM = 6.0
-# Default Font
-FONT = 'graphics/fonts/november.ttf'
-
-# size of walkable tile
-TILE_SIZE = 8
-# define rate that the server is polled, lower number means more polling
-POLL_RATE = 10
-# debug messages displayed on screen
-DEBUG_MODE = True
-# Pyscroll default layer
-DEFAULT_LAYER = 2
+from game_locals import *
 
 
 def init_screen(width, height):
@@ -133,11 +111,9 @@ class Game(object):
     def map_size(self):
         return self.map_data.width, self.map_data.height
 
-    def screen_coords_to_map_coords(self, coords):
-        """ Converts screen co-ordinates to map co-ordinates, i.e. the mouse pos in pygame returns
-        co-ordinates on screen, but this will not naturally match up with gameobject positions on the
-        map.  This function will translate mouse pos to actual map position. """
-        pass
+    @property
+    def charactername(self):
+        return self.client.charactername
 
     def screen_coords(self, coords):
         """
@@ -148,13 +124,6 @@ class Game(object):
         new_x = (coords[0]/100) * screen_x
         new_y = (coords[1]/100) * screen_y
         return new_x, new_y
-
-    def map_coords(self, coords):
-        """
-        :param coords: percentage of each axis. i.e. (50, 50) based on SCREEN position.
-        :return:
-        """
-        pass
 
     def poll_server(self, dt=60):
         """ get remotesprite coordinate updates from server and pass to remotesprite controller """
@@ -167,13 +136,18 @@ class Game(object):
             self.hero.tgh.update_target()
 
     def update_lifeforms(self):
-        """Update co-ordinates of all remote sprites with new information from server"""
+        """Update co-ordinates of all remote sprites with new information from server, also updates chat que and other
+        important information from the server """
         # Update data on all lifeforms in room
-        # TODO: Create remotesprite controller class that is similiar to GOC but for remote sprites
         r = self.client.send('get_coords')
-        coords_dict = r['response']
+        coords_dict = r['response']['coords']
         if coords_dict:
             self.rsc.update_coords(coords_dict)
+
+        # Update chat messages
+        messages = r['response']['messages']
+        for message in messages:
+            self.inputlog.add_line(string=message['message'], color=message['color'])
 
     def update(self, dt):
         """ Tasks that occur over time should be handled here"""
@@ -210,8 +184,7 @@ class Game(object):
                 self.hero.attack_timer = self.hero.attack_time
                 if self.hero.tgh.target:
                     if point_distance(self.hero.coords, self.hero.tgh.coords) < 14:
-                        r = self.client.send('attack', self.hero.tgh.id)
-                        # TODO: Display damage dealt in chat
+                        self.client.send('attack', self.hero.tgh.id)
 
     def draw(self, surface):
         # center the map/screen on our Hero

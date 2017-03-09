@@ -15,6 +15,7 @@ CURSOR_GRAPHIC = 'graphics/sprites/gems/067.png'
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
+        self.solid = False
         self.game = game
         self.image = pygame.image.load(CURSOR_GRAPHIC).convert_alpha()
         self.rect = self.image.get_rect()

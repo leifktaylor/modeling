@@ -118,6 +118,8 @@ class TargetReticle(pygame.sprite.Sprite):
     """ Targetting reticle sprite """
     def __init__(self, targethandler):
         pygame.sprite.Sprite.__init__(self)
+        self.solid = False
+
         self.th = targethandler
         image_map = {'red': 'graphics/sprites/hud/target/red.png',
                      'dblue': 'graphics/sprites/hud/target/dblue.png',
@@ -183,6 +185,7 @@ class Hero(object):
         """
         # Game object
         self.game = game
+        self.charactername = self.game.client.charactername
 
         # RemoteSprite object
         self.remotesprite = RemoteSprite(id=id, sprite=sprite, coords=coords)
@@ -275,7 +278,7 @@ class Hero(object):
         """
         collide = False
         # First check for unit collision
-        if [s for s in self.game.group if s.rect.collidepoint(position) and not isinstance(s, Cursor)]:
+        if [s for s in self.game.group if s.rect.collidepoint(position) and s.solid]:
             return True
         # Check for map / geometry collision
         if not layers:
@@ -376,6 +379,7 @@ class RemoteSprite(pygame.sprite.Sprite):
         """
         pygame.sprite.Sprite.__init__(self)
         self.id = id
+        self.solid = True
         self.image = pygame.image.load(sprite).convert_alpha()
         self.rect = self.image.get_rect()
         self._coords = coords

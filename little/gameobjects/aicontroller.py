@@ -121,6 +121,7 @@ class AIController(object):
         """
         condition = gambit_target[0]
         target_type = gambit_target[1]
+        # The attribute determined from this string has a 1:1 naming with properties in gameobject.Lifeform class
         return getattr(self.lifeform, '{0}_{1}'.format(condition, target_type))
 
     def perform_action(self, action, args=None, target=None):
@@ -142,7 +143,7 @@ class AIController(object):
         if action == 'move':
             # Move to target co-ordinates
             self.target_coords = args
-            return self.move
+            return self.move_to_coords
         if action == 'say':
             # Speak dialogue to target, if no target, to general chat
             pass
@@ -199,10 +200,19 @@ class AIController(object):
             pass
 
     def idle_check(self):
-        # Perform sequence of actions
-        # TODO: Finish this
-        # Look for target in range
-        return self.perform_action('wait', 10)
+        idle_actions = self.data['idle']
+        if idle_actions:
+            pass
+        else:
+            return self.perform_action('wait', 1)
+
+    def move_to_coords(self):
+        if self.action_timer < 0:
+            print('move: moving toward target coords: {0}'.format(self.target_coords))
+            self.action_timer = self.lifeform.move_time
+            r = self.lifeform.move(self.target_coords)
+            if not r:
+                self.state = None
 
     def attack(self):
         # Attack target if in range, otherwise move toward it
@@ -216,14 +226,10 @@ class AIController(object):
             if self.action_timer < 0:
                 print('attack: Target not in range, pathing towards target')
                 self.action_timer = self.lifeform.move_time
-                self.lifeform.move(self.target.coords)
+                self.lifeform.move_to_lifeform(self.target.coords)
                 return
 
     def wait(self):
         if self.action_timer < 0:
             print('wait: waiting complete')
             self.state = None
-
-
-
-

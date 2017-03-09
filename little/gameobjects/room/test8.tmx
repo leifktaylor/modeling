@@ -902,7 +902,7 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="162" name="big_tiles" tilewidth="8" tileheight="8" tilecount="1" columns="22">
+ <tileset firstgid="162" name="big_tiles" tilewidth="8" tileheight="8" tilecount="264" columns="22">
   <image source="../../graphics/tilesets/tiles3.png" width="176" height="96"/>
  </tileset>
  <layer name="under0" width="50" height="50">
@@ -915,9 +915,9 @@
    H4sIAAAAAAAAA+2W3W7CMAyFud94CiS0cUWljb0og42BtL0pjlRLlpUfJ00al/mTjoC2pHZin2S1MgzDMIz52PcOoBIuj03lMZ9Aa9Bz5XFjuDyGUSlOoDO7dgH9sGtb0AvoNXB/KbyBDqCP3oE0QrLmhh9fL2ijRYzoFdK+lnpLiKke65uDgUkCPpfrZ/z91ONT6/MF+vbEQH/36mHq8TmUxNxyDynx+M0oSR3VWCNeB6XQenMxYR44v744eY6a9gwXC/YT9hTmxJ+jn7UJ9bHUf6knYE/Fej10b8418tUS9YR30K4gFp4n7f2W+dF+mHLuS61F6TpJPYCP79s/r6Cb8P8tfS0E1hYdP+cc0MurYmeNXDR57ZRYauZAfRJjOoI+M96nYU6pT2I8v6C/8Xts35gr/phHIM4nnc+HfDK3bnqtjdSvEb73aTgjxd6diil2tuBI6iIHPl7pHGo5n5bOT+/6KQXz1dIHEqRr1Cv+mj1Wu1+Nx8DqwjD+H637XouvaInDWAZ3l32cyhAnAAA=
   </data>
  </layer>
- <layer name="lifeforms" width="50" height="50">
+ <layer name="lifeforms" width="50" height="50" visible="0">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3SMQoAIAwDwH6/v3YV0UUQCdwt7ZiUVgEAAAAAwFn/DnCpl5mmN3typ12fJF3n+yf2maXlT/8lAADgrQE0xbCLECcAAA==
+   H4sIAAAAAAAAA+3OAQ0AAAgDoNe3tTGuGyQgAQAAAAAArpl2AAAAAB5aYsmmJBAnAAA=
   </data>
  </layer>
  <layer name="over0" width="50" height="50">

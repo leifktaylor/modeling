@@ -7,6 +7,8 @@ import json
 import sys
 import pytmx
 
+from game_locals import *
+
 # constants
 USER_LIST = 'mp/users/users.json'
 TILE_SIZE = 8
@@ -21,11 +23,50 @@ START_COORDS = [160, 160]
 # ERRORS
 # 1001  :: Gameobject not exist
 
+# TODO: Need to display enemy damage to players, both in white for other players to see, and in red for the player
+# TODO: being hit.  Also need to display '<enemy> has been slain!' message as well.
+class BroadcastQue(object):
+    """ Queues messages to be sent to individual clients """
+    def __init__(self, server):
+        self.server = server
+        self.que = []
+
+    def add(self, message, target, color=NORMAL_COLOR):
+        """
+        :param message: Message to be broadcasted
+        :param target: 'ALL', 'room:uniquename', 'charactername'
+        :param color: (255, 255, 255)
+        """
+        if target == 'ALL':
+            for charactername in self.characternames:
+                self.que.append({'message': message, 'charactername': charactername, 'color': color})
+        elif target.startswith('room:'):
+            room = target.replace('room:', '')
+            names = [player.name for id, player in self.server.goc.players.items() if player.current_room == room]
+            for charactername in names:
+                self.que.append({'message': message, 'charactername': charactername, 'color': color})
+        else:
+            self.que.append({'message': message, 'charactername': target, 'color': color})
+
+    def dump(self, charactername):
+        """ Return list of all messages intended for the given charactername, and pop them from the broadcast que """
+        output_que = []
+        for i, message in enumerate(self.que):
+            if message['charactername'] == charactername:
+                output_que.append(self.que.pop(i))
+        return output_que
+
+    @property
+    def characternames(self):
+        """ List of all characternames currently connected """
+        return self.server.remote_clients.keys()
+
 
 class RequestProcessor(object):
     def __init__(self, goc=None, server=None):
         self.goc = goc
         self.server = server
+        self.broadcastque = BroadcastQue(self.server)
 
     def get_payload(self, request):
         """
@@ -39,15 +80,40 @@ class RequestProcessor(object):
         """
         return getattr(self, request['request'])(request)
 
+    def tell(self, request):
+        """ Send private message to another player,
+        Request like: {... 'request': 'tell', {'message': message, 'target': target_player}} """
+        message = request['args']['message']
+        target_player = request['args']['target']
+        self.broadcastque.add(message=message, target=target_player, color=TELL_COLOR)
+        return {'status': 0, 'response': 'echo'}
+
+    def say(self, request):
+        """ Broadcast message locally to other players, if NPC is targetted, will trigger dialogue with NPC """
+        # TODO Finish npc aspect
+        npc_id = request['args']['id']
+
+        player = self.goc.gameobjects[request['id']]
+        message = request['args']['message']
+        room = 'room:{0}'.format(player.current_room)
+        self.broadcastque.add(message=message, target=room)
+        return {'status': 0, 'response': 'echo'}
+
     def attack(self, request):
         """ Request like: {... 'request': 'attack', 'args': <enemy id>}
         Return data like: {'status': 0, 'response': 'damage': <damage dealt> """
-        print('RECEIVED ATTACK REQUEST !!!!!!!!')
         try:
+            # Calculate attack damage and execute on target
             enemyid = request['args']
+            enemy = self.goc.gameobjects[enemyid]
             playerid = request['id']
             player = self.goc.gameobjects[playerid]
             damage = player.attack(enemyid)
+
+            # Create broadcast message (TODO use weapon verb)
+            room = 'room:{0}'.format(player.current_room)
+            message = '{0} attacks {1} for {2} damage.'.format(player.name, enemy.name, damage)
+            self.broadcastque.add(message=message, target=room)
             return {'status': 0, 'response': {'damage': damage}}
         except KeyError:
             return {'status': -1, 'response': {'Something went wrong, does current target still exist?'}}
@@ -63,11 +129,12 @@ class RequestProcessor(object):
             return {'status': 1001, 'response': {'message': 'ID Does not exist in Gameobject controller'}}
 
     def get_coords(self, request):
-        """ Return Co-ords to client of all gameobjects in room """
+        """ Return Co-ords to client of all gameobjects in room, also return all broadcast messages to client """
         # Get coordinates of only objects in the client's current room:
         current_room = self.goc.gameobjects[request['id']].current_room
         room_coords = self.goc.coords_sprite_map_for_room(current_room)
-        return {'status': 0, 'response': room_coords}
+        charactername = request['charactername']
+        return {'status': 0, 'response': {'coords': room_coords, 'messages': self.broadcastque.dump(charactername)}}
 
     def update_coords(self, request):
         """ Update player's coords in the GOC, also return some basic player stats to client like:
@@ -77,6 +144,7 @@ class RequestProcessor(object):
         return {'status': 0, 'response': {'move_time': lf.move_time, 'attack_time': lf.attack_time}}
 
     def login(self, request):
+        """ Login client and create Gameobject for the client-user's character """
         if self.server.authenticate_credentials(request):
             if request['charactername'] not in self.goc.playernames:
                 print('Player logging in, adding player Lifeform to GOC')
@@ -95,6 +163,7 @@ class RequestProcessor(object):
             return {'status': -1, 'response': {'message': 'Credentials invalid'}}
 
     def logout(self, request):
+        """ Logout client and remove their gameobject from the world """
         if self.server.authenticate_credentials(request):
             if request['charactername'] in self.goc.playernames:
                 print('Removing gameobject with id: {0}'.format(request['id']))
@@ -107,6 +176,7 @@ class RequestProcessor(object):
             return {'status': -1, 'response': {'message': 'Credentials invalid'}}
 
     def test(self, request):
+        """ Simple socket test.  Send a message back and forth from client to server """
         playername = request['username']
         return {'status': 0, 'response': {'message': 'Hello {0}!'.format(playername)}}
 
@@ -333,4 +403,3 @@ class GameServer(object):
             except IndexError:
                 print('Some message was lost...')
         return message_list
-

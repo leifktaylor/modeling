@@ -4,6 +4,7 @@ import pygame
 class Camera(object):
     """Invisible object that slowly follows player, screen locks onto this object"""
     def __init__(self, remotesprite):
+        self.solid = False
         self.remotesprite = remotesprite
         x, y = self.remotesprite.x, self.remotesprite.y
         self.rect = pygame.Rect(x, y, 8, 8)

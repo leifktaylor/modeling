@@ -661,14 +661,13 @@ class LifeForm(GameObject):
             response = 'Cannot speak to that!'
         return response
 
-    def move(self, coords):
-        """ Move to given coordinates """
+    def move_to_lifeform(self, coords):
+        """ Move to given coordinates and stop right in front of them """
         start = self.coords[0] / TILE_SIZE, self.coords[1] / TILE_SIZE
         end = coords[0] / TILE_SIZE, coords[1] / TILE_SIZE
         updated_grid = self.goc.rooms[self.current_room].grid
         route = astar(updated_grid, start, end)
         if point_distance(self.coords, coords) > 12:
-        #if len(route) > 2:
             try:
                 new_x, new_y = route[1][0] * TILE_SIZE, route[1][1] * TILE_SIZE
                 print('newx/newy {0},{1}'.format(new_x, new_y))
@@ -677,6 +676,25 @@ class LifeForm(GameObject):
             except IndexError:
                 return None
         # Return None if we have arrived at our destination
+        return None
+
+    def move_to_coords(self, coords):
+        """ Move to given coordinates """
+        start = self.coords[0] / TILE_SIZE, self.coords[1] / TILE_SIZE
+        end = coords[0] / TILE_SIZE, coords[1] / TILE_SIZE
+        updated_grid = self.goc.rooms[self.current_room].grid
+        if not self.route:
+            self.route = astar(updated_grid, start, end)
+        try:
+            new_x, new_y = self.route[1][0] * TILE_SIZE, self.route[1][1] * TILE_SIZE
+            print('newx/newy {0},{1}'.format(new_x, new_y))
+            self.coords = [new_x, new_y]
+            return self.route
+        except IndexError:
+            self.route = []
+            return None
+        # Return None if we have arrived at our destination
+        self.route = []
         return None
 
     def update_grid(self, grid):

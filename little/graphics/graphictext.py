@@ -1,4 +1,5 @@
 import pygame
+from game_locals import *
 
 
 def draw_text(string, surface, size=22, coords=(0, 0), color=(255, 255, 255), background=None, font=None):
@@ -31,13 +32,16 @@ class InputLog(object):
         self.size = size
         self.scroll_type = scroll_type
         self.font = font
+        self.color_list = []
 
-    def add_line(self, string):
+    def add_line(self, string, color=NORMAL_COLOR):
         if self.scroll_type.lower() == 'up':
             if len(self.line_list) == self.max_length:
                 self.line_list = [string] + self.line_list[:-1]
+                self.color_list = [color] + self.color_list[:-1]
             else:
                 self.line_list = [string] + self.line_list
+                self.color_list = [color] + self.color_list
         elif self.scroll_type.lower() == 'down':
             if len(self.line_list) == self.max_length:
                 self.line_list = self.line_list[1:] + [string]
@@ -48,8 +52,8 @@ class InputLog(object):
 
     def draw(self, surface):
         y = self.coords[1]
-        for line in self.line_list:
-            draw_text(line, surface, self.size, (self.coords[0], y), font=self.font)
+        for i, line in enumerate(self.line_list):
+            draw_text(line, surface, self.size, (self.coords[0], y), font=self.font, color=self.color_list[i])
             if self.scroll_type.lower() == 'up':
                 y -= self.spacing
             else:
