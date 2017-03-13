@@ -8,19 +8,14 @@ import pickle
 
 import pytmx
 
-from pathfinding.core.diagonal_movement import DiagonalMovement
-from pathfinding.finder.a_star import AStarFinder
-from pathfinding.core.grid import Grid
-
 from functions.game_math import clamp, point_distance, calc_stat
-
 from gameobjects.aicontroller import AIController
 
 from pathfinding.astar2 import *
-import numpy
 
+import numpy
 import random
-import copy
+
 
 START_ROOM = 'gameobjects/room/template.rm'
 START_COORDS = [160, 160]
@@ -632,7 +627,7 @@ class LifeForm(GameObject):
         if damage < 1:
             damage = 1
         target.stats['HP'] -= damage
-        print('{0} attacking {1} for {2} damage'.format(self.name, target.name, damage))
+        print('{0} attacks {1} for {2} damage'.format(self.name, target.name, damage))
         return damage
 
     def equip_item(self, id):
@@ -670,7 +665,7 @@ class LifeForm(GameObject):
         if point_distance(self.coords, coords) > 12:
             try:
                 new_x, new_y = route[1][0] * TILE_SIZE, route[1][1] * TILE_SIZE
-                print('newx/newy {0},{1}'.format(new_x, new_y))
+                # print('newx/newy {0},{1}'.format(new_x, new_y))
                 self.coords = [new_x, new_y]
                 return route
             except IndexError:
@@ -687,7 +682,7 @@ class LifeForm(GameObject):
             self.route = astar(updated_grid, start, end)
         try:
             new_x, new_y = self.route[1][0] * TILE_SIZE, self.route[1][1] * TILE_SIZE
-            print('newx/newy {0},{1}'.format(new_x, new_y))
+            # print('newx/newy {0},{1}'.format(new_x, new_y))
             self.coords = [new_x, new_y]
             return self.route
         except IndexError:
@@ -704,21 +699,21 @@ class LifeForm(GameObject):
             grid[coords[1]][coords[0]] = 1
         return grid
 
-    @staticmethod
-    def _path(start, end, grid):
-        """
-        Use A* pathing algorythm to return a list of sequential tuples where each tuple is the
-            co-ordinates of the tile along the path.  Will avoid tiles with 'wall' property == 'true'
-        :param start: (x1, y1)
-        :param end: (x2, y2)
-        :param grid: Room.grid object
-        :return: list of tuples like [(0, 0), (0, 1), (0, 2)]
-        """
-        start = grid.node(*start)  # format (30, 30)
-        end = grid.node(*end)
-        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
-        path, runs = finder.find_path(start, end, grid)
-        return path
+    # @staticmethod
+    # def _path(start, end, grid):
+    #     """
+    #     Use A* pathing algorythm to return a list of sequential tuples where each tuple is the
+    #         co-ordinates of the tile along the path.  Will avoid tiles with 'wall' property == 'true'
+    #     :param start: (x1, y1)
+    #     :param end: (x2, y2)
+    #     :param grid: Room.grid object
+    #     :return: list of tuples like [(0, 0), (0, 1), (0, 2)]
+    #     """
+    #     start = grid.node(*start)  # format (30, 30)
+    #     end = grid.node(*end)
+    #     finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+    #     path, runs = finder.find_path(start, end, grid)
+    #     return path
 
     def update(self, dt):
         """
@@ -817,7 +812,6 @@ class Item(object):
     def __init__(self, templatefile):
         tp = TemplateParser()
         data = tp.load_data(templatefile)
-        print(data)
         self.settings = data['settings']
         try:
             self.sprites = data['sprites']
@@ -895,7 +889,6 @@ class Inventory(object):
                 equipped = False
             index = self.add_item(item_template)
             if equipped:
-                print(equipped)
                 self.equip_item(index)
 
     @property
