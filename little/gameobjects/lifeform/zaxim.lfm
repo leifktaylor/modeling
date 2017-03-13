@@ -6,7 +6,7 @@ ai:None
 
 *** sprites ***
 # <tag> <path> <params> ...
-main graphics/sprites/humans/b16.png
+main graphics/sprites/player_sprites/human_0.png
 
 *** stats ***
 STR:10

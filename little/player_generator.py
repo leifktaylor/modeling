@@ -2,7 +2,8 @@ from gameobjects.gameobject import GameObjectController
 
 
 def make_player(filepath):
-    gc = GameObjectController()
+    dummycontroller = None
+    gc = GameObjectController(dummycontroller)
     lifeform_instance, id = gc.add_gameobject(filepath)
     name = lifeform_instance.name
     gc.save_gameobject(lifeform_instance, 'mp/users/{0}.sav'.format(name))

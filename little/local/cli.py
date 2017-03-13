@@ -27,6 +27,11 @@ class CliParser(object):
             else:
                 self.inputlog.add_line('Talking to yourself again?', SYSTEM_COLOR)
 
+        if msgvalue.split()[0] in ['/ooc']:
+            message_text = ' '.join(msgvalue.split()[1:])
+            message = '{0}: {1}'.format(self.hero.charactername, message_text)
+            self.game.client.send('ooc', {'message': message, 'target': 'ALL'})
+
         elif msgvalue.startswith('/set'):
             if len(msgvalue.split()) == 3:
                 attribute = msgvalue.split()[1]

@@ -59,7 +59,7 @@ class BroadcastQue(object):
     @property
     def characternames(self):
         """ List of all characternames currently connected """
-        return self.server.remote_clients.keys()
+        return self.server.goc.playernames
 
 
 class RequestProcessor(object):
@@ -80,16 +80,23 @@ class RequestProcessor(object):
         """
         return getattr(self, request['request'])(request)
 
+    def ooc(self, request):
+        """ Send out-of-character message to all players in all zones
+        Request like: {... 'request': 'ooc', {'message': message} } """
+        message = request['args']['message']
+        self.broadcastque.add(message=message, target='ALL', color=OOC_COLOR)
+        return {'status': 0, 'response': 'ooc message delivered to server'}
+
     def tell(self, request):
         """ Send private message to another player,
         Request like: {... 'request': 'tell', {'message': message, 'target': target_player}} """
         message = request['args']['message']
         target_player = request['args']['target']
         # Check if player is in remote clients, and correct for case sensitivity
-        if target_player.capitalize() not in self.server.remote_clients.keys():
+        if target_player.capitalize() not in self.goc.playernames:
             return {'status': -1, 'response': {'message': 'Player not logged in'}}
-        self.broadcastque.add(message=message, target=target_player.capitalize, color=TELL_COLOR)
-        return {'status': 0, 'response': 'echo'}
+        self.broadcastque.add(message=message, target=target_player.capitalize(), color=TELL_COLOR)
+        return {'status': 0, 'response': 'tell message delivered to server'}
 
     def say(self, request):
         """ Broadcast message locally to other players, if NPC is targetted, will trigger dialogue with NPC """
@@ -151,13 +158,15 @@ class RequestProcessor(object):
         if self.server.authenticate_credentials(request):
             if request['charactername'] not in self.goc.playernames:
                 print('Player logging in, adding player Lifeform to GOC')
+                print('Loading mp/users/{0}/sav'.format(request['charactername']))
                 gameobject, id = self.goc.load_gameobject('mp/users/{0}.sav'.format(request['charactername']))
+                print('Loaded, creating gameobject')
                 print('Created gameobject with id: {0}'.format(id))
                 # If the player has no coords, he's a fresh player, and should go to the starting room
                 if not gameobject.current_room:
                     gameobject.current_room = START_ROOM
                     gameobject.coords = START_COORDS
-                
+                print('RETURNING!!!!!!!')
                 return {'status': 0, 'response': {'id': id, 'coords': gameobject.coords, 'sprite': gameobject.graphic,
                         'current_room': gameobject.current_room}}
             else:
@@ -195,10 +204,6 @@ class GameServer(object):
         self.goc = goc
         # RequestProcessor will respond to client request and deliver payload from the goc
         self.processor = RequestProcessor(self.goc, self)
-
-        # dictionary containing {<charactername>:<player gameobject id>, ...}
-        self.remote_clients = {}
-
         self.server = None
 
         with open(USER_LIST, 'r') as f:
@@ -254,53 +259,12 @@ class GameServer(object):
             return {'status': -1, 'response': 'Password was invalid, or character/user does not exist'}
 
         # check that user is logged in
-        if charactername not in self.remote_clients.keys():
+        if charactername not in self.goc.playernames:
             print('Cannot logout, user is not logged in')
             return {'status': -1, 'response': 'User is not logged in'}
         # save character
         # todo All this stuff
         # logout character
-
-    def login_client(self, request):
-        """
-        Instantiate player gameobject and login client
-        :param request: dictionary containing 'username', 'password' and 'charactername'
-        :return:
-        """
-        charactername = request['charactername']
-        username = request['username']
-        password = request['password']
-        print('Someone attempting to log in...')
-
-        # Check that character isn't already logged in
-        if charactername in self.remote_clients.keys():
-            print('User is already logged in')
-            return {'status': -1, 'response': 'Character is already logged in!'}
-
-        # Find player json matching charactername, make sure username and password correct and instantiate
-        player = self.goc.load_player_from_json(charactername, username, password)
-        if player == -1:
-            print('Password was invalid, or character/user does not exist')
-            return {'status': -1, 'response': 'Password was invalid, or character/user does not exist'}
-
-        # Create RemoteClient instance and add to self.remote_clients dictionary
-        playerid = player.id
-        self.remote_clients[charactername] = RemoteClient(playerid=playerid, lifeform=player, username=username,
-                                                          password=password, charactername=charactername)
-
-        # Put player in starting/current location
-        # TODO: non default values here please ********
-        print('Creating room instance')
-        room = self.add_room(START_ROOM)['instance']
-        player.current_room = room
-        coords = (132, 132)
-        # Add player to room
-        room.add_lifeform_by_id(playerid, coords)
-
-        # respond to client with playerid and roominstance
-        print('Login successful on serverside, sending response to client...')
-        response = {'status': 0, 'response': {'playerid': playerid, 'current_room': room}}
-        return response
 
     def listen(self, clients):
         try:
@@ -386,23 +350,3 @@ class GameServer(object):
                 return False
         else:
             return False
-
-    def add_to_broadcast_que(self, originalplayerid, message):
-        # TODO: Deprecated.. fix this
-        for username, playerid in self.known_users.items():
-            if playerid != originalplayerid:
-                broadcaster_name = get_object_by_id(originalplayerid).name
-                message = '{0}: {1}'.format(broadcaster_name, message[4:])
-                self.broadcast_que.append((message, originalplayerid, playerid))
-
-    def get_broadcast_message(self, playerid):
-        # TODO: Deprecated.. Fix this
-        # Find messages for this player, and then clear them from the broadcast que
-        message_list = [message[0] for message in self.broadcast_que if message[2] == playerid]
-        indexes_to_drop = [i for i, message in enumerate(self.broadcast_que) if message[2] == playerid]
-        for index in indexes_to_drop:
-            try:
-                self.broadcast_que.pop(index)
-            except IndexError:
-                print('Some message was lost...')
-        return message_list

@@ -174,6 +174,46 @@ class TargetDisplay(object):
             draw_text(string=str(self.th.target['id']), surface=surface, size=self.size, coords=(x, y+60), font=self.font)
 
 
+class VisualEquipment(object):
+    def __init__(self, remotesprite, game):
+        self.remotesprite = remotesprite
+        self.game = game
+        sourceimages = {'chest': 'graphics/sprites/player_sprites/chest/chest_robe_blackred.png',
+                        'head': 'graphics/sprites/player_sprites/head/head_cap_aqua.png',
+                        'feet': 'graphics/sprites/player_sprites/feet/boots_gold.png',
+                        'weapon': 'graphics/sprites/player_sprites/weapon/staff_blackblue.png'}
+        # 'slot': (pygame image, pygame rect), ...
+        self.sprites = {'chest': None, 'head': None, 'feet': None, 'weapon': None}
+        for slot, image in sourceimages.items():
+            if image:
+                self.sprites[slot] = pygame.sprite.Sprite()
+                self.sprites[slot].image = pygame.image.load(sourceimages[slot])
+                self.sprites[slot].rect = self.sprites[slot].image.get_rect()
+                self.game.group.add(self.sprites[slot], layer='over0')
+
+    def change_sprite(self, slot, file):
+        """ Changes sprite of given slot """
+        self.sprites[slot].image = pygame.image.load(file)
+        self.sprites[slot].rect = self.sprites[slot].image.get_rect()
+
+    def empty_sprite(self, slot):
+        """ Empties the given armor slot """
+        self.game.group.remove(self.sprites[slot])
+        self.sprites[slot] = None
+
+    def update(self):
+        """ Update co-ordinates of all image rects to match parent remotesprite's coordinates """
+        for sprite in self.sprites:
+            if sprite:
+                self.sprites[sprite].rect.topleft = self.remotesprite.coords
+
+    def flip(self):
+        """ Sprite flips horizontaly when remotesprite object flips horizontally """
+        for slot, sprite in self.sprites.items():
+            if sprite:
+                sprite.image = pygame.transform.flip(sprite.image, True, False)
+
+
 class Hero(object):
     """ Our Hero """
 
@@ -189,6 +229,9 @@ class Hero(object):
 
         # RemoteSprite object
         self.remotesprite = RemoteSprite(id=id, sprite=sprite, coords=coords)
+
+        # Visual Equipment object
+        self.visualequipment = VisualEquipment(game=game, remotesprite=self.remotesprite)
 
         # Camera which will follow the hero's remotesprite
         self.camera = Camera(self.remotesprite)
@@ -253,7 +296,8 @@ class Hero(object):
 
     def update(self, dt):
         # Update Coordinates
-        self.rect.topleft = self._coords
+        #self.rect.topleft = self._coords
+        self.visualequipment.update()
 
     def move_lifeform(self, coords):
         """

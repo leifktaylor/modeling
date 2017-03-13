@@ -151,6 +151,7 @@ class Game(object):
 
     def update(self, dt):
         """ Tasks that occur over time should be handled here"""
+        self.hero.visualequipment.update()
         # update all sprites in game world
         self.group.update(dt)
         # update camera position (follows player)

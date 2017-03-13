@@ -851,7 +851,7 @@ class Inventory(object):
         self.equip_slots = {'head': None, 'mask': None, 'neck': None,
                             'chest': None, 'wrist1': None, 'wrist2': None,
                             'ring1': None, 'ring2': None, 'idol': None,
-                            'belt': None, 'legs': None, 'boots': None,
+                            'belt': None, 'legs': None, 'feet': None,
                             'right_hand': None, 'left_hand': None,
                             'ranged': None, 'ammo': None}
         self.max_slots = inventory_data['slots']

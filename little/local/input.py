@@ -183,6 +183,7 @@ class PlayerController(object):
                     rs = self.hero.remotesprite
                     if self.dir is not 'left':
                         rs.image = pygame.transform.flip(rs.image, True, False)
+                        self.hero.visualequipment.flip()
                         self.dir = 'left'
 
                     target_coords[0] = self.hero.x - TILE_SIZE
@@ -191,6 +192,7 @@ class PlayerController(object):
                     # Aim direction we're moving
                     rs = self.hero.remotesprite
                     if self.dir is not 'right':
+                        self.hero.visualequipment.flip()
                         rs.image = pygame.transform.flip(rs.image, True, False)
                         self.dir = 'right'
 
