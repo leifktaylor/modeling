@@ -1,5 +1,6 @@
 *** settings ***
 item_type:apparel
+uniquename:linen_shirt
 equippable_slot:chest
 name:"linen shirt"
 description:"description of weapon"

@@ -1,5 +1,6 @@
 *** settings ***
 item_type:potion
+uniquename:major_health_potion
 name:"Large Health Potion"
 description:"This big bottle holds enough for multiple uses of healing delight."
 weight:2

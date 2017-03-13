@@ -178,16 +178,28 @@ class VisualEquipment(object):
     def __init__(self, remotesprite, game):
         self.remotesprite = remotesprite
         self.game = game
-        sourceimages = {'chest': 'graphics/sprites/player_sprites/chest/chest_robe_blackred.png',
-                        'head': 'graphics/sprites/player_sprites/head/head_cap_aqua.png',
-                        'feet': 'graphics/sprites/player_sprites/feet/boots_gold.png',
-                        'weapon': 'graphics/sprites/player_sprites/weapon/staff_blackblue.png'}
+        self.sourceimages = {'chest': 'graphics/sprites/player_sprites/chest/chest_robe_blackred.png',
+                             'head': 'graphics/sprites/player_sprites/head/head_cap_aqua.png',
+                             'feet': 'graphics/sprites/player_sprites/feet/boots_gold.png',
+                             'weapon': 'graphics/sprites/player_sprites/weapon/staff_blackblue.png'}
         # 'slot': (pygame image, pygame rect), ...
-        self.sprites = {'chest': None, 'head': None, 'feet': None, 'weapon': None}
-        for slot, image in sourceimages.items():
+        self.sprites = {}
+        self._update_sprites()
+
+    def update_sprites(self, sourceimages):
+        """
+        :param sourceimages: Dictionary of images per slot to update sprites with
+        """
+        self.sourceimages = sourceimages
+        self._update_sprites()
+
+    def _update_sprites(self):
+        """ Create sprites and add them to pyscroll group for each equipped item graphic """
+        # TODO : Check if old sprites are being removed from group
+        for slot, image in self.sourceimages.items():
             if image:
                 self.sprites[slot] = pygame.sprite.Sprite()
-                self.sprites[slot].image = pygame.image.load(sourceimages[slot])
+                self.sprites[slot].image = pygame.image.load(self.sourceimages[slot])
                 self.sprites[slot].rect = self.sprites[slot].image.get_rect()
                 self.game.group.add(self.sprites[slot], layer='over0')
 

@@ -1,5 +1,6 @@
 *** settings ***
 item_type:potion
+uniquename:minor_health_potion
 name:"Minor Health Potion"
 description:"A small jolt of energy is in this bottle."
 weight:2

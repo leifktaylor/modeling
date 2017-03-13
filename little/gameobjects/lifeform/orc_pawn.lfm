@@ -19,19 +19,6 @@ MDEF:28
 PDEF:8
 
 *** inventory ***
-slots:12
-0:gameobjects/apparel/linen_shirt.itm True 20
-1:gameobjects/potion/major_health_potion.itm False 20
-2:gameobjects/weapon/long_sword.itm True 20
-3:gameobjects/apparel/linen_shirt.itm False 20
-4:gameobjects/potion/major_health_potion.itm False 20
-5:gameobjects/weapon/long_sword.itm False 20
-6:gameobjects/apparel/linen_shirt.itm False 20
-7:gameobjects/potion/major_health_potion.itm False 20
-8:gameobjects/weapon/long_sword.itm False 20
-9:gameobjects/apparel/linen_shirt.itm False 20
-10:gameobjects/potion/major_health_potion.itm False 20
-11:gameobjects/weapon/long_sword.itm False 20
 
 *** factions ***
 player:0

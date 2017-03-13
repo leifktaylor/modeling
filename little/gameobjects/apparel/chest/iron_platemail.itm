@@ -1,14 +1,13 @@
 *** settings ***
-item_type:weapon
-uniquename:iron_longsword
-equippable_slot:weapon
-name:"Iron Longsword"
-attack_verb:slashes
-description:"Weapon of choice for members of the Iron Covenant"
+item_type:apparel
+uniquename:iron_platemail
+equippable_slot:chest
+name:"Iron Platemail"
+description:"A heavy iron chest guard"
 weight:4
 
 *** sprites ***
-main graphics/sprites/player_sprites/weapon/sword_long_iron.png
+main graphics/sprites/player_sprites/chest/chest_plate_iron.png
 
 *** stats ***
 PDMG:5

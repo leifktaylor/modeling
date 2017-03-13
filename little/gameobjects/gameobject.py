@@ -813,18 +813,46 @@ class LifeForm(GameObject):
         return 0
 
 
-class Item(GameObject):
-    def __init__(self, id=None, goc=None, coords=[0, 0], current_room=None,
-                 settings=None, sprites=None, stats=None, scripts=None):
-        super(Item, self).__init__(id=id, goc=goc, coords=coords, current_room=current_room)
-        self.settings = settings
-        self.sprites = sprites
-        self.stats = stats
-        self.scripts = scripts
+class Item(object):
+    def __init__(self, templatefile):
+        tp = TemplateParser()
+        data = tp.load_data(templatefile)
+        print(data)
+        self.settings = data['settings']
+        try:
+            self.sprites = data['sprites']
+        except KeyError:
+            self.sprites = None
+        try:
+            self.stats = data['stats']
+        except KeyError:
+            self.stats = None
+        try:
+            self.scripts = data['scripts']
+        except KeyError:
+            self.scripts = None
+
+    @property
+    def sprite(self):
+        try:
+            return self._value(self.sprites['main'])
+        except KeyError:
+            return None
+
+    @property
+    def name(self):
+        return self.uniquename
+
+    @property
+    def uniquename(self):
+        return self.settings['uniquename']
 
     @property
     def weight(self):
-        return self._value(self.settings['weight'])
+        try:
+            return self._value(self.settings['weight'])
+        except KeyError:
+            return None
 
     @property
     def fullname(self):
@@ -832,38 +860,43 @@ class Item(GameObject):
 
     @property
     def item_type(self):
-        return self._value(self.settings['item_type'])
+        try:
+            return self.settings['item_type']
+        except KeyError:
+            return None
 
     @property
     def equippable_slot(self):
-        return self._value(self.settings['equippable_slot'])
+        try:
+            return self.settings['equippable_slot']
+        except KeyError:
+            return None
 
 
 class Inventory(object):
-    def __init__(self, inventory_data, owner):
+    def __init__(self, inventory_data, lifeform):
+        """ Inventory class, stores items and equipped items of LifeForm instance
+        inventory_data: refers to parsed inventory dictionary from lifeform template file
         """
-        Inventory data is created from .lfm template
-        :param inventory_data: dictionary of key values
-        :param owner: Lifeform who owns this inventory
-        """
-        self.owner = owner
-        self.slots = [None]*inventory_data['slots']
-        self.equip_slots = {'head': None, 'mask': None, 'neck': None,
-                            'chest': None, 'wrist1': None, 'wrist2': None,
-                            'ring1': None, 'ring2': None, 'idol': None,
-                            'belt': None, 'legs': None, 'feet': None,
-                            'right_hand': None, 'left_hand': None,
+        self.lifeform = lifeform
+        self.slots = []
+        self.equip_slots = {'head': None, 'neck': None, 'chest': None, 'wrists': None,
+                            'ring1': None, 'ring2': None, 'idol': None, 'belt': None,
+                            'legs': None, 'feet': None, 'weapon': None, 'offhand': None,
                             'ranged': None, 'ammo': None}
-        self.max_slots = inventory_data['slots']
-        # Populate Slots with item instances, and equip if required by template
-        a = TemplateParser()
-        for slot, item_data in inventory_data.items():
-            if slot == 'slots':
-                pass
-            else:
-                self.slots[slot] = Item(**a.load_data(item_data[0]))
-                if item_data[1]:
-                    self.equip_item(self.slots[slot])
+
+        # Populate Slots with item instances, equipped item if equipped is True
+        # item[0]:template, item[1]:equipped?
+        for item_info in inventory_data.values():
+            item_template = item_info[0]
+            try:
+                equipped = item_info[1]
+            except IndexError:
+                equipped = False
+            index = self.add_item(item_template)
+            if equipped:
+                print(equipped)
+                self.equip_item(index)
 
     @property
     def weight(self):
@@ -873,49 +906,42 @@ class Inventory(object):
                 weight += item.stats.weight
         return weight
 
-    def add_item(self, item):
-        # If inventory is full
-        if None not in self.slots:
-            raise RuntimeError('Inventory is full, cannot add item')
+    def add_item(self, itemtemplate):
+        """ Add item to inventory """
+        item = Item(itemtemplate)
+        self.slots.append(item)
+        return len(self.slots) - 1
 
-        # Add item to first available slot in inventory
-        for i, slot in enumerate(self.slots):
-            if slot is None:
-                self.slots.insert(i, item)
-                break
+    def item_in_inventory(self, uniquename):
+        """ Returns index of first item with given uniquename, if item not in inventory returns None """
+        for i, item in enumerate(self.slots):
+            if item.uniquename == uniquename:
+                return i
+        return None
 
-    def item_in_inventory(self, item):
-        return item in self.slots
-
-    def item_name_in_inventory(self, name):
-        for item in self.slots:
-            if item:
-                if item.name == name:
-                    return True
+    def is_equipped(self, uniquename):
+        """ Returns True or False if given item (by uniquename) is equipped """
+        for slot, item in self.equip_slots.items():
+            if item.uniquename == uniquename:
+                return True
         return False
 
-    def is_equipped(self, item):
-        item_slot = item.equippable_slot
-        if item_slot:
-            return self.equip_slots[item_slot] == item
-        else:
-            return False
-
-    def equip_item(self, item):
-        equip_slot = item.equippable_slot
+    def equip_item(self, index):
+        """ Equips item of given index into its equippable slot, if it cannot be equipped will raise """
+        try:
+            item = self.slots[index]
+        except IndexError:
+            raise RuntimeError('No item in inventory with given index {0}'.format(index))
 
         # If item isn't in inventory
-        if not self.item_in_inventory(item):
+        if self.item_in_inventory(item.uniquename) is None:
             raise RuntimeError('{0} is not in inventory'.format(item))
 
         # If item doesn't have an equippable slot
         if not item.equippable_slot:
             raise RuntimeError('{0} is not equipabble'.format(item.name))
 
-        # Confirm object is equippable in given slot
-        if item.equippable_slot != equip_slot:
-            logging.info('Tried to equip item in improper slot')
-            raise RuntimeError('{0} only equippable in {1} slot'.format(item.name, item.equippable_slot))
+        equip_slot = item.equippable_slot
 
         if self.equip_slots[equip_slot] and self.equip_slots[equip_slot] != item:
             # If a different item already equipped, unequip it
@@ -927,15 +953,26 @@ class Inventory(object):
 
         self.equip_slots[equip_slot] = item
 
-    def unequip_item(self, equip_slot):
+    def unequip_slot(self, equip_slot):
+        """ Unequips item in given slot """
         equipped_item = self.equip_slots[equip_slot]
         # If nothing is equipped in slot, or item not even in inventory, raise
         if not equipped_item:
             raise RuntimeError('No item equipped in {0} slot'.format(equip_slot))
-        if not self.item_in_inventory(equipped_item.id):
-            raise RuntimeError('{0} is not in inventory'.format(equipped_item.name))
         # Remove item from equipped slot
         self.equip_slots[equip_slot] = None
+
+    def unequip_item(self, index):
+        """ Unequips item by index, if given index does not refer to equipped item, will raise """
+        try:
+            item = self.slots[index]
+        except IndexError:
+            raise RuntimeError('No item in inventory with given index {0}'.format(index))
+        equip_slot = item.equippable_slot
+        if self.equip_slots[equip_slot] == item:
+            self.equip_slots[equip_slot] = None
+        else:
+            raise RuntimeError('Item with index {0} is not equipped in {1}'.format(index, equip_slot))
 
     def use_item(self, id):
         # Check if item has 'OnUse'

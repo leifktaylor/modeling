@@ -19,19 +19,11 @@ MDEF:28 # Deprecate this
 PDEF:8 # Deprecate this
 
 *** inventory ***
-slots:12
-0:gameobjects/apparel/linen_shirt.itm True 20
-1:gameobjects/potion/major_health_potion.itm False 20
-2:gameobjects/weapon/long_sword.itm True 20
-3:gameobjects/apparel/linen_shirt.itm False 20
-4:gameobjects/potion/major_health_potion.itm False 20
-5:gameobjects/weapon/long_sword.itm False 20
-6:gameobjects/apparel/linen_shirt.itm False 20
-7:gameobjects/potion/major_health_potion.itm False 20
-8:gameobjects/weapon/long_sword.itm False 20
-9:gameobjects/apparel/linen_shirt.itm False 20
-10:gameobjects/potion/major_health_potion.itm False 20
-11:gameobjects/weapon/long_sword.itm False 20
+0 gameobjects/apparel/chest/iron_platemail.itm True 20
+1 gameobjects/potion/major_health_potion.itm False 20
+2 gameobjects/weapon/long_sword.itm True 20
+3 gameobjects/apparel/feet/iron_boots.itm True 20
+4 gameobjects/apparel/head/iron_helmet.itm True 20
 
 *** factions ***
 player:100

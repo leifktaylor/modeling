@@ -15,27 +15,67 @@
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
+  <component name="DockManager">
+    <window id="1">
+      <content type="file-editors">
+        <state>
+          <leaf>
+            <file leaf-file-name="madaar.lfm" pinned="false" current-in-tab="true">
+              <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/madaar.lfm">
+                <provider selected="true" editor-type-id="text-editor">
+                  <state relative-caret-position="0">
+                    <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+                    <folding />
+                  </state>
+                </provider>
+              </entry>
+            </file>
+          </leaf>
+        </state>
+      </content>
+    </window>
+  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="little" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="little.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/little.py">
+      <file leaf-file-name="gameobject.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/gameobjects/gameobject.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1527">
-              <caret line="153" column="23" selection-start-line="153" selection-start-column="23" selection-end-line="153" selection-end-column="23" />
+            <state relative-caret-position="-219">
+              <caret line="944" column="0" selection-start-line="944" selection-start-column="0" selection-end-line="944" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="server.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/mp/server.py">
+      <file leaf-file-name="orc_pawn.lfm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/orc_pawn.lfm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+            <state relative-caret-position="300">
+              <caret line="20" column="17" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="linen_shirt.itm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/apparel/linen_shirt.itm">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="long_sword.itm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/weapon/long_sword.itm">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -44,71 +84,60 @@
       <file leaf-file-name="gamecontroller.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gamecontroller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="182">
+            <state relative-caret-position="330">
               <caret line="24" column="22" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="22" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="input.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/local/input.py">
+      <file leaf-file-name="zaxim.lfm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/zaxim.lfm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="11" column="27" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="27" />
+            <state relative-caret-position="408">
+              <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="cli.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/local/cli.py">
+      <file leaf-file-name="major_health_potion.itm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/potion/major_health_potion.itm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="31" column="35" selection-start-line="31" selection-start-column="35" selection-end-line="31" selection-end-column="35" />
+            <state relative-caret-position="30">
+              <caret line="2" column="30" selection-start-line="2" selection-start-column="30" selection-end-line="2" selection-end-column="30" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gameobject.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gameobjects/gameobject.py">
+      <file leaf-file-name="minor_health_potion.itm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/potion/minor_health_potion.itm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1005">
-              <caret line="30" column="24" selection-start-line="30" selection-start-column="6" selection-end-line="30" selection-end-column="24" />
+            <state relative-caret-position="30">
+              <caret line="2" column="16" selection-start-line="2" selection-start-column="16" selection-end-line="2" selection-end-column="16" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="chest_robe_skyblue.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/graphics/sprites/player_sprites/chest/chest_robe_skyblue.png">
-          <provider selected="true" editor-type-id="images">
-            <state />
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="remotesprite.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/local/remotesprite.py">
+      <file leaf-file-name="template.itm" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/potion/template.itm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="903">
-              <caret line="182" column="41" selection-start-line="182" selection-start-column="41" selection-end-line="182" selection-end-column="41" />
+            <state relative-caret-position="120">
+              <caret line="8" column="16" selection-start-line="8" selection-start-column="16" selection-end-line="8" selection-end-column="16" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="chest_robe_greywhite.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/graphics/sprites/player_sprites/chest/chest_robe_greywhite.png">
-          <provider selected="true" editor-type-id="images">
-            <state />
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="chest_robe_gold.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/graphics/sprites/player_sprites/chest/chest_robe_gold.png">
-          <provider selected="true" editor-type-id="images">
-            <state />
+      <file leaf-file-name="template_parser.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gameobjects/template_parser.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1575">
+              <caret line="207" column="39" selection-start-line="207" selection-start-column="39" selection-end-line="207" selection-end-column="39" />
+              <folding />
+            </state>
           </provider>
         </entry>
       </file>
@@ -124,13 +153,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/gameserver.py" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/rat_man.lfm" />
-        <option value="$PROJECT_DIR$/mp/users/users.json" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/test1.lfm" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/test2.lfm" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/test3.lfm" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/test4.lfm" />
         <option value="$PROJECT_DIR$/gameobjects/lifeform/test5.lfm" />
         <option value="$PROJECT_DIR$/gameobjects/lifeform/test6.lfm" />
         <option value="$PROJECT_DIR$/gameobjects/ai/healer.ai" />
@@ -139,7 +161,6 @@
         <option value="$PROJECT_DIR$/gameobjects/room/template.rm" />
         <option value="$PROJECT_DIR$/mp/remotesprite.py" />
         <option value="$PROJECT_DIR$/local/hero.py" />
-        <option value="$PROJECT_DIR$/gameobjects/template_parser.py" />
         <option value="$PROJECT_DIR$/pyscroll/isometric.py" />
         <option value="$PROJECT_DIR$/gui/target_display.py" />
         <option value="$PROJECT_DIR$/graphics/eztext.py" />
@@ -157,10 +178,8 @@
         <option value="$PROJECT_DIR$/regression.py" />
         <option value="$PROJECT_DIR$/startserver.py" />
         <option value="$PROJECT_DIR$/functions/game_math.py" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/orc_pawn.lfm" />
         <option value="$PROJECT_DIR$/gamecontroller.py" />
         <option value="$PROJECT_DIR$/pathfinding/test.py" />
-        <option value="$PROJECT_DIR$/gameobjects/gameobject.py" />
         <option value="$PROJECT_DIR$/game_locals.py" />
         <option value="$PROJECT_DIR$/graphics/graphictext.py" />
         <option value="$PROJECT_DIR$/local/camera.py" />
@@ -168,19 +187,29 @@
         <option value="$PROJECT_DIR$/pathfinding/astar2.py" />
         <option value="$PROJECT_DIR$/mp/client.py" />
         <option value="$PROJECT_DIR$/dependencies.md" />
-        <option value="$PROJECT_DIR$/gameobjects/lifeform/zaxim.lfm" />
         <option value="$PROJECT_DIR$/player_generator.py" />
         <option value="$PROJECT_DIR$/little.py" />
         <option value="$PROJECT_DIR$/local/input.py" />
-        <option value="$PROJECT_DIR$/local/remotesprite.py" />
         <option value="$PROJECT_DIR$/local/cli.py" />
         <option value="$PROJECT_DIR$/mp/server.py" />
+        <option value="$PROJECT_DIR$/local/remotesprite.py" />
+        <option value="$PROJECT_DIR$/gameobjects/apparel/head/iron_helmet.itm" />
+        <option value="$PROJECT_DIR$/gameobjects/apparel/chest/iron_platemail.itm" />
+        <option value="$PROJECT_DIR$/gameobjects/apparel/boots/iron_boots.itm" />
+        <option value="$PROJECT_DIR$/gameobjects/lifeform/zaxim.lfm" />
+        <option value="$PROJECT_DIR$/gameobjects/potion/major_health_potion.itm" />
+        <option value="$PROJECT_DIR$/gameobjects/potion/minor_health_potion.itm" />
+        <option value="$PROJECT_DIR$/gameobjects/apparel/linen_shirt.itm" />
+        <option value="$PROJECT_DIR$/gameobjects/lifeform/orc_pawn.lfm" />
+        <option value="$PROJECT_DIR$/gameobjects/gameobject.py" />
+        <option value="$PROJECT_DIR$/gameobjects/template_parser.py" />
+        <option value="$PROJECT_DIR$/gameobjects/weapon/long_sword.itm" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="29" />
-    <option name="y" value="45" />
+    <option name="x" value="85" />
+    <option name="y" value="25" />
     <option name="width" value="1251" />
     <option name="height" value="693" />
   </component>
@@ -271,27 +300,45 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="little" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="little" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameobjects" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="weapon" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../framework3" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/gameobjects/regression" />
-      <recent name="$PROJECT_DIR$/gameobjects/lifeform" />
-      <recent name="$PROJECT_DIR$/gameobjects/room/regression" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/gameobjects/faction" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/graphics/tilesets" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/functions/utility" />
       <recent name="$PROJECT_DIR$/graphics/fonts" />
       <recent name="$PROJECT_DIR$/particles" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/gameobjects/apparel/boots" />
+      <recent name="$PROJECT_DIR$/gameobjects/apparel/chest" />
+      <recent name="$PROJECT_DIR$/gameobjects/apparel/head" />
+      <recent name="$PROJECT_DIR$/gameobjects/regression" />
+      <recent name="$PROJECT_DIR$/gameobjects/lifeform" />
     </key>
   </component>
   <component name="RunManager">
@@ -458,10 +505,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="29" y="45" width="1251" height="693" extended-state="0" />
-    <editor active="true" />
+    <frame x="85" y="25" width="1251" height="693" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24878049" sideWeight="0.49453977" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24878049" sideWeight="0.49453977" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -498,74 +545,10 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/startserver.py" />
-    <entry file="file://$PROJECT_DIR$/clientserver.md" />
-    <entry file="file://$PROJECT_DIR$/gameobjects/room/testroom.json" />
-    <entry file="file://$PROJECT_DIR$/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/graphics/tilesets/tiles3.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/particles/Spark.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/graphics/tilesets/tiles1.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/graphics/tilesets/tiles2.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/functions/utility.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/functions/game_math.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gameobjects/ai/AI.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-        <state split_layout="FIRST">
-          <first_editor relative-caret-position="288">
-            <caret line="65" column="0" selection-start-line="65" selection-start-column="0" selection-end-line="68" selection-end-column="7" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-      <provider editor-type-id="MarkdownFxPreviewEditor">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gameobjects/ai/simple.ai">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
           <caret line="3" column="12" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/orc_pawn.lfm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="5" selection-start-line="15" selection-start-column="5" selection-end-line="15" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -648,13 +631,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/zaxim.lfm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="17" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/regression.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4335">
@@ -668,7 +644,7 @@
         <state relative-caret-position="870">
           <caret line="60" column="62" selection-start-line="60" selection-start-column="62" selection-end-line="60" selection-end-column="62" />
           <folding>
-            <element signature="e#0#21#0" expanded="true" />
+            <element signature="e#0#21#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -772,14 +748,6 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/local/remotesprite.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="903">
-          <caret line="182" column="41" selection-start-line="182" selection-start-column="41" selection-end-line="182" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/little.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1527">
@@ -796,14 +764,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gamecontroller.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="24" column="22" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/local/cli.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
@@ -812,18 +772,138 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gameobjects/gameobject.py">
+    <entry file="file://$PROJECT_DIR$/mp/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1005">
-          <caret line="30" column="24" selection-start-line="30" selection-start-column="6" selection-end-line="30" selection-end-column="24" />
+        <state relative-caret-position="-1449">
+          <caret line="18" column="28" selection-start-line="18" selection-start-column="28" selection-end-line="18" selection-end-column="28" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mp/server.py">
+    <entry file="file://$PROJECT_DIR$/local/remotesprite.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+        <state relative-caret-position="385">
+          <caret line="194" column="0" selection-start-line="194" selection-start-column="0" selection-end-line="194" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/room/template.rm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/apparel/head/iron_helmet.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/apparel/chest/iron_platemail.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/apparel/feet/iron_boots.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/madaar.lfm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/potion/major_health_potion.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="30" selection-start-line="2" selection-start-column="30" selection-end-line="2" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/potion/minor_health_potion.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="16" selection-start-line="2" selection-start-column="16" selection-end-line="2" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/potion/template.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="16" selection-start-line="8" selection-start-column="16" selection-end-line="8" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/apparel/linen_shirt.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/orc_pawn.lfm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="20" column="17" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/lifeform/zaxim.lfm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/template_parser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1575">
+          <caret line="207" column="39" selection-start-line="207" selection-start-column="39" selection-end-line="207" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/weapon/long_sword.itm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gamecontroller.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="24" column="22" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameobjects/gameobject.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-219">
+          <caret line="944" column="0" selection-start-line="944" selection-start-column="0" selection-end-line="944" selection-end-column="0" />
           <folding />
         </state>
       </provider>

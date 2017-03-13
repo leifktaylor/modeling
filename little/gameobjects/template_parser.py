@@ -90,13 +90,16 @@ class TemplateParser(object):
         if ':' not in line:
             if len(line.split()) > 1:
                 key = line.split()[0]
+                # If Key is a digit, convert to an integer instead of remaining as string
+                if key.isdigit():
+                    key = int(key)
                 value = ' '.join(line.split()[1:])
                 # Split line, but if section enclosed in quotes keep it together
                 value = shlex.split(value)
                 if len(value) == 1:
                     return {key: value[0]}
                 else:
-                    return {key: value}
+                    return {key: [self.string_literal(string) for string in value]}
             else:
                 return line
 
