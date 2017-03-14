@@ -1,5 +1,7 @@
 from template_parser import TemplateParser
 from functions.game_math import point_distance
+import logging
+
 
 TILE_SIZE = 8
 
@@ -40,13 +42,13 @@ class AIController(object):
             self.state()
             self.cancel_check()
         else:
-            print('run: Performing combat check')
+            logging.info('run: Performing combat check')
             check = self.combat_check()
             if check:
                 self.set_mode('combat')
                 self.state = check
             else:
-                print('run: Performing idle check')
+                logging.info('run: Performing idle check')
                 self.set_mode('idle')
                 self.state = self.idle_check()
 
@@ -57,17 +59,17 @@ class AIController(object):
 
     def cancel_check(self):
         if self.cancel_timer < 0:
-            print('cancel_check: Timer reached 0. Cancelling current state')
+            logging.info('cancel_check: Timer reached 0. Cancelling current state')
             self.cancel_timer = self.cancel_time
             self.state = None
 
     def set_mode(self, mode):
         if mode == 'idle':
-            print('set_mode: "idle"')
+            logging.info('set_mode: "idle"')
             self.mode = 'idle'
             self.lifeform.sight = self.base_sight
         else:
-            print('set_mode: "combat"')
+            logging.info('set_mode: "combat"')
             self.mode = 'combat'
             self.lifeform.sight = self.base_sight * 2
 
@@ -85,29 +87,29 @@ class AIController(object):
             a 'condition'
         """
         for gambit in self.data['combat']:
-            print('combat_check: Starting check for gambit: {0}'.format(gambit))
+            logging.info('combat_check: Starting check for gambit: {0}'.format(gambit))
             if self.check_condition(gambit['precondition'], self.lifeform):
-                print('combat_check: Precondition met, checking for target')
+                logging.info('combat_check: Precondition met, checking for target')
                 if gambit['target'] and gambit['target'][0] is not 'self':
                     # If target provided in gambits, see if there is an eligible target
                     target = self.find_target(gambit['target'])
                     if target:
-                        print('combat_check: Target found: {0}'.format(target))
+                        logging.info('combat_check: Target found: {0}'.format(target))
                         if self.check_condition(gambit['condition'], target):
-                            print('combat_check: Target condition met')
+                            logging.info('combat_check: Target condition met')
                             action = gambit['action'][0]
                             args = gambit['action'][1:]
                             return self.perform_action(action, args, target)
                     else:
-                        print('combat_check: Target not found, moving to next gambit')
+                        logging.info('combat_check: Target not found, moving to next gambit')
                 else:
                     # If no target given, assume we're referring to self
-                    print('combat_check: No target given, assuming self')
+                    logging.info('combat_check: No target given, assuming self')
                     target = self.lifeform
                     action = gambit['action'][0]
                     args = gambit['action'][1:]
                     return self.perform_action(action, args, target)
-        print('combat_check: No gambits met their conditions, returning None')
+        logging.info('combat_check: No gambits met their conditions, returning None')
         return None
 
     def find_target(self, gambit_target):
@@ -125,7 +127,7 @@ class AIController(object):
         return getattr(self.lifeform, '{0}_{1}'.format(condition, target_type))
 
     def perform_action(self, action, args=None, target=None):
-        print('perform_action: Entering state: {0}'.format(action))
+        logging.info('perform_action: Entering state: {0}'.format(action))
         if action == 'attack':
             self.target = target
             self.action_timer = self.lifeform.move_time
@@ -184,12 +186,12 @@ class AIController(object):
                 max_stat_value = getattr(target, 'MAX{0}'.format(stat))
                 percent = float(max_stat_value) * (.01 * int(value))
                 expression = '{0}{1}{2}'.format(stat_value, oper, percent)
-                print('{0}: {1}'.format(eval(expression), expression))
+                logging.info('{0}: {1}'.format(eval(expression), expression))
                 return eval(expression)
             else:
                 # If any other stat, use flat value
                 expression = '{0}{1}{2}'.format(stat_value, oper, value)
-                print('{0}: {1}'.format(eval(expression), expression))
+                logging.info('{0}: {1}'.format(eval(expression), expression))
                 return eval(expression)
 
         if kw == 'status':
@@ -208,7 +210,7 @@ class AIController(object):
 
     def move_to_coords(self):
         if self.action_timer < 0:
-            print('move: moving toward target coords: {0}'.format(self.target_coords))
+            logging.info('move: moving toward target coords: {0}'.format(self.target_coords))
             self.action_timer = self.lifeform.move_time
             r = self.lifeform.move(self.target_coords)
             if not r:
@@ -218,18 +220,18 @@ class AIController(object):
         # Attack target if in range, otherwise move toward it
         if point_distance(self.lifeform.coords, self.target.coords) < (1.7 * TILE_SIZE):
             if self.attack_timer < 0:
-                print('attack: Target in range, attacking')
+                logging.info('attack: Target in range, attacking')
                 self.lifeform.attack(self.target.id)
                 self.state = None
                 return
         else:
             if self.action_timer < 0:
-                print('attack: Target not in range, pathing towards target')
+                logging.info('attack: Target not in range, pathing towards target')
                 self.action_timer = self.lifeform.move_time
                 self.lifeform.move_to_lifeform(self.target.coords)
                 return
 
     def wait(self):
         if self.action_timer < 0:
-            print('wait: waiting complete')
+            logging.info('wait: waiting complete')
             self.state = None

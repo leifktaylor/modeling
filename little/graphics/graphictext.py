@@ -1,6 +1,6 @@
 import pygame
 from game_locals import *
-
+from functions.game_math import map_pos
 
 def draw_text(string, surface, size=22, coords=(0, 0), color=(255, 255, 255), background=None, font=None):
     font = pygame.font.Font(font, size)
@@ -78,7 +78,7 @@ class InventoryBox(object):
 
     def update_inventory(self, inventory):
         # List of any non-empty (is not None) slots in inventory
-        self.slots = [item for item in inventory.slots if item]
+        self.slots = self.inventory.slots
         # List of equipped item id's
         self.equipped_list = [item.id for item in self.slots if inventory.is_equipped(instance=item)]
 
@@ -97,7 +97,7 @@ class InventoryBox(object):
         ev = pygame.event.get()
         for event in ev:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                pos = pygame.mouse.get_pos()
+                pos = map_pos(self.game, pygame.mouse.get_pos())
                 # get a list of all sprites that are under the mouse cursor
                 clicked_objects = [s for s in self.rects if s.collidepoint(pos)]
                 if clicked_objects:

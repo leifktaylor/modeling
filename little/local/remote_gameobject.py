@@ -6,10 +6,104 @@ from functions.game_math import point_distance
 
 from mp.client import ServerResponseError
 
+import logging
+
 TARGET_RANGE = 105
 FONT = 'graphics/fonts/november.ttf'
 TILE_SIZE = 8
 MOVE_TIME = 8
+
+
+class RemoteInventory(object):
+    def __init__(self, client):
+        self.client = client
+        self.inventory = None
+
+    def update_inventory(self):
+        """ Update inventory from server, response like:
+        {'response': [{'name': 'Big Sword', 'graphic': 'sword.png', 'equipped': True}, ... ] }"""
+        r = self.client.send('inventory_update')
+        self.inventory = [RemoteItem(item['name'], item['graphic'], item['equipped']) for item in r['response']]
+        logging.info('Updated inventory from server: {0}'.format(self.inventory))
+        return self.inventory
+
+    def equipped_graphics(self):
+        """ Return list of the graphics of all equipped items """
+        return [item.graphic for item in self.get_equipped_items()]
+
+    def get_equipped_items(self):
+        """ Return list of RemoteItems that represent equipped Items on server side """
+        return [item for item in self.inventory if item.equipped]
+
+    def equip_item(self, index):
+        """ Send request to equip item on serverside """
+        try:
+            r = self.client.send('inventory_equip', index)
+        except ServerResponseError:
+            return 'Could not equip item'
+        self.update_inventory()
+        return r['response']['message']
+
+    def unequip_item(self, index):
+        """ Send request to unequip item on serverside """
+        try:
+            r = self.client.send('inventory_unequip', index)
+        except ServerResponseError:
+            return 'Could not unequip item'
+        self.update_inventory()
+        return r['response']['message']
+
+    def give_item(self, index, target):
+        """ Send request to give item to selected target lifeform on serverside (by ID) """
+        r = self.client.send('inventory_give', {'index': index, 'targetid': target})
+        self.update_inventory()
+
+
+class VisualEquipment(object):
+    def __init__(self, remotesprite, group):
+        self.remotesprite = remotesprite
+        self.group = group
+        self.sprites = [None, None, None, None]
+
+    def update_sprites(self, graphics):
+        """ Gets graphics of equipped items from server and updates sprites """
+        # Clear old sprites
+        print('GOT GERAPHICS !!!!!!!')
+        print(graphics)
+        for sprite in self.sprites:
+            if sprite:
+                sprite.kill()
+        for i, graphic in enumerate(graphics):
+            self.sprites[i] = pygame.sprite.Sprite()
+            self.sprites[i].image = pygame.image.load(graphic)
+            self.sprites[i].rect = self.sprites[i].image.get_rect()
+            self.group.add(self.sprites[i], layer='over0')
+        if self.remotesprite.facing == 'left':
+            self.flip()
+
+    def update(self):
+        """ Update co-ordinates of all image rects to match parent remotesprite's coordinates """
+        for sprite in self.sprites:
+            if sprite:
+                sprite.rect.topleft = self.remotesprite.coords
+
+    def flip(self):
+        """ Sprite flips horizontaly when remotesprite object flips horizontally """
+        for sprite in self.sprites:
+            if sprite:
+                sprite.image = pygame.transform.flip(sprite.image, True, False)
+
+
+class RemoteItem(object):
+    def __init__(self, name, graphic, equipped):
+        """
+        :param name: display name of item
+        :param graphic: path to graphic file
+        :param equipped: boolean
+        """
+        self.name = name
+        self.graphic = graphic
+        self.equipped = equipped
 
 
 class TargetHandler(object):
@@ -174,58 +268,6 @@ class TargetDisplay(object):
             draw_text(string=str(self.th.target['id']), surface=surface, size=self.size, coords=(x, y+60), font=self.font)
 
 
-class VisualEquipment(object):
-    def __init__(self, remotesprite, game):
-        self.remotesprite = remotesprite
-        self.game = game
-        self.sourceimages = {'chest': 'graphics/sprites/player_sprites/chest/chest_robe_blackred.png',
-                             'head': 'graphics/sprites/player_sprites/head/head_cap_aqua.png',
-                             'feet': 'graphics/sprites/player_sprites/feet/boots_gold.png',
-                             'weapon': 'graphics/sprites/player_sprites/weapon/staff_blackblue.png'}
-        # 'slot': (pygame image, pygame rect), ...
-        self.sprites = {}
-        self._update_sprites()
-
-    def update_sprites(self, sourceimages):
-        """
-        :param sourceimages: Dictionary of images per slot to update sprites with
-        """
-        self.sourceimages = sourceimages
-        self._update_sprites()
-
-    def _update_sprites(self):
-        """ Create sprites and add them to pyscroll group for each equipped item graphic """
-        # TODO : Check if old sprites are being removed from group
-        for slot, image in self.sourceimages.items():
-            if image:
-                self.sprites[slot] = pygame.sprite.Sprite()
-                self.sprites[slot].image = pygame.image.load(self.sourceimages[slot])
-                self.sprites[slot].rect = self.sprites[slot].image.get_rect()
-                self.game.group.add(self.sprites[slot], layer='over0')
-
-    def change_sprite(self, slot, file):
-        """ Changes sprite of given slot """
-        self.sprites[slot].image = pygame.image.load(file)
-        self.sprites[slot].rect = self.sprites[slot].image.get_rect()
-
-    def empty_sprite(self, slot):
-        """ Empties the given armor slot """
-        self.game.group.remove(self.sprites[slot])
-        self.sprites[slot] = None
-
-    def update(self):
-        """ Update co-ordinates of all image rects to match parent remotesprite's coordinates """
-        for sprite in self.sprites:
-            if sprite:
-                self.sprites[sprite].rect.topleft = self.remotesprite.coords
-
-    def flip(self):
-        """ Sprite flips horizontaly when remotesprite object flips horizontally """
-        for slot, sprite in self.sprites.items():
-            if sprite:
-                sprite.image = pygame.transform.flip(sprite.image, True, False)
-
-
 class Hero(object):
     """ Our Hero """
 
@@ -240,10 +282,15 @@ class Hero(object):
         self.charactername = self.game.client.charactername
 
         # RemoteSprite object
-        self.remotesprite = RemoteSprite(id=id, sprite=sprite, coords=coords)
+        print('PASSING!!!')
+        print(self.game.group)
+        self.remotesprite = RemoteSprite(id=id, sprite=sprite, coords=coords, group=self.game.group)
 
-        # Visual Equipment object
-        self.visualequipment = VisualEquipment(game=game, remotesprite=self.remotesprite)
+        # Visual equipment and inventory
+        self.remoteinventory = RemoteInventory(client=self.game.client)
+        self.remoteinventory.update_inventory()
+        equipment_graphics = self.remoteinventory.equipped_graphics()
+        self.remotesprite.visualequipment.update_sprites(equipment_graphics)
 
         # Camera which will follow the hero's remotesprite
         self.camera = Camera(self.remotesprite)
@@ -307,9 +354,7 @@ class Hero(object):
         self.remotesprite.coords = list(value)
 
     def update(self, dt):
-        # Update Coordinates
-        #self.rect.topleft = self._coords
-        self.visualequipment.update()
+        pass
 
     def move_lifeform(self, coords):
         """
@@ -426,22 +471,32 @@ class RemoteSprite(pygame.sprite.Sprite):
     of information to the client, and the client to render a representation of all the gameobjects
     in the game world.
     """
-    def __init__(self, id, sprite, coords):
+    def __init__(self, id, sprite, coords, group=None):
         """
         :param id: id of sister gameobject on server side
         :param sprite: image
         :param coords: pixel coordinates to render on screen (from remote gameobject)
-        :param stats: stats of Gameobject counterpart
+        :param group: pyscroll sprite group
         """
         pygame.sprite.Sprite.__init__(self)
         self.id = id
         self.solid = True
+        self.facing = 'right'
         self.image = pygame.image.load(sprite).convert_alpha()
         self.rect = self.image.get_rect()
         self._coords = coords
+        self.group = group
+
+        # Inventory Classes
+        if self.group is not None:
+            self.visualequipment = VisualEquipment(remotesprite=self, group=self.group)
+        else:
+            self.visualequipment = None
 
     def update(self, dt=None):
         self.rect.topleft = self._coords
+        if self.visualequipment:
+            self.visualequipment.update()
 
     @property
     def x(self):

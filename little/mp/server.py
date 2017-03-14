@@ -62,11 +62,50 @@ class BroadcastQue(object):
         return self.server.goc.playernames
 
 
+# TODO: Finish this, starting with visual equipment for remoteclients updating
+class PayloadQue(object):
+    """ Queues payloads to be sent to individual clients"""
+    def __init__(self, server):
+        self.server = server
+        self.que = []
+
+    def add(self, tag, data, target):
+        """
+        :param tag: string, metadata so that client knows what to do with payload
+        :param data: payload to be delivered to client(s)
+        :param target: 'ALL', 'room:uniquename', 'charactername'
+        """
+        if target == 'ALL':
+            for charactername in self.characternames:
+                self.que.append({'tag': tag, 'data': data, 'charactername': charactername})
+        elif target.startswith('room:'):
+            room = target.replace('room:', '')
+            names = [player.name for id, player in self.server.goc.players.items() if player.current_room == room]
+            for charactername in names:
+                self.que.append({'tag': tag, 'data': data, 'charactername': charactername})
+        else:
+            self.que.append({'tag': tag, 'data': data, 'charactername': target})
+
+    def dump(self, charactername):
+        """ Return list of all messages intended for the given charactername, and pop them from the broadcast que """
+        output_que = []
+        for i, message in enumerate(self.que):
+            if message['charactername'] == charactername:
+                output_que.append(self.que.pop(i))
+        return output_que
+
+    @property
+    def characternames(self):
+        """ List of all characternames currently connected """
+        return self.server.goc.playernames
+
+
 class RequestProcessor(object):
     def __init__(self, goc=None, server=None):
         self.goc = goc
         self.server = server
         self.broadcastque = BroadcastQue(self.server)
+        self.payloadque = PayloadQue(self.server)
 
     def get_payload(self, request):
         """
@@ -79,6 +118,45 @@ class RequestProcessor(object):
         :return: {'status': 0, 'response': { <response object> } }
         """
         return getattr(self, request['request'])(request)
+
+    def inventory_update(self, request):
+        """ Send list of dictionaries of item data to client to update client-side RemoteInventory
+        Request like: {... 'request': 'inventory_update', 'args': None} """
+        # TODO: This will need to be changed if items besides Helm, Chest, Boots, and Weapon are equipped and have
+        # graphics.
+        playerid = request['id']
+        inventory = self.goc.gameobjects[playerid].inventory
+        slots = self.goc.gameobjects[playerid].inventory.slots
+        payload = [{'name': item.fullname, 'graphic': item.sprite,
+                    'equipped': inventory.is_equipped(item.uniquename)} for item in slots]
+        images = inventory.visual_equipment
+        self.payloadque.add('visualequipment', {'visualequipment': images, 'playerid': playerid},
+                            'room:{0}'.format(self.goc.gameobjects[playerid].current_room))
+        return {'status': 0, 'response': payload}
+
+    def inventory_equip(self, request):
+        """ Equips item on client's gameobject based on index """
+        index = int(request['args'])
+        playerid = request['id']
+        try:
+            self.goc.gameobjects[playerid].inventory.equip_item(index)
+            item = self.goc.gameobjects[playerid].inventory.slots[index]
+            fullname = item.fullname
+        except RuntimeError:
+            return {'status': -1, 'response': {'message': 'Could not equip item'}}
+        return {'status': 0, 'response': {'message': 'Equipped {0}'.format(fullname)}}
+
+    def inventory_unequip(self, request):
+        """ Unequips item on client's gameobject based on index """
+        index = int(request['args'])
+        playerid = request['id']
+        try:
+            self.goc.gameobjects[playerid].inventory.unequip_item(index)
+            item = self.goc.gameobjects[playerid].inventory.slots[index]
+            fullname = item.fullname
+        except RuntimeError:
+            return {'status': -1, 'response': {'message': 'Could not unequip item'}}
+        return {'status': 0, 'response': {'message': 'Unequipped {0}'.format(fullname)}}
 
     def ooc(self, request):
         """ Send out-of-character message to all players in all zones
@@ -126,7 +204,7 @@ class RequestProcessor(object):
             self.broadcastque.add(message=message, target=room)
             return {'status': 0, 'response': {'damage': damage}}
         except KeyError:
-            return {'status': -1, 'response': {'Something went wrong, does current target still exist?'}}
+            return {'status': -1, 'response': {'message': 'Something went wrong, does current target still exist?'}}
 
     def get_target(self, request):
         """ Return target data like: {'name': <name>, 'stats': <stats dictionary>} """
@@ -138,13 +216,14 @@ class RequestProcessor(object):
         except KeyError:
             return {'status': 1001, 'response': {'message': 'ID Does not exist in Gameobject controller'}}
 
-    def get_coords(self, request):
+    def get_roomdata(self, request):
         """ Return Co-ords to client of all gameobjects in room, also return all broadcast messages to client """
         # Get coordinates of only objects in the client's current room:
         current_room = self.goc.gameobjects[request['id']].current_room
         room_coords = self.goc.coords_sprite_map_for_room(current_room)
         charactername = request['charactername']
-        return {'status': 0, 'response': {'coords': room_coords, 'messages': self.broadcastque.dump(charactername)}}
+        return {'status': 0, 'response': {'coords': room_coords, 'messages': self.broadcastque.dump(charactername),
+                                          'payloads': self.payloadque.dump(charactername)}}
 
     def update_coords(self, request):
         """ Update player's coords in the GOC, also return some basic player stats to client like:

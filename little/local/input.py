@@ -168,11 +168,13 @@ class PlayerController(object):
         if self.hero.move_timer <= 0:
             if not self.hero.moving:
                 target_coords = [None, None]
+
                 if pressed[K_UP]:
                     # This is a diagonal fix, pre-checking for collision on one of the axis
                     if not self.hero.collision_check([self.hero.x, self.hero.y - TILE_SIZE]):
                         moved = True
                         target_coords[1] = self.hero.y - TILE_SIZE
+
                 elif pressed[K_DOWN]:
                     if not self.hero.collision_check([self.hero.x, self.hero.y + TILE_SIZE]):
                         target_coords[1] = self.hero.y + TILE_SIZE
@@ -183,20 +185,20 @@ class PlayerController(object):
                     rs = self.hero.remotesprite
                     if self.dir is not 'left':
                         rs.image = pygame.transform.flip(rs.image, True, False)
-                        self.hero.visualequipment.flip()
+                        self.hero.remotesprite.visualequipment.flip()
                         self.dir = 'left'
-
+                        self.hero.remotesprite.facing = 'left'
                     target_coords[0] = self.hero.x - TILE_SIZE
                     moved = True
+
                 elif pressed[K_RIGHT]:
                     # Aim direction we're moving
                     rs = self.hero.remotesprite
                     if self.dir is not 'right':
-                        self.hero.visualequipment.flip()
+                        self.hero.remotesprite.visualequipment.flip()
                         rs.image = pygame.transform.flip(rs.image, True, False)
                         self.dir = 'right'
-
-                    pygame.transform.flip(self.hero.remotesprite.image, True, False)
+                        self.hero.remotesprite.facing = 'right'
                     target_coords[0] = self.hero.x + TILE_SIZE
                     moved = True
 

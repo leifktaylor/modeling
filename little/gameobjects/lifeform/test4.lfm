@@ -19,7 +19,6 @@ MDEF:28
 PDEF:8
 
 *** inventory ***
-slots:12
 0:gameobjects/apparel/linen_shirt.itm True 20
 1:gameobjects/potion/major_health_potion.itm False 20
 2:gameobjects/weapon/long_sword.itm True 20

@@ -1,13 +1,5 @@
-""" Quest - An epic journey.
+""" Client application | Requires server to be running """
 
-Simple demo that demonstrates PyTMX and pyscroll.
-
-requires pygame and pytmx.
-
-https://github.com/bitcraft/pytmx
-
-pip install pytmx
-"""
 from __future__ import division
 
 import pygame
@@ -25,9 +17,9 @@ from functions.game_math import negpos, point_distance, map_pos
 from mp.client import PacketSizeMismatch
 from mp.client import GameClient
 
-from local.remotesprite import Hero
+from local.remote_gameobject import Hero
 from local.input import PlayerController
-from local.remotesprite import RemoteSpriteController, RemoteSprite
+from local.remote_gameobject import RemoteSpriteController, RemoteSprite, VisualEquipment
 
 from particles import PyIgnition
 
@@ -134,12 +126,16 @@ class Game(object):
             self.update_lifeforms()
             # Update target if hero has one
             self.hero.tgh.update_target()
+            # Update our Hero's armor
+            equipment_graphics = self.hero.remoteinventory.equipped_graphics()
+            self.hero.remotesprite.visualequipment.update_sprites(equipment_graphics)
+            # TODO: Update remote player's inventory graphics
 
     def update_lifeforms(self):
         """Update co-ordinates of all remote sprites with new information from server, also updates chat que and other
         important information from the server """
         # Update data on all lifeforms in room
-        r = self.client.send('get_coords')
+        r = self.client.send('get_roomdata')
         coords_dict = r['response']['coords']
         if coords_dict:
             self.rsc.update_coords(coords_dict)
@@ -149,9 +145,23 @@ class Game(object):
         for message in messages:
             self.inputlog.add_line(string=message['message'], color=message['color'])
 
+        # Update remotesprite visual equipment (for remote players)
+        payloads = r['response']['payloads']
+        for payload in payloads:
+            if payload['tag'] == 'visualequipment':
+                playerid = payload['data']['playerid']
+                if playerid == self.hero.id:
+                    continue
+                equip_data = payload['data']['visualequipment']
+                remotesprite = self.rsc.remotesprites[playerid]
+                graphics = [item for item in equip_data]
+                if not remotesprite.visualequipment:
+                    remotesprite.visualequipment = VisualEquipment(remotesprite=remotesprite, group=self.group)
+                remotesprite.visualequipment.update_sprites(graphics)
+
     def update(self, dt):
         """ Tasks that occur over time should be handled here"""
-        self.hero.visualequipment.update()
+        # self.hero.remotesprite.visualequipment.update()
         # update all sprites in game world
         self.group.update(dt)
         # update camera position (follows player)

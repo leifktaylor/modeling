@@ -699,22 +699,6 @@ class LifeForm(GameObject):
             grid[coords[1]][coords[0]] = 1
         return grid
 
-    # @staticmethod
-    # def _path(start, end, grid):
-    #     """
-    #     Use A* pathing algorythm to return a list of sequential tuples where each tuple is the
-    #         co-ordinates of the tile along the path.  Will avoid tiles with 'wall' property == 'true'
-    #     :param start: (x1, y1)
-    #     :param end: (x2, y2)
-    #     :param grid: Room.grid object
-    #     :return: list of tuples like [(0, 0), (0, 1), (0, 2)]
-    #     """
-    #     start = grid.node(*start)  # format (30, 30)
-    #     end = grid.node(*end)
-    #     finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
-    #     path, runs = finder.find_path(start, end, grid)
-    #     return path
-
     def update(self, dt):
         """
         Events which occur over time go here
@@ -828,8 +812,12 @@ class Item(object):
 
     @property
     def sprite(self):
+        """ Returns path to file of sprite image """
         try:
-            return self._value(self.sprites['main'])
+            if self.sprites:
+                return self.sprites['main']
+            else:
+                return None
         except KeyError:
             return None
 
@@ -844,13 +832,16 @@ class Item(object):
     @property
     def weight(self):
         try:
-            return self._value(self.settings['weight'])
+            return self.settings['weight']
         except KeyError:
             return None
 
     @property
     def fullname(self):
-        return self._value(self.settings['fullname'])
+        try:
+            return self.settings['name']
+        except KeyError:
+            return self.uniquename
 
     @property
     def item_type(self):
@@ -892,6 +883,16 @@ class Inventory(object):
                 self.equip_item(index)
 
     @property
+    def visual_equipment(self):
+        """ Returns a list of equipped visual equipment paths to images """
+        graphics = []
+        for slot in ['head', 'feet', 'chest', 'weapon']:
+            item = self.equip_slots[slot]
+            if item:
+                graphics.append(item.sprite)
+        return graphics
+
+    @property
     def weight(self):
         weight = 0
         for item in self.slots:
@@ -915,8 +916,9 @@ class Inventory(object):
     def is_equipped(self, uniquename):
         """ Returns True or False if given item (by uniquename) is equipped """
         for slot, item in self.equip_slots.items():
-            if item.uniquename == uniquename:
-                return True
+            if item:
+                if item.uniquename == uniquename:
+                    return True
         return False
 
     def equip_item(self, index):

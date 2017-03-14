@@ -17,7 +17,7 @@ class CliParser(object):
         self.out_going_message = msgvalue
         if msgvalue.split()[0] in ['/t', '/tell', '/w', '/whisper']:
             target_player = msgvalue.split()[1]
-            if target_player != self.game.charactername:
+            if target_player.capitalize() != self.game.charactername.capitalize():
                 message = '{0}: {1}'.format(self.hero.charactername, ' '.join(msgvalue.split()[2:]))
                 try:
                     self.game.client.send('tell', {'message': message, 'target': target_player})
@@ -27,7 +27,7 @@ class CliParser(object):
             else:
                 self.inputlog.add_line('Talking to yourself again?', SYSTEM_COLOR)
 
-        if msgvalue.split()[0] in ['/ooc']:
+        elif msgvalue.split()[0] in ['/ooc']:
             message_text = ' '.join(msgvalue.split()[1:])
             message = '{0}: {1}'.format(self.hero.charactername, message_text)
             self.game.client.send('ooc', {'message': message, 'target': 'ALL'})
@@ -80,6 +80,22 @@ class CliParser(object):
             else:
                 DEBUG_MODE = False
 
+        elif msgvalue in ['/inventory', '/i']:
+            inventory = self.hero.remoteinventory.update_inventory()
+            for i, item in enumerate(inventory):
+                if item.equipped:
+                    icon = '(E)'
+                else:
+                    icon = ''
+                self.inputlog.add_line('{0}: {1} {2}'.format(i, item.name, icon))
+        elif '/equip' == msgvalue.split()[0].lower():
+            index = msgvalue.split()[1]
+            r = self.hero.remoteinventory.equip_item(index)
+            print(r)
+        elif '/unequip' == msgvalue.split()[0].lower():
+            index = msgvalue.split()[1]
+            r = self.hero.remoteinventory.unequip_item(index)
+            print(r)
         else:
             # This is a /say command, visible to all players in room, and directed toward target NPC if selected
             target = self.hero.tgh.target

@@ -38,7 +38,7 @@ def gameobjectcontroller_test():
     print(' ------- GameObjectController Tests ------- ')
     print(' TEST 7 : Rooms')
     print('Instantiating GOC')
-    GOC = GameObjectController()
+    GOC = GameObjectController(None)
     print('Creating Template Room')
     GOC.add_room('gameobjects/room/template.rm')
     print('Verifying Room in Room list')
@@ -314,11 +314,11 @@ def ai_gambits():
 
 
 # UNIT TESTS:
-# templateparser_test()
-# gameobjectcontroller_test()
-# client_server_test()
-# gamecontroller_test_basic()
-# current_room_test()
+templateparser_test()
+gameobjectcontroller_test()
+client_server_test()
+gamecontroller_test_basic()
+current_room_test()
 ai_gambits()
 
 # SYSTEM TESTS:
