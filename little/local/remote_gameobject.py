@@ -68,8 +68,6 @@ class VisualEquipment(object):
     def update_sprites(self, graphics):
         """ Gets graphics of equipped items from server and updates sprites """
         # Clear old sprites
-        print('GOT GERAPHICS !!!!!!!')
-        print(graphics)
         for sprite in self.sprites:
             if sprite:
                 sprite.kill()
