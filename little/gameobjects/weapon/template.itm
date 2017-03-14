@@ -1,22 +1,37 @@
-# Weapon Template
+*** settings ***
 item_type:weapon
-name:name of weapon
+name:longsword
 attack_verb:slashes
 description:description of weapon
+weight:4
 
-# Damage Types
+*** sprites ***
+main graphics/sprites/weapons/sprite1014.png
+
+*** stats ***
 PDMG:5
 MDMG:3
-
-# Properties (Any number)
 HP:4
 MP:5
 STR:4
 
-# Effects (functional call from effects class), length in seconds
-OnHit:path/to/spell.spl
-OnHitChance:20
-Passive:path/to/status.sts
+*** scripts ***
+# <proc-type clause> <action clause>
+onhit 10 cast fire target
+onhit 10 cast shield self
+ondamage 5 cast poison target
+passive regen
+use 0 cast strengthen self
 
-# misc stuff
-weight:4
+
+# All possible formats:
+# onhit <percent> <action clause> <target clause>
+# ondamage <percent> <action clause> <target clause>
+# passive <status>
+# use <qty> <action clause> <target clause> # 0 is infinite
+# action clauses
+# cast <spell>
+
+
+
+

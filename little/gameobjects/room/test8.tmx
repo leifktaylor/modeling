@@ -1,0 +1,933 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="8" tileheight="8" nextobjectid="79">
+ <tileset firstgid="1" name="tileset1" tilewidth="8" tileheight="8" tilecount="70" columns="14">
+  <image source="../../graphics/tilesets/tiles1.png" width="112" height="40"/>
+  <tile id="0">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="23">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="36">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="37">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="39">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="40">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="41">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="42">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="43">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="44">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="45">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="46">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="47">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+   <animation>
+    <frame tileid="47" duration="500"/>
+    <frame tileid="60" duration="500"/>
+   </animation>
+  </tile>
+  <tile id="48">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="49">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="50">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="51">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="52">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="53">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="54">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="55">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="56">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="57">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="58">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="59">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="60">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="61">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="62">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="63">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="64">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="65">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="66">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="67">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="68">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="69">
+   <properties>
+    <property name="event" value="zone"/>
+    <property name="room" value="otherroomuniquename"/>
+    <property name="target_x" type="int" value="0"/>
+    <property name="target_y" type="int" value="0"/>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="71" name="tileset2" tilewidth="8" tileheight="8" tilecount="66" columns="11">
+  <image source="../../graphics/tilesets/tiles2.png" width="88" height="48"/>
+  <tile id="0">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="23">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="36">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="37">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="39">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="40">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="41">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="42">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="43">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="44">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="45">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="46">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="47">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="48">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="49">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="50">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="51">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="52">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="53">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="54">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="55">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="56">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="57">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="58">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="59">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="60">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="61">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="62">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="63">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="64">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="65">
+   <properties>
+    <property name="template" value=""/>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="137" name="sprites" tilewidth="8" tileheight="8" tilecount="1" columns="0">
+  <tile id="0">
+   <properties>
+    <property name="spawn_time" type="int" value="300"/>
+    <property name="template" value="gameobjects/lifeform/orc_pawn.lfm"/>
+   </properties>
+   <image width="8" height="8" source="../../graphics/sprites/monsters/140.png"/>
+  </tile>
+ </tileset>
+ <tileset firstgid="138" name="trees" tilewidth="8" tileheight="8" tilecount="24" columns="12">
+  <image source="../../graphics/sprites/trees/treepack.png" width="96" height="16"/>
+  <tile id="12">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+  <tile id="23">
+   <properties>
+    <property name="wall" type="bool" value="false"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="162" name="big_tiles" tilewidth="8" tileheight="8" tilecount="264" columns="22">
+  <image source="../../graphics/tilesets/tiles3.png" width="176" height="96"/>
+ </tileset>
+ <layer name="under0" width="50" height="50">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA9WYuW7DMAyGvTZD5wLtZrc5phhtk/d/s9oACTAsD5m6nIFwYkjW//EQZV+HYbgG7GWxA1zxN9r7YiewM9x7JdfIerWMcnwt9kYYVu2/YHdyb+8cn8CC/r+z+KzaL8DzsQPtGscBWND/Vm6tPCNYbwaJg9cHza0L4RgF2wMHr40jMGAenYbHuFD9M1hPFtT/A79RP/ofY3IHu8GVc/SODdY2slD9tN6lPOKx6J1ryHIkdlZ8b8XAspYst+GxX3DNku+38LRisXLHuz8R68HiabZiMBnWkkVi8HTNwjgpJi15+HMt/04Og/ecWixenqTwpdR2TQ4t/1N9vGW/rRUTae/RcoXXOP3v9b+oD6J7qrZWbq+IsqQwaDq0WEQ1l86xFC2R2i3Boe0l0Rzi+2rNeHjrS37UNEV7sGVR5uj6LXKntj07gxW7mjVQQ7vHQq239hT91tmvJ4e3D23lLMmSUo/SetFzqNVDchm+mSbr7DYKY3LyMDcmqJ9aytmthN9y+qGU2xYHr8dSTLn9nL67cP2co5T/axh9d/Hyaa8mva+XPLfl6to6NqK9Vr9KrTlt3J4Yts6ROEr4Ksog6erhz5axSPkOt0eOEntRK+aU7yhST/B4vDG019Rg4OtrvS16tp6H/z2zNIfWmz0Ouhd5/Ll9X/vGmcsh9URrXgkOi2VrLmkMmh+8c0wkj7yeLOnn46Szt8VSmsPaa6VnT2z+pMzXGLjfcvpP7ntLdL40p1cP7f095RntD0KbPHcQJwAA
+  </data>
+ </layer>
+ <layer name="under1" width="50" height="50">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+2W3W7CMAyFud94CiS0cUWljb0og42BtL0pjlRLlpUfJ00al/mTjoC2pHZin2S1MgzDMIz52PcOoBIuj03lMZ9Aa9Bz5XFjuDyGUSlOoDO7dgH9sGtb0AvoNXB/KbyBDqCP3oE0QrLmhh9fL2ijRYzoFdK+lnpLiKke65uDgUkCPpfrZ/z91ONT6/MF+vbEQH/36mHq8TmUxNxyDynx+M0oSR3VWCNeB6XQenMxYR44v744eY6a9gwXC/YT9hTmxJ+jn7UJ9bHUf6knYE/Fej10b8418tUS9YR30K4gFp4n7f2W+dF+mHLuS61F6TpJPYCP79s/r6Cb8P8tfS0E1hYdP+cc0MurYmeNXDR57ZRYauZAfRJjOoI+M96nYU6pT2I8v6C/8Xts35gr/phHIM4nnc+HfDK3bnqtjdSvEb73aTgjxd6diil2tuBI6iIHPl7pHGo5n5bOT+/6KQXz1dIHEqRr1Cv+mj1Wu1+Nx8DqwjD+H637XouvaInDWAZ3l32cyhAnAAA=
+  </data>
+ </layer>
+ <layer name="lifeforms" width="50" height="50" visible="0">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3OAQ0AAAgDoNe3tTGuGyQgAQAAAAAArpl2AAAAAB5aYsmmJBAnAAA=
+  </data>
+ </layer>
+ <layer name="over0" width="50" height="50">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3W2wqAIAyA4XqdHrUj1Atnl0Um1pZT/w8k6GA6NrVpAACApt614XJvdm15+Cb0HPq69nzFd3e1YI3mGHOpa+kYxPb39H6or9W1LeJfpcol17RI5YEv32qP71e+uOawR7z119xKjmEMyb3Aekytj8+HdRQSLOQ/Z0+/0bUp9SASkc4LC7kuqbT5hORYC9bXNsmYWp8r0iAvgPpo172V80Bt5zDgsAMN+hmWECcAAA==
+  </data>
+ </layer>
+ <layer name="event" width="50" height="50" visible="0">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3OQREAAAgDoKWzfyRT7HwICUgAAAAAAH6Z6wAAAAAAFQtHuaxjECcAAA==
+  </data>
+ </layer>
+</map>

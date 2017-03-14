@@ -1,0 +1,15 @@
+*** settings ***
+name: "The Iron Covenant"
+uniquename:iron_covenant
+description: "Those that learned to work metal, lorded over all men."
+banner:graphics/sprites/weapons/sprites1012.png
+
+*** factions ***
+player:50
+enemy:0
+iron_covenant:100
+chand_baori:60
+de_incendio:40
+tramore_folk:40
+
+

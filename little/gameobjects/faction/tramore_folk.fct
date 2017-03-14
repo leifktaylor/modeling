@@ -1,0 +1,15 @@
+*** settings ***
+name:"Tramore Folk"
+uniquename:tramore_folk
+description:"We grew up too fast here. We had no choice."
+banner:graphics/sprites/keys/sprites1003.png
+
+*** factions ***
+player:50
+enemy:0
+iron_covenant:30
+chand_baori:60
+de_incendio:40
+tramore_folk:80
+
+

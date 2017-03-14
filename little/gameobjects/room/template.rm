@@ -1,21 +1,9 @@
-# Room template
-# Room templates must contain these four sections, delimited by '*** section_name ***'
-
 *** settings ***
-name:Dark Hallway
-atenter:As you enter the hallway, you hear nothing but water dripping and a slight breeze.
-atexit:You proceed down the hallway.
-look:The walls are covered in slime.  What a horrid place.
-listen:You think you hear a distant moaning sound.
+name:"Template Room"
+uniquename:template_room
+tmx_map:gameobjects/room/test8.tmx
+bgm:None
+bgs:None
 
-*** lifeforms ***
-gameobjects/lifeform/rat_man.lfm
-gameobjects/lifeform/rat_man.lfm
-gameobjects/lifeform/rat_man.lfm
 
-*** items ***
-gameobjects/potion/minor_health_potion.itm
-gameobjects/weapon/rusty_shiv.itm
-
-*** links ***
-gameobjects/rooms/anotherroom.rm
+# Later add an effects tab for fog etc.

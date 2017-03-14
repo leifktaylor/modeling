@@ -1,11 +1,10 @@
-# Ingredient Template
+*** settings ***
 item_type:potion
-name:Large Health Potion
-description:This big bottle holds enough for multiple uses of healing delight.
-
-# When used as an item
-OnUse:spells/potion_uses/minor_heal.spl
-uses:3
-
-# misc stuff
+uniquename:major_health_potion
+name:"Large Health Potion"
+description:"This big bottle holds enough for multiple uses of healing delight."
 weight:2
+
+*** scripts ***
+# When used as an item
+use 0 cast heal self

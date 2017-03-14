@@ -1,16 +1,35 @@
-# Weapon Template
+*** settings ***
 item_type:weapon
-name:Longsword
+uniquename:iron_longsword
+equippable_slot:weapon
+name:"Iron Longsword"
 attack_verb:slashes
-description:A sturdy, hefty, and imposing steel blade
-equippable_slot:right_hand
-
-# Damage Types
-PDMG:5
-
-# Properties (Any number)
-STA:1
-STR:1
-
-# misc stuff
+description:"Weapon of choice for members of the Iron Covenant"
 weight:4
+
+*** sprites ***
+main graphics/sprites/player_sprites/weapon/sword_long_iron.png
+
+*** stats ***
+PDMG:5
+MDMG:3
+HP:4
+MP:5
+STR:4
+
+*** scripts ***
+# <proc-type clause> <action clause>
+onhit 10 cast fire target
+onhit 10 cast shield self
+ondamage 5 cast poison target
+passive regen
+use 0 cast strengthen self
+
+
+# All possible formats:
+# onhit <percent> <action clause> <target clause>
+# ondamage <percent> <action clause> <target clause>
+# passive <status>
+# use <qty> <action clause> <target clause> # 0 is infinite
+# action clauses
+# cast <spell>

@@ -1,0 +1,11 @@
+[hail]
+Well aren't you a [handsome] one! Would you like to meet my [daughter]?
+[daughter]
+Yes my daughter! Why she's the finest lass in this fair city.  If only I could find her a [suitor]
+[handsome]
+Yes! You're so incredibly handsome.. heck I'd date you!
+[suitor]
+Yes! Why don't you go meet her! She's somewhere in this weird place.
+Take this sword; it may impress her!
+{give gameobjects/weapon/long_sword.itm}
+{dialogue 1}

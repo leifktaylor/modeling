@@ -1,0 +1,11 @@
+*** combat ***
+stat HP<5 flee
+stat HP<20 cast healing self
+stat HP>20 cast healing nearest ally stat HP<70
+random 10 cast silence any enemy stat MND>10
+stat MP>50 cast fire any enemy
+attack nearest enemy
+
+*** idle ***
+move (20,25)
+move (10,5)

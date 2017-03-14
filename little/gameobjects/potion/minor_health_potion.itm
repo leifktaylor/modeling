@@ -1,11 +1,10 @@
-# Ingredient Template
+*** settings ***
 item_type:potion
-name:Minor Health Potion
-description:A household tonic whose recipe is known by many a grandmother in Estora.
+uniquename:minor_health_potion
+name:"Minor Health Potion"
+description:"A small jolt of energy is in this bottle."
+weight:2
 
+*** scripts ***
 # When used as an item
-OnUse:spells/potion_uses/minor_heal.spl
-uses:1
-
-# misc stuff
-weight:1
+use 0 cast heal self
