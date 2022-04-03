@@ -1,7 +1,0 @@
-[linux] # this is my linux filesystem
-./mkfiles
-[hpux] # this is another filesystem
-./mkfiles
-[aix]
-./mkfiles
-
